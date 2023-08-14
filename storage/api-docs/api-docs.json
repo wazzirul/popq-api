@@ -1,0 +1,145 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "PopQ OpenApi Documentation",
+        "description": "L5 Swagger OpenApi",
+        "contact": {
+            "email": "hello@illiyin.studio"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000/api",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/administrators/store": {
+            "post": {
+                "tags": [
+                    "Administrators"
+                ],
+                "summary": "Store new or update administrator",
+                "description": "Returns administrator data",
+                "operationId": "storeAdministrators",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - Remove the id_administrator object for create new data Administrator <b>or</b>\n                    <br> - Fill in the id_administrator object for update data Administrator\n                    <br> - Empty object if you don't want to change data\n                    <br> - soft_delete (0 = active, 1 = deleted)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_administrator": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "email": {
+                                        "type": "email",
+                                        "example": "solikin@test.co"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "solikin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "solikin"
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/administrators/login": {
+            "post": {
+                "tags": [
+                    "Administrators"
+                ],
+                "summary": "Login administrator",
+                "description": "Returns administrator data",
+                "operationId": "loginAdministrators",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - <b>Email</b> can be filled by email or username",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "email",
+                                        "example": "solikin@test.co"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "solikin"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/administrators/show": {
+            "get": {
+                "tags": [
+                    "Administrators"
+                ],
+                "summary": "Show administrator",
+                "description": "Returns administrator data",
+                "operationId": "showAdministrators",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        }
+    }
+}
