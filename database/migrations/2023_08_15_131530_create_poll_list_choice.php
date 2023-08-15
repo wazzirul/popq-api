@@ -16,6 +16,9 @@ return new class extends Migration
             $table->unsignedInteger('id_poll');
             $table->foreign('id_poll')->references('id_poll')->on('poll')->onDelete('cascade');
             $table->string('poll_choice');
+
+            $table->smallInteger('soft_delete')->default(0);
+            $table->timestamps();
         });
     }
 

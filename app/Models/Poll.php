@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Poll extends Model
+{
+    protected $table = 'poll';
+    protected $primaryKey = 'id_poll';
+    protected $fillable = ['id_poll','id_categories','title','subtitle','thumbnail','description','today_status','draft','soft_delete'];
+
+    public function Categories()
+    {
+        return $this->hasOne('App\Models\Categories','id_categories','id_categories');
+    }
+
+    public function QuizListChoice()
+    {
+        return $this->hasMany('App\Models\QuizListChoice','id_poll','id_poll');
+    }
+}

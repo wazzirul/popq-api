@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class QuizListChoice extends Model
+{
+    protected $table = 'quiz_list_choice';
+    protected $primaryKey = 'id_quiz_list_choice';
+    protected $fillable = ['id_quiz_list_choice','id_quiz_questions','answer','correct','soft_delete'];
+
+    public function QuizQuestions()
+    {
+        return $this->hasOne('App\Models\QuizQuestions','id_quiz_questions','id_quiz_questions');
+    }
+}
