@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id_user');
-            $table->string('username');
-            $table->string('fb_ids');
-            $table->string('go_ids');
+            $table->string('username')->nullable();
+            $table->string('fb_ids')->nullable();
+            $table->string('go_ids')->nullable();
             $table->smallInteger('status')->default(0);
 
             $table->smallInteger('soft_delete')->default(0);
