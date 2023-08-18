@@ -97,4 +97,150 @@ class UserController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
+
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/user/edit-user",
+     *      operationId="editUser",
+     *      tags={"Users"},
+     *      summary="Edit User Data",
+     *      description="Returns updated username on User Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated
+     *         <br> - <b>username</b> need for update username   ",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
+     *              @OA\Property(property="go_ids", type="string", example=null),
+     *              @OA\Property(property="username", type="string", example=null),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function editUser(Request $request)
+    {
+        $requestData = $request->only([
+            'fb_ids', // Facebook ID
+            'go_ids', // Google ID
+            'username', // Username
+        ]);
+
+        $fbId = $requestData['fb_ids'] ?? null;
+        $goId = $requestData['go_ids'] ?? null;
+        $username = $requestData['username'] ?? null;
+
+        if (!$fbId && !$goId) {
+            return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        if(!$fbId){
+            $data = Users::where('go_ids', $goId)->first();
+        }
+        
+        if(!$goId){
+            $data = Users::where('fb_ids', $fbId)->first();
+        }
+
+        if ($data) {    
+            $data->username = $username;
+            $data->save();        
+        }else{
+            return ResultHelpers::errors('User Data Not Found.', 401, false);
+        }
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/user/update-status-user",
+     *      operationId="updateStatusUser",
+     *      tags={"Users"},
+     *      summary="Update Status User Data",
+     *      description="Returns updated status (active / banned) on User Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated
+     *         <br> - <b>status</b> need for update status of user (default 0 = active, 1 = banned)   ",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
+     *              @OA\Property(property="go_ids", type="string", example=null),
+     *              @OA\Property(property="status", type="number", example=0),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function statusUser(Request $request)
+    {
+        $requestData = $request->only([
+            'fb_ids', // Facebook ID
+            'go_ids', // Google ID
+            'status', // status
+        ]);
+
+        $fbId = $requestData['fb_ids'] ?? null;
+        $goId = $requestData['go_ids'] ?? null;
+        $status = $requestData['status'] ?? null;
+
+        if (!$fbId && !$goId) {
+            return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        if(!$fbId){
+            $data = Users::where('go_ids', $goId)->first();
+        }
+        
+        if(!$goId){
+            $data = Users::where('fb_ids', $fbId)->first();
+        }
+
+        if ($data) {    
+            $data->status = $status;
+            $data->save();        
+        }else{
+            return ResultHelpers::errors('User Data Not Found.', 401, false);
+        }
+
+        return ResultHelpers::success($data, 200, true);
+    }
 }

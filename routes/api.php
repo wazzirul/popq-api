@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdministratorsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoriesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +30,11 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // User
     Route::post('/user/register-login', [UserController::class, 'registerLogin'])->name('users--registerLogin');
+    Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
+    Route::post('/user/update-status-user', [UserController::class, 'statusUser'])->name('users--statusUser');
 
+    // Categories
+    Route::post('/categories/create-edit', [CategoriesController::class, 'createEdit'])->name('categories--createEdit');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
