@@ -97,7 +97,6 @@ class UserController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
-
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -109,13 +108,15 @@ class UserController extends Controller
      *      description="Returns updated username on User Data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated
-     *         <br> - <b>username</b> need for update username   ",
+     *         <br> - <b>username</b> need for update username of user
+     *         <br> - <b>status</b> need for update status of user (default 0 = active, 1 = banned)   ",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
      *              @OA\Property(property="go_ids", type="string", example=null),
      *              @OA\Property(property="username", type="string", example=null),
+     *              @OA\Property(property="status", type="number", example=0),
      *          )
      *      ),
      *      @OA\Response(
@@ -142,11 +143,13 @@ class UserController extends Controller
             'fb_ids', // Facebook ID
             'go_ids', // Google ID
             'username', // Username
+            'status', // status
         ]);
 
         $fbId = $requestData['fb_ids'] ?? null;
         $goId = $requestData['go_ids'] ?? null;
         $username = $requestData['username'] ?? null;
+        $status = $requestData['status'] ?? null;
 
         if (!$fbId && !$goId) {
             return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
@@ -163,6 +166,7 @@ class UserController extends Controller
 
         if ($data) {    
             $data->username = $username;
+            $data->status = $status;
             $data->save();        
         }else{
             return ResultHelpers::errors('User Data Not Found.', 401, false);
@@ -171,24 +175,65 @@ class UserController extends Controller
         return ResultHelpers::success($data, 200, true);
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Get(
+     *      path="/user/show",
+     *      operationId="showUsers",
+     *      tags={"Users"},
+     *      summary="Show Users",
+     *      description="Returns Users data",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function show(Request $request)
+    {
+        $data = Users::where('soft_delete', 0)
+            ->orderBy('id_user', 'DESC')
+            ->select([
+                'id_user',
+                'username',
+                'fb_ids',
+                'go_ids',
+                'status',
+            ])
+            ->get();
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+    
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Post(
-     *      path="/user/update-status-user",
-     *      operationId="updateStatusUser",
+     *      path="/user/showById",
+     *      operationId="showByIdUser",
      *      tags={"Users"},
-     *      summary="Update Status User Data",
-     *      description="Returns updated status (active / banned) on User Data",
+     *      summary="Show BY Id User Data",
+     *      description="Returns User Data based on fb_ids or go_ids",
      *      @OA\RequestBody(
-     *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated
-     *         <br> - <b>status</b> need for update status of user (default 0 = active, 1 = banned)   ",
+     *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
      *              @OA\Property(property="go_ids", type="string", example=null),
-     *              @OA\Property(property="status", type="number", example=0),
      *          )
      *      ),
      *      @OA\Response(
@@ -209,17 +254,15 @@ class UserController extends Controller
      *      )
      * )
      */
-    public function statusUser(Request $request)
+    public function showById(Request $request)
     {
         $requestData = $request->only([
             'fb_ids', // Facebook ID
             'go_ids', // Google ID
-            'status', // status
         ]);
 
         $fbId = $requestData['fb_ids'] ?? null;
         $goId = $requestData['go_ids'] ?? null;
-        $status = $requestData['status'] ?? null;
 
         if (!$fbId && !$goId) {
             return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
@@ -232,13 +275,6 @@ class UserController extends Controller
         
         if(!$goId){
             $data = Users::where('fb_ids', $fbId)->first();
-        }
-
-        if ($data) {    
-            $data->status = $status;
-            $data->save();        
-        }else{
-            return ResultHelpers::errors('User Data Not Found.', 401, false);
         }
 
         return ResultHelpers::success($data, 200, true);

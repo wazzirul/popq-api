@@ -31,10 +31,13 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // User
     Route::post('/user/register-login', [UserController::class, 'registerLogin'])->name('users--registerLogin');
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
-    Route::post('/user/update-status-user', [UserController::class, 'statusUser'])->name('users--statusUser');
+    Route::get('/user/show', [UserController::class, 'show'])->name('users--show');
+    Route::post('/user/showById', [UserController::class, 'showById'])->name('users--showById');
 
     // Categories
     Route::post('/categories/create-edit', [CategoriesController::class, 'createEdit'])->name('categories--createEdit');
+    Route::post('/categories/delete', [CategoriesController::class, 'delete'])->name('categories--delete');
+    Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
