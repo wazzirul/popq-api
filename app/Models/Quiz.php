@@ -16,13 +16,13 @@ class Quiz extends Model
         return $this->hasOne('App\Models\Categories','id_categories','id_categories');
     }
 
-    public function QuizListChoice()
-    {
-        return $this->hasMany('App\Models\QuizListChoice','id_quiz','id_quiz');
-    }
-
     public function QuizQuestions()
     {
         return $this->hasMany('App\Models\QuizQuestions','id_quiz','id_quiz');
+    }
+
+    public function QuizListChoice()
+    {
+        return $this->hasMany('App\Models\QuizListChoice','id_quiz','id_quiz');
     }
 }

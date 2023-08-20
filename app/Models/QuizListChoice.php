@@ -9,7 +9,12 @@ class QuizListChoice extends Model
 {
     protected $table = 'quiz_list_choice';
     protected $primaryKey = 'id_quiz_list_choice';
-    protected $fillable = ['id_quiz_list_choice','id_quiz_questions','answer','correct','soft_delete'];
+    protected $fillable = ['id_quiz_list_choice','id_quiz','id_quiz_questions','answer','correct','soft_delete'];
+
+    public function Quiz()
+    {
+        return $this->hasOne('App\Models\Quiz','id_quiz','id_quiz');
+    }
 
     public function QuizQuestions()
     {

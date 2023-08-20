@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdministratorsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\QuizController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,12 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/categories/create-edit', [CategoriesController::class, 'createEdit'])->name('categories--createEdit');
     Route::post('/categories/delete', [CategoriesController::class, 'delete'])->name('categories--delete');
     Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
+
+    // Quiz
+    Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
+    Route::get('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
+    Route::post('/quiz/showById', [QuizController::class, 'showById'])->name('quiz--showById');
+    Route::post('/quiz/showDraftQuiz', [QuizController::class, 'showDraftQuiz'])->name('quiz--showDraftQuiz');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN

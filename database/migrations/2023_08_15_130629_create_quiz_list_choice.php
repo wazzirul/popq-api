@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('quiz_list_choice', function (Blueprint $table) {
             $table->increments('id_quiz_list_choice');
+            $table->unsignedInteger('id_quiz');
+            $table->foreign('id_quiz')->references('id_quiz')->on('quiz')->onDelete('cascade');
             $table->unsignedInteger('id_quiz_questions');
             $table->foreign('id_quiz_questions')->references('id_quiz_questions')->on('quiz_questions')->onDelete('cascade');
             $table->string('answer');

@@ -108,8 +108,8 @@ class UserController extends Controller
      *      description="Returns updated username on User Data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> as a reference to the user data that will be updated
-     *         <br> - <b>username</b> need for update username of user
-     *         <br> - <b>status</b> need for update status of user (default 0 = active, 1 = banned)   ",
+              <br> - <b>username</b> need for update username of user
+              <br> - <b>status</b> need for update status of user (default 0 = active, 1 = banned)   ",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
