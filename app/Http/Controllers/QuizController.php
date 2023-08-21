@@ -219,6 +219,60 @@ class QuizController extends Controller
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Post(
+     *      path="/quiz/showByCategories",
+     *      operationId="showByCategoriesQuiz",
+     *      tags={"Quiz"},
+     *      summary="Show BY Categories Quiz Data",
+     *      description="Returns Quiz Data based on id_categories",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - id_categories as a reference to the categories quiz data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_categories", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showByCategories(Request $request)
+    {
+        $requestData = $request->only([
+            'id_categories', // Facebook ID
+        ]);
+
+        $idCategories = $requestData['id_categories'] ?? null;
+
+        if (!$idCategories) {
+            return ResultHelpers::errors('id_categories must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Quiz Data with its Relation.
+        $data = Quiz::where('id_categories', $idCategories)->with('Categories')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    }    
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
      *      path="/quiz/showById",
      *      operationId="showByIdQuiz",
      *      tags={"Quiz"},

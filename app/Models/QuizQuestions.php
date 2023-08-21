@@ -15,4 +15,9 @@ class QuizQuestions extends Model
     {
         return $this->hasOne('App\Models\Quiz','id_quiz','id_quiz');
     }
+
+    public function QuizListChoice()
+    {
+        return $this->hasMany('App\Models\QuizListChoice','id_quiz_questions','id_quiz_questions');
+    }
 }

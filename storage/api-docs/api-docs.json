@@ -315,6 +315,47 @@
                 }
             }
         },
+        "/quiz/showByCategories": {
+            "post": {
+                "tags": [
+                    "Quiz"
+                ],
+                "summary": "Show BY Categories Quiz Data",
+                "description": "Returns Quiz Data based on id_categories",
+                "operationId": "showByCategoriesQuiz",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_categories": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/quiz/showById": {
             "post": {
                 "tags": [
@@ -413,6 +454,173 @@
                             "schema": {
                                 "properties": {
                                     "draft": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/quiz-question/create-edit": {
+            "post": {
+                "tags": [
+                    "Quiz Question"
+                ],
+                "summary": "Create / Edit Quiz Question Data",
+                "description": "Returns Quiz Question Data",
+                "operationId": "createEditQuizQuestion",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_quiz_questions </b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>id_quiz</b> : id quiz from table quiz\n               <br><b>number_question</b> : number of question\n               <br><b>question</b> : question of quiz\n               <br><b>duration</b> : duration of quiz by(seconds)\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_quiz_questions": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_quiz": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "number_question": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "question": {
+                                        "type": "string",
+                                        "example": "What is the name of the creature that captures Luke Skywalker on Hoth? What is the name of the creature that captures Luke?"
+                                    },
+                                    "duration": {
+                                        "type": "integer",
+                                        "example": "30"
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/quiz-question/show": {
+            "get": {
+                "tags": [
+                    "Quiz Question"
+                ],
+                "summary": "Show Quiz Question",
+                "description": "Returns Quiz Question data",
+                "operationId": "showQuizQuestion",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/quiz-question/showByQuiz": {
+            "post": {
+                "tags": [
+                    "Quiz Question"
+                ],
+                "summary": "Show Quiz Question BY ID Quiz",
+                "description": "Returns Quiz Question Data based on id_quiz",
+                "operationId": "showByQuizQuizQuestion",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_quiz as a reference to the quiz question data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_quiz": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/quiz-question/showByID": {
+            "post": {
+                "tags": [
+                    "Quiz Question"
+                ],
+                "summary": "Show Quiz Question BY ID Quiz Question",
+                "description": "Returns Quiz Question Data based on id_quiz_questions",
+                "operationId": "showByIDQuizQuestion",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_quiz_questions as a reference to the quiz question data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_quiz_questions": {
                                         "type": "string",
                                         "example": "1"
                                     }
