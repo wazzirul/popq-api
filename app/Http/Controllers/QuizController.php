@@ -319,7 +319,7 @@ class QuizController extends Controller
 
         // Check if the user already exists in the table
         // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('id_quiz', $idQuiz)->with('Categories','QuizQuestions','QuizListChoice')->first();
+        $data = Quiz::where('id_quiz', $idQuiz)->with('Categories','QuizQuestions.QuizListChoice')->first();
 
         return ResultHelpers::success($data, 200, true);
     }    
