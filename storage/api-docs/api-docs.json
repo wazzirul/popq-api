@@ -979,6 +979,173 @@
                     }
                 }
             }
+        },
+        "/user-quiz/create-edit": {
+            "post": {
+                "tags": [
+                    "User Quiz"
+                ],
+                "summary": "Create / Edit User Quiz Data",
+                "description": "Returns User Quiz Data",
+                "operationId": "createEditUserQuiz",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_user_quiz </b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>id_user</b> : id_user from table user\n               <br><b>id_quiz</b> : id_quiz from table quiz\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted\n               <br><b>answers</b>: Array of user quiz answers",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user_quiz": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_quiz": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id_quiz_questions": {
+                                                    "type": "integer",
+                                                    "example": "1"
+                                                },
+                                                "id_quiz_list_choice": {
+                                                    "type": "integer",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/user-quiz/show": {
+            "post": {
+                "tags": [
+                    "User Quiz"
+                ],
+                "summary": "Show User Quiz",
+                "description": "Returns User Quiz data",
+                "operationId": "showUserQuiz",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_user as a reference to the User Quiz data that will be returned\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/user-quiz/showByIdQuiz": {
+            "post": {
+                "tags": [
+                    "User Quiz"
+                ],
+                "summary": "Show User Quiz By Id Quiz",
+                "description": "Returns User Quiz By Id Quiz data",
+                "operationId": "showUserQuizByIdQuiz",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_quiz as a reference to the User Quiz data that will be returned\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_quiz": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
         }
     }
 }

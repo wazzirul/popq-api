@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdministratorsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserQuizController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionsController;
@@ -36,6 +37,11 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
     Route::get('/user/show', [UserController::class, 'show'])->name('users--show');
     Route::post('/user/showById', [UserController::class, 'showById'])->name('users--showById');
+
+    // User Quiz
+    Route::post('/user-quiz/create-edit', [UserQuizController::class, 'createEdit'])->name('user-quiz--createEdit');
+    Route::post('/user-quiz/show', [UserQuizController::class, 'show'])->name('user-quiz--show');
+    Route::post('/user-quiz/showByIdQuiz', [UserQuizController::class, 'showByIdQuiz'])->name('user-quiz--showByIdQuiz');
 
     // Categories
     Route::post('/categories/create-edit', [CategoriesController::class, 'createEdit'])->name('categories--createEdit');

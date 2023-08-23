@@ -20,4 +20,9 @@ class QuizListChoice extends Model
     {
         return $this->hasOne('App\Models\QuizQuestions','id_quiz_questions','id_quiz_questions');
     }
+
+    public function UserQuizAnswer()
+    {
+        return $this->hasOne('App\Models\UserQuizAnswer','id_quiz_list_choice','id_quiz_list_choice');
+    }
 }
