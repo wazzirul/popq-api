@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('poll', function (Blueprint $table) {
             $table->increments('id_poll');
             $table->unsignedInteger('id_categories');
-            $table->foreign('id_categories')->references('id_categories')->on('categories');
+            $table->foreign('id_categories')->references('id_categories')->on('categories')->onDelete('cascade');
             $table->string('title');
             $table->string('subtitle');
             $table->string('thumbnail');

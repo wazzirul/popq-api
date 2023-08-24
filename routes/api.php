@@ -55,6 +55,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::get('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
     Route::post('/quiz/showByCategories', [QuizController::class, 'showByCategories'])->name('quiz--showByCategories');
     Route::post('/quiz/showById', [QuizController::class, 'showById'])->name('quiz--showById');
+    Route::post('/quiz/showTodayQuiz', [QuizController::class, 'showTodayQuiz'])->name('quiz--showTodayQuiz');
     Route::post('/quiz/showDraftQuiz', [QuizController::class, 'showDraftQuiz'])->name('quiz--showDraftQuiz');
 
     // Quiz Questions
@@ -71,6 +72,11 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Poll
     Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
+    Route::get('/poll/show', [PollController::class, 'show'])->name('poll--show');
+    Route::post('/poll/showByCategories', [PollController::class, 'showByCategories'])->name('poll--showByCategories');
+    Route::post('/poll/showById', [PollController::class, 'showById'])->name('poll--showById');
+    Route::post('/poll/showTodayPoll', [PollController::class, 'showTodayPoll'])->name('poll--showTodayPoll');
+    Route::post('/poll/showDraftPoll', [PollController::class, 'showDraftPoll'])->name('poll--showDraftPoll');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN

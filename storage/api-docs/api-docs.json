@@ -291,6 +291,194 @@
                 }
             }
         },
+        "/poll/show": {
+            "get": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show Poll",
+                "description": "Returns Poll data",
+                "operationId": "showPoll",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/poll/showByCategories": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show BY Categories Poll Data",
+                "description": "Returns Poll Data based on id_categories",
+                "operationId": "showByCategoriesPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories poll data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_categories": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/poll/showById": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show BY Id Poll Data",
+                "description": "Returns Poll Data based on id_poll",
+                "operationId": "showByIdPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_poll": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/poll/showTodayPoll": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show BY Today Poll Data",
+                "description": "Returns Poll Data based on today_status",
+                "operationId": "showByTodayStatusPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - today_status as a reference to the poll data that will be returned ( 1 = Today Trivia Poll, 0 = Not Today Trivia Poll )",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "today_status": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/poll/showDraftPoll": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show BY Draft Poll Data",
+                "description": "Returns Poll Data based on draft status",
+                "operationId": "showByDraftPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - draft as a reference to the poll data that will be returned ( 1 = Drafted Poll, 0 = Published Poll )",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "draft": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/quiz/create-edit": {
             "post": {
                 "tags": [

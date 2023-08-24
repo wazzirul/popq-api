@@ -177,4 +177,257 @@ class PollController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
+    
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Get(
+     *      path="/poll/show",
+     *      operationId="showPoll",
+     *      tags={"Poll"},
+     *      summary="Show Poll",
+     *      description="Returns Poll data",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function show(Request $request)
+    {
+        $data = Poll::where('soft_delete', 0)
+            ->orderBy('id_poll', 'DESC')
+            ->with('Categories')
+            ->get();
+
+        return ResultHelpers::success($data, 200, true);
+    }   
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/showByCategories",
+     *      operationId="showByCategoriesPoll",
+     *      tags={"Poll"},
+     *      summary="Show BY Categories Poll Data",
+     *      description="Returns Poll Data based on id_categories",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - id_categories as a reference to the categories poll data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_categories", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showByCategories(Request $request)
+    {
+        $requestData = $request->only([
+            'id_categories', // Facebook ID
+        ]);
+
+        $idCategories = $requestData['id_categories'] ?? null;
+
+        if (!$idCategories) {
+            return ResultHelpers::errors('id_categories must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $data = Poll::where('id_categories', $idCategories)->with('Categories')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    }    
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/showById",
+     *      operationId="showByIdPoll",
+     *      tags={"Poll"},
+     *      summary="Show BY Id Poll Data",
+     *      description="Returns Poll Data based on id_poll",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - id_poll as a reference to the poll data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_poll", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showById(Request $request)
+    {
+        $requestData = $request->only([
+            'id_poll', // Facebook ID
+        ]);
+
+        $idPoll = $requestData['id_poll'] ?? null;
+
+        if (!$idPoll) {
+            return ResultHelpers::errors('id_poll must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $data = Poll::where('id_poll', $idPoll)->with('Categories','PollListChoice')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    }    
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/showTodayPoll",
+     *      operationId="showByTodayStatusPoll",
+     *      tags={"Poll"},
+     *      summary="Show BY Today Poll Data",
+     *      description="Returns Poll Data based on today_status",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - today_status as a reference to the poll data that will be returned ( 1 = Today Trivia Poll, 0 = Not Today Trivia Poll )",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="today_status", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showTodayPoll(Request $request)
+    {
+        $requestData = $request->only([
+            'today_status', // Facebook ID
+        ]);
+
+        $todayStatusPoll = $requestData['today_status'] ?? null;
+
+        if (!$todayStatusPoll) {
+            return ResultHelpers::errors('today_status must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $data = Poll::where('today_status', $todayStatusPoll)->with('Categories','PollListChoice')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    } 
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/showDraftPoll",
+     *      operationId="showByDraftPoll",
+     *      tags={"Poll"},
+     *      summary="Show BY Draft Poll Data",
+     *      description="Returns Poll Data based on draft status",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - draft as a reference to the poll data that will be returned ( 1 = Drafted Poll, 0 = Published Poll )",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="draft", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showDraftPoll(Request $request)
+    {
+        $requestData = $request->only([
+            'draft', // Facebook ID
+        ]);
+
+        $draftPoll = $requestData['draft'] ?? null;
+
+        if (!$draftPoll) {
+            return ResultHelpers::errors('draft status must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $data = Poll::where('draft', $draftPoll)->with('Categories')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    }
 }

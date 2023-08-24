@@ -359,7 +359,7 @@ class QuizController extends Controller
      *      )
      * )
      */
-    public function showByTodayQuiz(Request $request)
+    public function showTodayQuiz(Request $request)
     {
         $requestData = $request->only([
             'today_status', // Facebook ID
@@ -373,7 +373,7 @@ class QuizController extends Controller
 
         // Check if the user already exists in the table
         // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('today_status', $todayStatusQuiz)->with('Categories','QuizQuestions','QuizListChoice')->first();
+        $data = Quiz::where('today_status', $todayStatusQuiz)->with('Categories','QuizQuestions.QuizListChoice')->first();
 
         return ResultHelpers::success($data, 200, true);
     } 

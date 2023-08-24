@@ -16,8 +16,8 @@ class Poll extends Model
         return $this->hasOne('App\Models\Categories','id_categories','id_categories');
     }
 
-    public function QuizListChoice()
+    public function PollListChoice()
     {
-        return $this->hasMany('App\Models\QuizListChoice','id_poll','id_poll');
+        return $this->hasMany('App\Models\PollListChoice','id_poll','id_poll');
     }
 }
