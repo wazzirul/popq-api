@@ -153,7 +153,7 @@ class QuizController extends Controller
             $data->id_categories = $idCategories;
             $data->title = $titleQuiz;
             $data->subtitle = $subtitleQuiz;
-            $data->thumbnail = $thumbnailUrl;
+            $data->thumbnail = $thumbnailUrl ?? '';
             $data->description = $descriptionQuiz;
             $data->today_status = $todayStatusQuiz;
             $data->draft = $draftQuiz;

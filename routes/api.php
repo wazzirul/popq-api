@@ -10,6 +10,8 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\QuizListChoiceController;
+use App\Http\Controllers\PollController;
+use App\Http\Controllers\PollListChoiceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +68,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::get('/quiz-list-choice/show', [QuizListChoiceController::class, 'show'])->name('quiz-question--show');
     Route::post('/quiz-list-choice/showByQuiz', [QuizListChoiceController::class, 'showByQuiz'])->name('quiz-question--showByQuiz');
     Route::post('/quiz-list-choice/showByQuizQuestions', [QuizListChoiceController::class, 'showByQuizQuestions'])->name('quiz-question--showByQuizQuestions');
+
+    // Poll
+    Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN

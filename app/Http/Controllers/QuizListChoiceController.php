@@ -86,6 +86,11 @@ class QuizListChoiceController extends Controller
             return ResultHelpers::errors('Quiz Questions Data Not Found from id_quiz_questions inputed', 400, false);
         }
 
+        // Check if the provided id_quiz_questions matches the id_quiz_questions from QuizQuestions
+        if ($dataQuizQuestions->id_quiz !== $idQuiz) {
+            return ResultHelpers::errors('id_quiz_questions does not match the provided id_quiz', 400, false);
+        }
+
         if($idQuizListChoice === null){
             // Create a new user account
             $data = new QuizListChoice();
