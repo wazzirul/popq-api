@@ -479,6 +479,59 @@
                 }
             }
         },
+        "/poll-list-choice/create-edit": {
+            "post": {
+                "tags": [
+                    "Poll List Choice"
+                ],
+                "summary": "Create / Edit Poll List Choice Data",
+                "description": "Returns Poll List Choice Data",
+                "operationId": "createEditPollListChoice",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_poll_list_choice</b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>id_poll</b> : id poll from table poll\n               <br><b>poll_choice</b> : string of poll_choice example (Cristiano Ronaldo)\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_poll_list_choice": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_poll": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "poll_choice": {
+                                        "type": "string",
+                                        "example": "Cristiano Ronaldo"
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/quiz/create-edit": {
             "post": {
                 "tags": [

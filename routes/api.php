@@ -77,6 +77,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/poll/showById', [PollController::class, 'showById'])->name('poll--showById');
     Route::post('/poll/showTodayPoll', [PollController::class, 'showTodayPoll'])->name('poll--showTodayPoll');
     Route::post('/poll/showDraftPoll', [PollController::class, 'showDraftPoll'])->name('poll--showDraftPoll');
+
+    // Poll List Choice
+    Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN

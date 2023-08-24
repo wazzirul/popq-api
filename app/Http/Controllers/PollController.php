@@ -313,14 +313,30 @@ class PollController extends Controller
         $idPoll = $requestData['id_poll'] ?? null;
 
         if (!$idPoll) {
-            return ResultHelpers::errors('id_poll must be provided.', 400, false);
+          return ResultHelpers::errors('id_poll must be provided.', 400, false);
         }
 
         // Check if the user already exists in the table
         // Return Created / Updated Poll Data with its Relation.
-        $data = Poll::where('id_poll', $idPoll)->with('Categories','PollListChoice')->first();
+        $poll = Poll::where('id_poll', $idPoll)
+        ->with('Categories', 'PollListChoice')
+        ->first();
 
-        return ResultHelpers::success($data, 200, true);
+        if (!$poll) {
+          return ResultHelpers::errors('Poll not found.', 404, false);
+        }
+
+        // Load the associated PollListChoice records
+        $poll->load(['PollListChoice']);
+    
+        // Count the number of selections for each PollListChoice using UserPoll
+        foreach ($poll->PollListChoice as $choice) {
+            $pollCount = UserPoll::where('id_poll_list_choice', $choice->id_poll_list_choice)
+                ->count();
+            $choice->poll_count = $pollCount;
+        }
+    
+        return ResultHelpers::success($poll, 200, true);
     }    
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
