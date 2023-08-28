@@ -532,6 +532,88 @@
                 }
             }
         },
+        "/poll-list-choice/showByPoll": {
+            "post": {
+                "tags": [
+                    "Poll List Choice"
+                ],
+                "summary": "Show Poll List Choice BY ID Poll",
+                "description": "Returns Poll List Choice Data based on id_poll",
+                "operationId": "showPollListChoiceByPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll list choice data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_poll": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/poll-list-choice/showById": {
+            "post": {
+                "tags": [
+                    "Poll List Choice"
+                ],
+                "summary": "Show Poll List Choice BY ID Poll List Choice",
+                "description": "Returns Poll List Choice Data based on id_poll_list_choice",
+                "operationId": "showPollListChoiceByID",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_poll_list_choice as a reference to the poll list choice data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_poll_list_choice": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/quiz/create-edit": {
             "post": {
                 "tags": [
@@ -1271,6 +1353,161 @@
                                     "go_ids": {
                                         "type": "string",
                                         "example": null
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/user-poll/create-edit": {
+            "post": {
+                "tags": [
+                    "User Poll"
+                ],
+                "summary": "Create / Edit User Poll Data",
+                "description": "Returns User Poll Data",
+                "operationId": "createEditUserPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n         <br><b>id_user_poll </b> : null / empty if want to create data, fill the id number if want to update data\n         <br><b>id_user</b> : id_user from table user\n         <br><b>id_poll</b> : id_poll from table poll\n         <br><b>id_poll_list_choice</b> : id_poll_list_choice from table poll list choice\n         <br><b>soft_delete</b> : 0 = active, 1 = deleted (default = 0)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user_poll": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_poll": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_poll_list_choice": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/user-poll/show": {
+            "post": {
+                "tags": [
+                    "User Poll"
+                ],
+                "summary": "Show User Poll",
+                "description": "Returns User Poll data",
+                "operationId": "showUserPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n        <br> - id_user as a reference to the User Poll data that will be returned\n        <br> - limit as limit show data (default 10)\n        <br> - page as page show data (default 1)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/user-poll/showByIdPoll": {
+            "post": {
+                "tags": [
+                    "User Poll"
+                ],
+                "summary": "Show User Poll By Id Poll",
+                "description": "Returns User Poll By Id Poll data",
+                "operationId": "showUserPollByIdPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n        <br> - id_poll as a reference to the User Poll data that will be returned\n        <br> - limit as limit show data (default 10)\n        <br> - page as page show data (default 1)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_poll": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
                                     }
                                 },
                                 "type": "object"

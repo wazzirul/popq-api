@@ -95,4 +95,128 @@ class PollListChoiceController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll-list-choice/showByPoll",
+     *      operationId="showPollListChoiceByPoll",
+     *      tags={"Poll List Choice"},
+     *      summary="Show Poll List Choice BY ID Poll",
+     *      description="Returns Poll List Choice Data based on id_poll",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - id_poll as a reference to the poll list choice data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_poll", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showByPoll(Request $request)
+    {
+        $requestData = $request->only([
+            'id_poll',
+        ]);
+
+        $idPoll = $requestData['id_poll'] ?? null;
+
+        if (!$idPoll) {
+            return ResultHelpers::errors('id_poll must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $poll = Poll::where('id_poll', $idPoll)
+        ->with('Categories', 'PollListChoice')
+        ->first();
+
+        if (!$poll) {
+          return ResultHelpers::errors('Poll not found.', 404, false);
+        }
+
+        // Load the associated PollListChoice records
+        $poll->load(['PollListChoice']);
+    
+        // Count the number of selections for each PollListChoice using UserPoll
+        foreach ($poll->PollListChoice as $choice) {
+            $pollCount = UserPoll::where('id_poll_list_choice', $choice->id_poll_list_choice)
+                ->count();
+            $choice->poll_count = $pollCount;
+        }
+    
+        return ResultHelpers::success($poll, 200, true);
+    }    
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll-list-choice/showById",
+     *      operationId="showPollListChoiceByID",
+     *      tags={"Poll List Choice"},
+     *      summary="Show Poll List Choice BY ID Poll List Choice",
+     *      description="Returns Poll List Choice Data based on id_poll_list_choice",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                <br> - id_poll_list_choice as a reference to the poll list choice data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_poll_list_choice", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showById(Request $request)
+    {
+        $requestData = $request->only([
+            'id_poll_list_choice',
+        ]);
+
+        $idPoll = $requestData['id_poll_list_choice'] ?? null;
+
+        if (!$idPoll) {
+            return ResultHelpers::errors('id_poll_list_choice must be provided.', 400, false);
+        }
+
+        // Check if the user already exists in the table
+        // Return Created / Updated Poll Data with its Relation.
+        $data = PollListChoice::where('id_poll_list_choice', $idPoll)->where('soft_delete', 0)->with('Poll')->first();
+
+        return ResultHelpers::success($data, 200, true);
+    }  
 }

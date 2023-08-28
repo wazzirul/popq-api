@@ -12,6 +12,7 @@ use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\QuizListChoiceController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
+use App\Http\Controllers\UserPollController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +81,13 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');
+    Route::post('/poll-list-choice/showByPoll', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showByPoll');
+    Route::post('/poll-list-choice/showById', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showById');
+
+    // User Poll
+    Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
+    Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
+    Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
