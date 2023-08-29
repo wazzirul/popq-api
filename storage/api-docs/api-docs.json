@@ -1209,6 +1209,47 @@
                 }
             }
         },
+        "/statistics/showUser": {
+            "post": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Show BY Statistics User Data",
+                "description": "Returns User today, this month, permonth (january - december), and this year Data based on year",
+                "operationId": "statisticsShowUser",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - <b>year</b> as a reference to the user data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "year": {
+                                        "type": "string",
+                                        "example": "2023"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/user/register-login": {
             "post": {
                 "tags": [

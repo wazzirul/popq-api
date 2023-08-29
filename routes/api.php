@@ -13,6 +13,7 @@ use App\Http\Controllers\QuizListChoiceController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
 use App\Http\Controllers\UserPollController;
+use App\Http\Controllers\StatisticController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +89,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
     Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
     Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
+
+    // Statistics
+    Route::post('/statistics/showUser', [StatisticController::class, 'showUser'])->name('statistics--showUser');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
