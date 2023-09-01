@@ -904,7 +904,7 @@
                                     },
                                     "answer": {
                                         "type": "string",
-                                        "example": "TauntaunTauntaunTauntaunTauntaun"
+                                        "example": "Tauntaun"
                                     },
                                     "correct": {
                                         "type": "integer",
@@ -1071,7 +1071,7 @@
                                     },
                                     "question": {
                                         "type": "string",
-                                        "example": "What is the name of the creature that captures Luke Skywalker on Hoth? What is the name of the creature that captures Luke?"
+                                        "example": "What is the name of the creature that captures Luke Skywalker on Hoth?"
                                     },
                                     "duration": {
                                         "type": "integer",
@@ -1234,6 +1234,112 @@
                         }
                     }
                 },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/statistics/showQuiz": {
+            "post": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Show BY Statistics User Data",
+                "description": "Returns User today, this month, permonth (january - december), and this year Data based on year",
+                "operationId": "statisticsShowQuiz",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - <b>year</b> as a reference to the user data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "year": {
+                                        "type": "string",
+                                        "example": "2023"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/statistics/showQuizByCategories": {
+            "post": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Show BY Statistics User Data",
+                "description": "Returns User today, this month, permonth (january - december), and this year Data based on year",
+                "operationId": "statisticsShowQuizByCategories",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - <b>year</b> as a reference to the user data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "year": {
+                                        "type": "string",
+                                        "example": "2023"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/statistics/countTotalQuizzesAndPolls": {
+            "get": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Show Statistics",
+                "description": "Returns Statistics count Total Quizzes And Polls data",
+                "operationId": "statisticsCountTotalQuizzesAndPolls",
                 "responses": {
                     "200": {
                         "description": "Successful Operation"

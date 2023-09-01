@@ -35,7 +35,7 @@ class QuizQuestionsController extends Controller
      *              @OA\Property(property="id_quiz_questions", type="int", example="1"),
      *              @OA\Property(property="id_quiz", type="int", example="1"),
      *              @OA\Property(property="number_question", type="int", example="1"),
-     *              @OA\Property(property="question", type="string", example="What is the name of the creature that captures Luke Skywalker on Hoth? What is the name of the creature that captures Luke?"),
+     *              @OA\Property(property="question", type="string", example="What is the name of the creature that captures Luke Skywalker on Hoth?"),
      *              @OA\Property(property="duration", type="int", example="30"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
      *          )

@@ -203,20 +203,32 @@ class UserPollController extends Controller
   
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
-  
+
     // Fetch paginated data
-    $data = UserPoll::where('id_user', $idUser)
-      ->where('soft_delete', 0)
-      ->with('Poll.PollListChoice')
-      ->skip($offset)
-      ->take($limit)
-      ->get();
-      
+    $query = UserPoll::where('id_user', $idUser)
+        ->where('soft_delete', 0)
+        ->with('Poll.PollListChoice');
+
+    $totalRecords = $query->count();
+
+    $data = $query->skip($offset)
+        ->take($limit)
+        ->get();
+
     if (!$data) {
-      return ResultHelpers::errors('User Poll not found.', 404, false);
+        return ResultHelpers::errors('User Poll not found.', 404, false);
     }
+
+    // Calculate the total number of pages
+    $totalPages = ceil($totalRecords / $limit);
+
+    // Create the response array
+    $response = [
+        'data' => $data,
+        'total_pages' => $totalPages,
+    ];
   
-    return ResultHelpers::success($data, 200, true);
+    return ResultHelpers::success($response, 200, true);
   }    
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

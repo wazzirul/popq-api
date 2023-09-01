@@ -101,6 +101,8 @@ class UserQuizController extends Controller
       $data->date_time = $dateTime;
       $data->soft_delete = $softDelete;
       $data->save();
+      
+      $idUserQuiz = $data->id_user_quiz; // Obtain the new id_user_quiz
     }else{
       // Check if the user already exists in the table
       $data = UserQuiz::where('id_user_quiz', $idUserQuiz)->first();
@@ -264,17 +266,33 @@ class UserQuizController extends Controller
     }
   
     // Calculate the offset based on the page and limit
-    $offset = ($page - 1) * $limit;
+    $offset = ($page - 1) * $limit;        
   
     // Fetch paginated data
-    $data = UserQuiz::where('id_user', $idUser)
-      ->where('soft_delete', 0)
-      ->with('Quiz.QuizQuestions.QuizListChoice.UserQuizAnswer')
-      ->skip($offset)
-      ->take($limit)
-      ->get();
+    $query = UserQuiz::where('id_user', $idUser)
+        ->where('soft_delete', 0)
+        ->with('Quiz.QuizQuestions.QuizListChoice.UserQuizAnswer');
+
+    $totalRecords = $query->count();
+
+    $data = $query->skip($offset)
+        ->take($limit)
+        ->get();
+
+    if (!$data) {
+        return ResultHelpers::errors('User Quiz not found.', 404, false);
+    }
+
+    // Calculate the total number of pages
+    $totalPages = ceil($totalRecords / $limit);
+
+    // Create the response array
+    $response = [
+        'data' => $data,
+        'total_pages' => $totalPages,
+    ];
   
-    return ResultHelpers::success($data, 200, true);
+    return ResultHelpers::success($response, 200, true);
   }    
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

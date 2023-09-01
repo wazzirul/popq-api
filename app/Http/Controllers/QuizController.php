@@ -319,7 +319,22 @@ class QuizController extends Controller
 
         // Check if the user already exists in the table
         // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('id_quiz', $idQuiz)->with('Categories','QuizQuestions.QuizListChoice')->first();
+        $data = Quiz::where('id_quiz', $idQuiz)->with('Categories')->first();
+    
+        if (!$data) {
+            return ResultHelpers::errors('Quiz not found.', 404, false);
+        }
+    
+        // Retrieve the quiz questions for the quiz
+        $quizQuestions = QuizQuestions::where('id_quiz', $idQuiz)->get();
+
+        // Shuffle the quiz list choices for each quiz question
+        $quizQuestions->each(function ($question) {
+            $question->QuizListChoice = QuizListChoice::where('id_quiz_questions', $question->id_quiz_questions)->get()->shuffle();
+        });
+
+        // Assign the quiz questions to the quiz
+        $data->QuizQuestions = $quizQuestions;
 
         return ResultHelpers::success($data, 200, true);
     }    

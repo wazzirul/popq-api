@@ -35,7 +35,7 @@ class QuizListChoiceController extends Controller
      *              @OA\Property(property="id_quiz_list_choice", type="int", example="1"),
      *              @OA\Property(property="id_quiz", type="int", example="1"),
      *              @OA\Property(property="id_quiz_questions", type="int", example="1"),
-     *              @OA\Property(property="answer", type="string", example="TauntaunTauntaunTauntaunTauntaun"),
+     *              @OA\Property(property="answer", type="string", example="Tauntaun"),
      *              @OA\Property(property="correct", type="int", example="0"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
      *          )

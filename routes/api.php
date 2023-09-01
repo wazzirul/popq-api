@@ -92,6 +92,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Statistics
     Route::post('/statistics/showUser', [StatisticController::class, 'showUser'])->name('statistics--showUser');
+    Route::post('/statistics/showQuiz', [StatisticController::class, 'showQuiz'])->name('statistics--showQuiz');
+    Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'showQuizByCategories'])->name('statistics--showQuizByCategories');
+    Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
