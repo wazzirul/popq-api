@@ -1,0 +1,39 @@
+stages:
+  - packndeploy
+
+image: faisaladiprayugo/ubuntu:v5
+
+cache:
+  paths:
+    - vendor/
+    - popq_api.zip
+
+packndeploy_laravel:
+  tags:
+    - cicd
+    - devops
+    - illiyin
+    - popq
+  stage: packndeploy
+  before_script:
+    - source .${CI_COMMIT_REF_NAME}.env
+    - apt update -y
+    - dpkg-query -W --showformat='${Status}\n' zip | grep "install ok installed" || install zip -y
+    - dpkg-query -W --showformat='${Status}\n' unzip | grep "install ok installed" || install unzip -y
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$POPQ_API_INSTANCE_KEY")
+  script:
+    - echo "Creating ZIP file for $ZIP_FILE"
+    - zip -r $ZIP_FILE *
+    - ls -lah
+    - sftp -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST <<< $'put '"$ZIP_FILE"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'unzip '"$ZIP_FILE"' -d '"$POPQ_API_DEPLOY_TEMP"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'rsync -av '"$POPQ_API_DEPLOY_TEMP $POPQ_API_DEPLOY_DIR"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'cd '"$POPQ_API_DEPLOY_DIR"' && $(which php8.1) artisan config:clear'
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'chown -R '"$POPQ_API_INSTANCE_OWNED"' '"$POPQ_API_DEPLOY_DIR"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'chmod -R 755 '"$POPQ_API_DEPLOY_DIR"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'rm -rf '"$POPQ_API_DEPLOY_TEMP"
+    - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'rm -f '"$ZIP_FILE"
+    - rm -f $ZIP_FILE
+  only:
+    - production
