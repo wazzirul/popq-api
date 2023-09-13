@@ -128,27 +128,20 @@ class CategoriesController extends Controller
         if($idCategories === null){
             // Create a new user account
             $data = new Categories();
-            
-            $data->name_category = $nameCategories;
-            $iconUrl && $data->icon = $iconUrl;
-            $data->color = $colorCategories;
-            $data->color_hex = $colorHexCategories;
-            $data->soft_delete = $softDeleteCategories;
-            $data->save();
         }else{
             // Check if the user already exists in the table
             $data = Categories::where('id_categories', $idCategories)->first();
-            if ($data) {
-                $data->name_category = $nameCategories;
-                $iconUrl && $data->icon = $iconUrl;
-                $data->color = $colorCategories;
-                $data->color_hex = $colorHexCategories;
-                $data->soft_delete = $softDeleteCategories;
-                $data->save();
-            }else{
+            if (!$data) {
                 return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
             }
         }
+
+        $nameCategories && $data->name_category = $nameCategories;
+        $iconUrl && $data->icon = $iconUrl;
+        $colorCategories && $data->color = $colorCategories;
+        $colorHexCategories && $data->color_hex = $colorHexCategories;
+        $softDeleteCategories && $data->soft_delete = $softDeleteCategories;
+        $data->save();
 
         return ResultHelpers::success($data, 200, true);
     }

@@ -344,7 +344,7 @@ class UserQuizController extends Controller
   
     $idQuiz = $requestData['id_quiz'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
-    $page = $requestData['page'] ?? 1;;
+    $page = $requestData['page'] ?? 1;
   
     if (!$idQuiz) {
       return ResultHelpers::errors('id_quiz must be provided.', 400, false);
@@ -352,15 +352,31 @@ class UserQuizController extends Controller
   
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
-  
+    
     // Fetch paginated data
-    $data = UserQuiz::where('id_quiz', $idQuiz)
+    $query = UserQuiz::where('id_quiz', $idQuiz)
       ->where('soft_delete', 0)
-      ->with('Quiz.QuizQuestions.QuizListChoice.UserQuizAnswer')
-      ->skip($offset)
-      ->take($limit)
-      ->get();
+      ->with('Quiz.QuizQuestions.QuizListChoice.UserQuizAnswer');
+
+    $totalRecords = $query->count();
+
+    $data = $query->skip($offset)
+        ->take($limit)
+        ->get();
+
+    if (!$data) {
+        return ResultHelpers::errors('User Quiz not found.', 404, false);
+    }
+
+    // Calculate the total number of pages
+    $totalPages = ceil($totalRecords / $limit);
+
+    // Create the response array
+    $response = [
+        'data' => $data,
+        'total_pages' => $totalPages,
+    ];
   
-    return ResultHelpers::success($data, 200, true);
+    return ResultHelpers::success($response, 200, true);
   }    
 }

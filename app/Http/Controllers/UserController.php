@@ -165,8 +165,8 @@ class UserController extends Controller
         }
 
         if ($data) {    
-            $data->username = $username;
-            $data->status = $status;
+            $username && $data->username = $username;
+            $status && $data->status = $status;
             $data->save();        
         }else{
             return ResultHelpers::errors('User Data Not Found.', 401, false);
@@ -177,12 +177,23 @@ class UserController extends Controller
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/user/show",
      *      operationId="showUsers",
      *      tags={"Users"},
      *      summary="Show Users",
      *      description="Returns Users data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful Operation",
@@ -203,6 +214,17 @@ class UserController extends Controller
      */
     public function show(Request $request)
     {
+        $requestData = $request->only([
+          'limit',
+          'page',
+        ]);
+  
+        $limit = $requestData['limit'] ?? 10; // Default limit is 10
+        $page = $requestData['page'] ?? 1;
+  
+        // Calculate the offset based on the page and limit
+        $offset = ($page - 1) * $limit;
+
         $data = Users::where('soft_delete', 0)
             ->orderBy('id_user', 'DESC')
             ->select([
@@ -212,9 +234,17 @@ class UserController extends Controller
                 'go_ids',
                 'status',
             ])
+            ->skip($offset)
+            ->take($limit)
             ->get();
 
-        return ResultHelpers::success($data, 200, true);
+        $totalRecords = Users::where('soft_delete', 0)->count();
+        $totalPages = ceil($totalRecords / $limit);
+    
+        return ResultHelpers::success([
+            'data' => $data,
+            'total_pages' => $totalPages,
+        ], 200, true);
     }
 
     

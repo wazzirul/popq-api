@@ -101,92 +101,104 @@ class PollController extends Controller
      */
     public function createEdit(Request $request)
     {
-        $requestData = $request->only([
-            'id_poll', // ID Poll
-            'id_categories', // ID Categories
-            'title', // title Poll
-            'subtitle', // subtitle Poll
-            'thumbnail', // Thumbnail Poll using base64
-            'description', // description Poll
-            'today_status', // today_status Poll
-            'draft', // draft Poll
-            'soft_delete', // Soft Delete
-        ]);
+      $requestData = $request->only([
+        'id_poll', // ID Poll
+        'id_categories', // ID Categories
+        'title', // title Poll
+        'subtitle', // subtitle Poll
+        'thumbnail', // Thumbnail Poll using base64
+        'description', // description Poll
+        'today_status', // today_status Poll
+        'draft', // draft Poll
+        'soft_delete', // Soft Delete
+      ]);
 
-        $idPoll = $requestData['id_poll'] ?? null;
-        $idCategories = $requestData['id_categories'] ?? null;
-        $titlePoll = $requestData['title'] ?? null;
-        $subtitlePoll = $requestData['subtitle'] ?? null;
-        $thumbnailPoll = $requestData['thumbnail'] ?? null;
-        $descriptionPoll = $requestData['description'] ?? 0;
-        $todayStatusPoll = $requestData['today_status'] ?? 0;
-        $draftPoll = $requestData['draft'] ?? 0;
-        $softDeletePoll = $requestData['soft_delete'] ?? 0;
+      $idPoll = $requestData['id_poll'] ?? null;
+      $idCategories = $requestData['id_categories'] ?? null;
+      $titlePoll = $requestData['title'] ?? null;
+      $subtitlePoll = $requestData['subtitle'] ?? null;
+      $thumbnailPoll = $requestData['thumbnail'] ?? null;
+      $descriptionPoll = $requestData['description'] ?? 0;
+      $todayStatusPoll = $requestData['today_status'] ?? 0;
+      $draftPoll = $requestData['draft'] ?? 0;
+      $softDeletePoll = $requestData['soft_delete'] ?? 0;
 
-        $dataCategories = Categories::find($idCategories);
+      $dataCategories = Categories::find($idCategories);
 
-        if(!$dataCategories){
-            return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+      if(!$dataCategories){
+        return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+      }
+
+      $thumbnailUrl = null;
+      if ($thumbnailPoll) {
+        // Check if thumbnail input data is a valid base64 string
+        if (!preg_match('/data:image\/(.*?);base64,/', $thumbnailPoll)) {
+          return ResultHelpers::errors('thumbnail must be a valid base64 string', 400, false);
         }
+        
+        // Upload the base64 thumbnail to the public folder and get the path
+        $thumbnailPath = $this->uploadImageFromBase64($thumbnailPoll);
 
-        if ($thumbnailPoll) {
-            // Check if thumbnail input data is a valid base64 string
-            if (!preg_match('/data:image\/(.*?);base64,/', $thumbnailPoll)) {
-                return ResultHelpers::errors('thumbnail must be a valid base64 string', 400, false);
-            }
-            
-            // Upload the base64 thumbnail to the public folder and get the path
-            $thumbnailPath = $this->uploadImageFromBase64($thumbnailPoll);
+        // Generate the URL of the uploaded file
+        $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
+      } else {
+        $thumbnailPath = null;
+      }
 
-            // Generate the URL of the uploaded file
-            $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
-        } else {
-            $thumbnailPath = null;
-        }
-
-        if($idPoll === null){
-            // Create a new user account
-            $data = new Poll();
-            
-            $data->id_categories = $idCategories;
-            $data->title = $titlePoll;
-            $data->subtitle = $subtitlePoll;
-            $data->thumbnail = $thumbnailUrl ?? '';
-            $data->description = $descriptionPoll;
-            $data->today_status = $todayStatusPoll;
-            $data->draft = $draftPoll;
-            $data->soft_delete = $softDeletePoll;
-            $data->save();
+      if($idPoll === null){
+        // Create a new user account
+        $data = new Poll();
+        
+        $idCategories && $data->id_categories = $idCategories;
+        $titlePoll && $data->title = $titlePoll;
+        $subtitlePoll && $data->subtitle = $subtitlePoll;
+        $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+        $descriptionPoll && $data->description = $descriptionPoll;
+        $todayStatusPoll && $data->today_status = $todayStatusPoll;
+        $draftPoll && $data->draft = $draftPoll;
+        $softDeletePoll && $data->soft_delete = $softDeletePoll;
+        $data->save();
+      }else{
+        // Check if the user already exists in the table
+        $data = Poll::where('id_poll', $idPoll)->first();
+        if ($data) {
+          $idCategories && $data->id_categories = $idCategories;
+          $titlePoll && $data->title = $titlePoll;
+          $subtitlePoll && $data->subtitle = $subtitlePoll;
+          $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+          $descriptionPoll && $data->description = $descriptionPoll;
+          $todayStatusPoll && $data->today_status = $todayStatusPoll;
+          $draftPoll && $data->draft = $draftPoll;
+          $softDeletePoll && $data->soft_delete = $softDeletePoll;
+          $data->save();
         }else{
-            // Check if the user already exists in the table
-            $data = Poll::where('id_poll', $idPoll)->first();
-            if ($data) {
-                $data->id_categories = $idCategories;
-                $data->title = $titlePoll;
-                $data->subtitle = $subtitlePoll;
-                $data->thumbnail = $thumbnailUrl;
-                $data->description = $descriptionPoll;
-                $data->today_status = $todayStatusPoll;
-                $data->draft = $draftPoll;
-                $data->soft_delete = $softDeletePoll;
-                $data->save();
-            }else{
-                return ResultHelpers::errors('Poll Data Not Found from id_poll inputed', 400, false);
-            }
+          return ResultHelpers::errors('Poll Data Not Found from id_poll inputed', 400, false);
         }
+      }
 
-        return ResultHelpers::success($data, 200, true);
+      return ResultHelpers::success($data, 200, true);
     }
     
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/poll/show",
      *      operationId="showPoll",
      *      tags={"Poll"},
      *      summary="Show Poll",
      *      description="Returns Poll data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful Operation",
@@ -207,12 +219,31 @@ class PollController extends Controller
      */
     public function show(Request $request)
     {
-        $data = Poll::where('soft_delete', 0)
-            ->orderBy('id_poll', 'DESC')
-            ->with('Categories')
-            ->get();
+      $requestData = $request->only([
+        'limit',
+        'page',
+      ]);
 
-        return ResultHelpers::success($data, 200, true);
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
+
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
+
+      $data = Poll::where('soft_delete', 0)
+        ->orderBy('id_poll', 'DESC')
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Poll::where('soft_delete', 0)->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
     }   
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,6 +261,8 @@ class PollController extends Controller
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -252,21 +285,40 @@ class PollController extends Controller
      */
     public function showByCategories(Request $request)
     {
-        $requestData = $request->only([
-            'id_categories', // Facebook ID
-        ]);
+      $requestData = $request->only([
+        'id_categories', // Facebook ID
+        'limit',
+        'page',
+      ]);
 
-        $idCategories = $requestData['id_categories'] ?? null;
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
 
-        if (!$idCategories) {
-            return ResultHelpers::errors('id_categories must be provided.', 400, false);
-        }
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Poll Data with its Relation.
-        $data = Poll::where('id_categories', $idCategories)->with('Categories')->first();
+      $idCategories = $requestData['id_categories'] ?? null;
 
-        return ResultHelpers::success($data, 200, true);
+      if (!$idCategories) {
+        return ResultHelpers::errors('id_categories must be provided.', 400, false);
+      }
+
+      // Check if the user already exists in the table
+      // Return Created / Updated Poll Data with its Relation.
+      $data = Poll::where('id_categories', $idCategories)
+        ->where('soft_delete', 0)->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Poll::where('id_categories', $idCategories)
+        ->where('soft_delete', 0)->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
     }    
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,6 +460,8 @@ class PollController extends Controller
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="draft", type="string", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -430,20 +484,40 @@ class PollController extends Controller
      */
     public function showDraftPoll(Request $request)
     {
-        $requestData = $request->only([
-            'draft', // Facebook ID
-        ]);
+      $requestData = $request->only([
+          'draft', // Facebook ID
+          'limit',
+          'page',
+      ]);
 
-        $draftPoll = $requestData['draft'] ?? null;
+      $draftPoll = $requestData['draft'] ?? null;
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
 
-        if (!$draftPoll) {
-            return ResultHelpers::errors('draft status must be provided.', 400, false);
-        }
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Poll Data with its Relation.
-        $data = Poll::where('draft', $draftPoll)->with('Categories')->first();
+      if (!$draftPoll) {
+          return ResultHelpers::errors('draft status must be provided.', 400, false);
+      }
 
-        return ResultHelpers::success($data, 200, true);
+      // Check if the user already exists in the table
+      // Return Created / Updated Poll Data with its Relation.
+      $data = Poll::where('draft', $draftPoll)
+        ->where('soft_delete', 0)
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Poll::where('draft', $draftPoll)
+        ->where('soft_delete', 0)
+        ->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+          'data' => $data,
+          'total_pages' => $totalPages,
+      ], 200, true);
     }
 }

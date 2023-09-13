@@ -76,17 +76,17 @@ class PollListChoiceController extends Controller
             // Create a new user account
             $data = new PollListChoice();
             
-            $data->id_poll = $idPoll;
-            $data->poll_choice = $poll_choice;
-            $data->soft_delete = $softDelete;
+            $idPoll && $data->id_poll = $idPoll;
+            $poll_choice && $data->poll_choice = $poll_choice;
+            $softDelete && $data->soft_delete = $softDelete;
             $data->save();
         }else{
             // Check if the user already exists in the table
             $data = PollListChoice::where('id_poll_list_choice', $idPollListChoice)->first();
             if ($data) {
-                $data->id_poll = $idPoll;
-                $data->poll_choice = $poll_choice;
-                $data->soft_delete = $softDelete;
+                $idPoll && $data->id_poll = $idPoll;
+                $poll_choice && $data->poll_choice = $poll_choice;
+                $softDelete && $data->soft_delete = $softDelete;
                 $data->save();
             }else{
                 return ResultHelpers::errors('Poll List Choice Data Not Found from id_poll_list_choice inputed', 400, false);

@@ -39,7 +39,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // User
     Route::post('/user/register-login', [UserController::class, 'registerLogin'])->name('users--registerLogin');
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
-    Route::get('/user/show', [UserController::class, 'show'])->name('users--show');
+    Route::post('/user/show', [UserController::class, 'show'])->name('users--show');
     Route::post('/user/showById', [UserController::class, 'showById'])->name('users--showById');
 
     // User Quiz
@@ -54,7 +54,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Quiz
     Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
-    Route::get('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
+    Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
     Route::post('/quiz/showByCategories', [QuizController::class, 'showByCategories'])->name('quiz--showByCategories');
     Route::post('/quiz/showById', [QuizController::class, 'showById'])->name('quiz--showById');
     Route::post('/quiz/showTodayQuiz', [QuizController::class, 'showTodayQuiz'])->name('quiz--showTodayQuiz');
@@ -74,7 +74,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Poll
     Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
-    Route::get('/poll/show', [PollController::class, 'show'])->name('poll--show');
+    Route::post('/poll/show', [PollController::class, 'show'])->name('poll--show');
     Route::post('/poll/showByCategories', [PollController::class, 'showByCategories'])->name('poll--showByCategories');
     Route::post('/poll/showById', [PollController::class, 'showById'])->name('poll--showById');
     Route::post('/poll/showTodayPoll', [PollController::class, 'showTodayPoll'])->name('poll--showTodayPoll');

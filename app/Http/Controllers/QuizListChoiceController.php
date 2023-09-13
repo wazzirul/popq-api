@@ -95,21 +95,21 @@ class QuizListChoiceController extends Controller
             // Create a new user account
             $data = new QuizListChoice();
             
-            $data->id_quiz = $idQuiz;
-            $data->id_quiz_questions = $idQuizQuestions;
-            $data->answer = $answer;
-            $data->correct = $correct;
-            $data->soft_delete = $softDelete;
+            $idQuiz && $data->id_quiz = $idQuiz;
+            $idQuizQuestions && $data->id_quiz_questions = $idQuizQuestions;
+            $answer && $data->answer = $answer;
+            $correct && $data->correct = $correct;
+            $softDelete && $data->soft_delete = $softDelete;
             $data->save();
         }else{
             // Check if the user already exists in the table
             $data = QuizListChoice::where('id_quiz_list_choice', $idQuizListChoice)->first();
             if ($data) {
-                $data->id_quiz = $idQuiz;
-                $data->id_quiz_questions = $idQuizQuestions;
-                $data->answer = $answer;
-                $data->correct = $correct;
-                $data->soft_delete = $softDelete;
+                $idQuiz && $data->id_quiz = $idQuiz;
+                $idQuizQuestions && $data->id_quiz_questions = $idQuizQuestions;
+                $answer && $data->answer = $answer;
+                $correct && $data->correct = $correct;
+                $softDelete && $data->soft_delete = $softDelete;
                 $data->save();
             }else{
                 return ResultHelpers::errors('Quiz List Choice Data Not Found from id_quiz_list_choice inputed', 400, false);

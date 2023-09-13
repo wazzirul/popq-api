@@ -147,6 +147,7 @@ class AdministratorsController extends Controller
         $data = Administrators::where('email', $email)
             ->orWhere('username', $email)
             ->select([
+                'id_administrator',
                 'username',
                 'email',
                 'password',

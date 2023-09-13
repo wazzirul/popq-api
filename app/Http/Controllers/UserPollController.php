@@ -96,22 +96,21 @@ class UserPollController extends Controller
       // Create a new user account
       $data = new UserPoll();
       
-      $data->id_user = $idUser;
-      $data->id_poll = $idPoll;
-      $data->id_poll_list_choice = $idPollListChoice;
-      $data->date_time = $dateTime;
-      $data->soft_delete = $softDelete;
+      $idUser && $data->id_user = $idUser;
+      $idPoll && $data->id_poll = $idPoll;
+      $idPollListChoice && $data->id_poll_list_choice = $idPollListChoice;
+      $dateTime && $data->date_time = $dateTime;
+      $softDelete && $data->soft_delete = $softDelete;
       $data->save();
     }else{
       // Check if the user already exists in the table
       $data = UserPoll::where('id_user_poll', $idUserPoll)->first();
       if ($data) {
-      
-        $data->id_user = $idUser;
-        $data->id_poll = $idPoll;
-        $data->id_poll_list_choice = $idPollListChoice;
-        $data->date_time = $dateTime;
-        $data->soft_delete = $softDelete;
+        $idUser && $data->id_user = $idUser;
+        $idPoll && $data->id_poll = $idPoll;
+        $idPollListChoice && $data->id_poll_list_choice = $idPollListChoice;
+        $dateTime && $data->date_time = $dateTime;
+        $softDelete && $data->soft_delete = $softDelete;
         $data->save();
       }else{
         return ResultHelpers::errors('User Poll Data Not Found from id_user_poll inputed', 400, false);

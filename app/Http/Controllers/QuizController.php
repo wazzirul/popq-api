@@ -131,6 +131,8 @@ class QuizController extends Controller
             return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
         }
 
+        // Generate the URL of the uploaded file
+        $thumbnailUrl = null;
         if ($thumbnailQuiz) {
             // Check if thumbnail input data is a valid base64 string
             if (!preg_match('/data:image\/(.*?);base64,/', $thumbnailQuiz)) {
@@ -149,45 +151,46 @@ class QuizController extends Controller
         if($idQuiz === null){
             // Create a new user account
             $data = new Quiz();
-            
-            $data->id_categories = $idCategories;
-            $data->title = $titleQuiz;
-            $data->subtitle = $subtitleQuiz;
-            $data->thumbnail = $thumbnailUrl ?? '';
-            $data->description = $descriptionQuiz;
-            $data->today_status = $todayStatusQuiz;
-            $data->draft = $draftQuiz;
-            $data->soft_delete = $softDeleteQuiz;
-            $data->save();
         }else{
             // Check if the user already exists in the table
             $data = Quiz::where('id_quiz', $idQuiz)->first();
-            if ($data) {
-                $data->id_categories = $idCategories;
-                $data->title = $titleQuiz;
-                $data->subtitle = $subtitleQuiz;
-                $data->thumbnail = $thumbnailUrl;
-                $data->description = $descriptionQuiz;
-                $data->today_status = $todayStatusQuiz;
-                $data->draft = $draftQuiz;
-                $data->soft_delete = $softDeleteQuiz;
-                $data->save();
-            }else{
-                return ResultHelpers::errors('Quiz Data Not Found from id_quiz inputed', 400, false);
+            if (!$data) {
+              return ResultHelpers::errors('Quiz Data Not Found from id_quiz inputed', 400, false);
             }
         }
+            
+        $idCategories && $data->id_categories = $idCategories;
+        $titleQuiz && $data->title = $titleQuiz;
+        $subtitleQuiz && $data->subtitle = $subtitleQuiz;
+        $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+        $descriptionQuiz && $data->description = $descriptionQuiz;
+        $todayStatusQuiz && $data->today_status = $todayStatusQuiz;
+        $draftQuiz && $data->draft = $draftQuiz;
+        $softDeleteQuiz && $data->soft_delete = $softDeleteQuiz;
+        $data->save();
 
         return ResultHelpers::success($data, 200, true);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/quiz/show",
      *      operationId="showQuiz",
      *      tags={"Quiz"},
      *      summary="Show Quiz",
      *      description="Returns Quiz data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful Operation",
@@ -208,12 +211,31 @@ class QuizController extends Controller
      */
     public function show(Request $request)
     {
-        $data = Quiz::where('soft_delete', 0)
-            ->orderBy('id_quiz', 'DESC')
-            ->with('Categories')
-            ->get();
+      $requestData = $request->only([
+        'limit',
+        'page',
+      ]);
 
-        return ResultHelpers::success($data, 200, true);
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
+
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
+
+      $data = Quiz::where('soft_delete', 0)
+        ->orderBy('id_quiz', 'DESC')
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Quiz::where('soft_delete', 0)->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
     }    
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,6 +253,8 @@ class QuizController extends Controller
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -253,21 +277,41 @@ class QuizController extends Controller
      */
     public function showByCategories(Request $request)
     {
-        $requestData = $request->only([
-            'id_categories', // Facebook ID
+      $requestData = $request->only([
+        'id_categories', // Facebook ID
+        'limit',
+        'page',
         ]);
 
-        $idCategories = $requestData['id_categories'] ?? null;
+      $idCategories = $requestData['id_categories'] ?? null;
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
 
-        if (!$idCategories) {
-            return ResultHelpers::errors('id_categories must be provided.', 400, false);
-        }
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('id_categories', $idCategories)->with('Categories')->first();
+      if (!$idCategories) {
+          return ResultHelpers::errors('id_categories must be provided.', 400, false);
+      }
 
-        return ResultHelpers::success($data, 200, true);
+      // Check if the user already exists in the table
+      // Return Created / Updated Quiz Data with its Relation.
+      $data = Quiz::where('id_categories', $idCategories)
+        ->where('soft_delete', 0)
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Quiz::where('id_categories', $idCategories)
+        ->where('soft_delete', 0)
+        ->count();
+      $totalPages = ceil($totalRecords / $limit);
+
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
     }    
     
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -408,6 +452,8 @@ class QuizController extends Controller
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="draft", type="string", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -430,20 +476,40 @@ class QuizController extends Controller
      */
     public function showDraftQuiz(Request $request)
     {
-        $requestData = $request->only([
-            'draft', // Facebook ID
-        ]);
+      $requestData = $request->only([
+        'draft', // Facebook ID
+        'limit',
+        'page',
+      ]);
 
-        $draftQuiz = $requestData['draft'] ?? null;
+      $draftQuiz = $requestData['draft'] ?? null;
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
 
-        if (!$draftQuiz) {
-            return ResultHelpers::errors('draft status must be provided.', 400, false);
-        }
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('draft', $draftQuiz)->with('Categories')->first();
+      if (!$draftQuiz) {
+          return ResultHelpers::errors('draft status must be provided.', 400, false);
+      }
 
-        return ResultHelpers::success($data, 200, true);
+      // Check if the user already exists in the table
+      // Return Created / Updated Quiz Data with its Relation.
+      $data = Quiz::where('draft', $draftQuiz)
+        ->where('soft_delete', 0)
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Quiz::where('draft', $draftQuiz)
+        ->where('soft_delete', 0)
+        ->count();
+      $totalPages = ceil($totalRecords / $limit);
+
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
     }
 }

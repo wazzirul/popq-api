@@ -87,21 +87,21 @@ class QuizQuestionsController extends Controller
             // Create a new user account
             $data = new QuizQuestions();
             
-            $data->id_quiz = $idQuiz;
-            $data->number_question = $numberQuestion;
-            $data->question = $question;
-            $data->duration = $duration;
-            $data->soft_delete = $softDelete;
+            $idQuiz && $data->id_quiz = $idQuiz;
+            $numberQuestion && $data->number_question = $numberQuestion;
+            $question && $data->question = $question;
+            $duration && $data->duration = $duration;
+            $softDelete && $data->soft_delete = $softDelete;
             $data->save();
         }else{
             // Check if the user already exists in the table
             $data = QuizQuestions::where('id_quiz_questions', $idQuizQuestions)->first();
             if ($data) {
-                $data->id_quiz = $idQuiz;
-                $data->number_question = $numberQuestion;
-                $data->question = $question;
-                $data->duration = $duration;
-                $data->soft_delete = $softDelete;
+                $idQuiz && $data->id_quiz = $idQuiz;
+                $numberQuestion && $data->number_question = $numberQuestion;
+                $question && $data->question = $question;
+                $duration && $data->duration = $duration;
+                $softDelete && $data->soft_delete = $softDelete;
                 $data->save();
             }else{
                 return ResultHelpers::errors('Quiz Questions Data Not Found from id_quiz_questions inputed', 400, false);
