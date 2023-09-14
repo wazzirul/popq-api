@@ -81,12 +81,28 @@ class StatisticController extends Controller
 
         // Get statistics for this year
         $thisYearCount = Users::whereYear('created_at', $year)->count();
+        $totalCount = Users::count();
+
+        // Calculate percentages
+        $percentageToday = $totalCount > 0 ? ($todayCount / $totalCount) * 100 : 0;
+        $percentageThisMonth = $totalCount > 0 ? ($thisMonthCount / $totalCount) * 100 : 0;
+        $percentageThisYear = $totalCount > 0 ? ($thisYearCount / $totalCount) * 100 : 0;
+        // Calculate percentages for each month
+        $percentagePerMonth = [];
+        foreach ($monthlyCounts as $month => $count) {
+            $percentagePerMonth[$month] = $totalCount > 0 ? ($count / $totalCount) * 100 : 0;
+        }
 
         $data = [
             'today' => $todayCount,
+            'today_percentage' => $percentageToday,
             'this_month' => $thisMonthCount,
+            'this_month_percentage' => $percentageThisMonth,
             'per_month' => $monthlyCounts,
+            'per_month_percentage' => $percentagePerMonth,
             'this_year' => $thisYearCount,
+            'this_year_percentage' => $percentageThisYear,
+            'total' => $totalCount,
         ];
 
         return ResultHelpers::success($data, 200, true);
