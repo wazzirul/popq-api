@@ -29,6 +29,43 @@ use App\Http\Controllers\StatisticController;
 Route::post('/administrators/login', [AdministratorsController::class, 'login'])->name('administrators--login');
 Route::post('/user/login', [UserController::class, 'login'])->name('users--Login');
 
+// Categories
+Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
+
+// Quiz
+Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
+Route::post('/quiz/showByCategories', [QuizController::class, 'showByCategories'])->name('quiz--showByCategories');
+Route::post('/quiz/showById', [QuizController::class, 'showById'])->name('quiz--showById');
+Route::post('/quiz/showTodayQuiz', [QuizController::class, 'showTodayQuiz'])->name('quiz--showTodayQuiz');
+Route::post('/quiz/showDraftQuiz', [QuizController::class, 'showDraftQuiz'])->name('quiz--showDraftQuiz');
+
+// Quiz Questions
+Route::get('/quiz-question/show', [QuizQuestionsController::class, 'show'])->name('quiz-question--show');
+Route::post('/quiz-question/showByQuiz', [QuizQuestionsController::class, 'showByQuiz'])->name('quiz-question--showByQuiz');
+Route::post('/quiz-question/showByID', [QuizQuestionsController::class, 'showByID'])->name('quiz-question--showByID');
+
+// Quiz List Choice
+Route::get('/quiz-list-choice/show', [QuizListChoiceController::class, 'show'])->name('quiz-question--show');
+Route::post('/quiz-list-choice/showByQuiz', [QuizListChoiceController::class, 'showByQuiz'])->name('quiz-question--showByQuiz');
+Route::post('/quiz-list-choice/showByQuizQuestions', [QuizListChoiceController::class, 'showByQuizQuestions'])->name('quiz-question--showByQuizQuestions');
+
+// Poll
+Route::post('/poll/show', [PollController::class, 'show'])->name('poll--show');
+Route::post('/poll/showByCategories', [PollController::class, 'showByCategories'])->name('poll--showByCategories');
+Route::post('/poll/showById', [PollController::class, 'showById'])->name('poll--showById');
+Route::post('/poll/showTodayPoll', [PollController::class, 'showTodayPoll'])->name('poll--showTodayPoll');
+Route::post('/poll/showDraftPoll', [PollController::class, 'showDraftPoll'])->name('poll--showDraftPoll');
+
+// Poll List Choice
+Route::post('/poll-list-choice/showByPoll', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showByPoll');
+Route::post('/poll-list-choice/showById', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showById');
+
+// Statistics
+Route::post('/statistics/showUser', [StatisticController::class, 'showUser'])->name('statistics--showUser');
+Route::post('/statistics/showQuiz', [StatisticController::class, 'showQuiz'])->name('statistics--showQuiz');
+Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'showQuizByCategories'])->name('statistics--showQuizByCategories');
+Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // GROUP OF JWT TOKEN
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -50,51 +87,26 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Categories
     Route::post('/categories/create-edit', [CategoriesController::class, 'createEdit'])->name('categories--createEdit');
     Route::post('/categories/delete', [CategoriesController::class, 'delete'])->name('categories--delete');
-    Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
 
     // Quiz
     Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
-    Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
-    Route::post('/quiz/showByCategories', [QuizController::class, 'showByCategories'])->name('quiz--showByCategories');
-    Route::post('/quiz/showById', [QuizController::class, 'showById'])->name('quiz--showById');
-    Route::post('/quiz/showTodayQuiz', [QuizController::class, 'showTodayQuiz'])->name('quiz--showTodayQuiz');
-    Route::post('/quiz/showDraftQuiz', [QuizController::class, 'showDraftQuiz'])->name('quiz--showDraftQuiz');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
-    Route::get('/quiz-question/show', [QuizQuestionsController::class, 'show'])->name('quiz-question--show');
-    Route::post('/quiz-question/showByQuiz', [QuizQuestionsController::class, 'showByQuiz'])->name('quiz-question--showByQuiz');
-    Route::post('/quiz-question/showByID', [QuizQuestionsController::class, 'showByID'])->name('quiz-question--showByID');
 
     // Quiz List Choice
     Route::post('/quiz-list-choice/create-edit', [QuizListChoiceController::class, 'createEdit'])->name('quiz-question--createEdit');
-    Route::get('/quiz-list-choice/show', [QuizListChoiceController::class, 'show'])->name('quiz-question--show');
-    Route::post('/quiz-list-choice/showByQuiz', [QuizListChoiceController::class, 'showByQuiz'])->name('quiz-question--showByQuiz');
-    Route::post('/quiz-list-choice/showByQuizQuestions', [QuizListChoiceController::class, 'showByQuizQuestions'])->name('quiz-question--showByQuizQuestions');
 
     // Poll
     Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
-    Route::post('/poll/show', [PollController::class, 'show'])->name('poll--show');
-    Route::post('/poll/showByCategories', [PollController::class, 'showByCategories'])->name('poll--showByCategories');
-    Route::post('/poll/showById', [PollController::class, 'showById'])->name('poll--showById');
-    Route::post('/poll/showTodayPoll', [PollController::class, 'showTodayPoll'])->name('poll--showTodayPoll');
-    Route::post('/poll/showDraftPoll', [PollController::class, 'showDraftPoll'])->name('poll--showDraftPoll');
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');
-    Route::post('/poll-list-choice/showByPoll', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showByPoll');
-    Route::post('/poll-list-choice/showById', [PollListChoiceController::class, 'showByPoll'])->name('poll-question--showById');
 
     // User Poll
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
     Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
     Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
-
-    // Statistics
-    Route::post('/statistics/showUser', [StatisticController::class, 'showUser'])->name('statistics--showUser');
-    Route::post('/statistics/showQuiz', [StatisticController::class, 'showQuiz'])->name('statistics--showQuiz');
-    Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'showQuizByCategories'])->name('statistics--showQuizByCategories');
-    Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
