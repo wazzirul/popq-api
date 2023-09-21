@@ -15,10 +15,10 @@ class UserController extends Controller
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Post(
-     *      path="/user/register-login",
-     *      operationId="registerloginUser",
+     *      path="/user/login",
+     *      operationId="loginUser",
      *      tags={"Users"},
-     *      summary="Register / Login User",
+     *      summary=" / Login User",
      *      description="Returns User data with auth token",
      *      @OA\RequestBody(
      *          description="<b>Note:</b><br> - <b>fb_ids || go_ids</b> get from the firebase",
@@ -47,7 +47,7 @@ class UserController extends Controller
      *      )
      * )
      */
-    public function registerLogin(Request $request)
+    public function login(Request $request)
     {
         $requestData = $request->only([
             'fb_ids', // Facebook ID

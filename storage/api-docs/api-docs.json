@@ -1438,14 +1438,14 @@
                 }
             }
         },
-        "/user/register-login": {
+        "/user/login": {
             "post": {
                 "tags": [
                     "Users"
                 ],
-                "summary": "Register / Login User",
+                "summary": " / Login User",
                 "description": "Returns User data with auth token",
-                "operationId": "registerloginUser",
+                "operationId": "loginUser",
                 "requestBody": {
                     "description": "<b>Note:</b><br> - <b>fb_ids || go_ids</b> get from the firebase",
                     "required": true,

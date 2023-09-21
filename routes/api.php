@@ -27,6 +27,7 @@ use App\Http\Controllers\StatisticController;
 */
 
 Route::post('/administrators/login', [AdministratorsController::class, 'login'])->name('administrators--login');
+Route::post('/user/login', [UserController::class, 'login'])->name('users--Login');
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // GROUP OF JWT TOKEN
@@ -37,7 +38,6 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::get('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
 
     // User
-    Route::post('/user/register-login', [UserController::class, 'registerLogin'])->name('users--registerLogin');
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
     Route::post('/user/show', [UserController::class, 'show'])->name('users--show');
     Route::post('/user/showById', [UserController::class, 'showById'])->name('users--showById');
