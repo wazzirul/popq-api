@@ -366,6 +366,12 @@ class StatisticController extends Controller
      */
     public function countTotalQuizzesAndPolls()
     {
+        // total quizzes
+        $totalQuizzes = Quiz::where('soft_delete', 0)->count();
+        // total polls
+        $totalPolls = Poll::where('soft_delete', 0)->count();
+
+        // categories total quiz and total poll
         $categories = Categories::all();
 
         $categoryCounts = [];
@@ -381,7 +387,33 @@ class StatisticController extends Controller
                 'total_polls' => $pollCount,
             ];
         }
+        
 
-        return ResultHelpers::success($categoryCounts, 200, true);
+        // total quizzes this week
+        $startDate = now()->startOfWeek();
+        $endDate = now()->endOfWeek();
+
+        $totalCompletedQuizzesThisWeek = UserQuiz::whereHas('Quiz', function ($query) use ($startDate, $endDate) {
+            $query->where('soft_delete', 0);
+        })->where('status', 1)
+        ->whereBetween('date_time', [$startDate, $endDate])
+        ->count();
+        // Count the number of polls polled this week for each id_poll
+        $pollCounts = UserPoll::whereHas('Poll', function ($query) use ($startDate, $endDate) {
+            $query->where('soft_delete', 0);
+        })
+        ->whereBetween('date_time', [$startDate, $endDate])
+        ->groupBy('id_poll')
+        ->count();
+
+        $data = [
+            'category' => $categoryCounts,
+            'total_all_quizzes' => $totalQuizzes,
+            'total_completed_quizzes_this_week' => $totalCompletedQuizzesThisWeek,
+            'total_all_polls' => $totalPolls,
+            'total_polls_this_week' => $pollCounts,
+        ];
+
+        return ResultHelpers::success($data, 200, true);
     }
 }

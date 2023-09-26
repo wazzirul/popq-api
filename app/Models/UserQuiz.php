@@ -9,7 +9,7 @@ class UserQuiz extends Model
 {
     protected $table = 'user_quiz';
     protected $primaryKey = 'id_user_quiz';
-    protected $fillable = ['id_user_quiz','id_user','id_quiz','result','date_time','soft_delete'];
+    protected $fillable = ['id_user_quiz','id_user','id_quiz','answered','status','result','date_time','soft_delete'];
 
     public function Users()
     {

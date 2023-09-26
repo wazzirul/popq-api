@@ -28,11 +28,15 @@ class UserQuizController extends Controller
    *      description="Returns User Quiz Data",
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
-         <br><b>id_user_quiz </b> : null / empty if want to create data, fill the id number if want to update data
-         <br><b>id_user</b> : id_user from table user
-         <br><b>id_quiz</b> : id_quiz from table quiz
-         <br><b>soft_delete</b> : 0 = active, 1 = deleted
-         <br><b>answers</b>: Array of user quiz answers",
+         <br /><b>id_user_quiz </b> : null / empty if want to create data, fill the id number if want to update data
+         <br /><b>id_user</b> : id_user from table user
+         <br /><b>id_quiz</b> : id_quiz from table quiz
+         <br /><b>soft_delete</b> : 0 = active, 1 = deleted
+         <br /><b>answers</b>: Array of user quiz answers
+         <br /><br />
+         <br />the return later will have a 
+         <br /><b>answered</b> : array of id_quiz_questions that user answered
+         <br /><b>status</b>: 0 = not completed, 1 = completed",
    *          required=true,
    *          @OA\JsonContent(
    *              type="object",
@@ -119,6 +123,8 @@ class UserQuizController extends Controller
     
     // Initialize an array to hold user quiz answers for the response
     $userQuizAnswers = [];
+    // Initialize an array to store the IDs of answered questions
+    $answeredQuestionIds = [];
     $correctAnswersCount = 0; // Count of correct answers
     foreach ($answers as $answer) {
       $idQuizQuestion = $answer['id_quiz_questions'] ?? null;
@@ -194,7 +200,9 @@ class UserQuizController extends Controller
             $correctAnswersCount++;
           }
         }
-      }            
+      }   
+      
+      $answeredQuestionIds[] = $idQuizQuestion;         
     }
     
     // Calculate the total number of questions in the quiz
@@ -203,6 +211,15 @@ class UserQuizController extends Controller
     $resultPercentage = ($correctAnswersCount / $totalQuestions) * 100;
     $resultPercentage = round($resultPercentage, 2); // Round to 2 decimal places
     $data->result = $resultPercentage;
+
+    // Convert the array of answered question IDs to a comma-separated string
+    $answered = implode(',', $answeredQuestionIds);    
+    // Set the 'answered' field
+    $data->answered = $answered;    
+    // Calculate the total number of questions in the quiz
+    $totalQuestions = Quiz::find($idQuiz)->QuizQuestions->count();    
+    // Calculate the 'status' field (1 if all questions answered, 0 otherwise)
+    $data->status = (count($answeredQuestionIds) === $totalQuestions) ? 1 : 0;
     $data->save();
 
     // Add the user quiz answers to the $data array

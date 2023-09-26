@@ -113,8 +113,7 @@ class UserController extends Controller
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
-     *              @OA\Property(property="go_ids", type="string", example=null),
+     *              @OA\Property(property="id_user", type="string", example="1"),
      *              @OA\Property(property="username", type="string", example=null),
      *              @OA\Property(property="status", type="number", example=0),
      *          )
@@ -140,29 +139,20 @@ class UserController extends Controller
     public function editUser(Request $request)
     {
         $requestData = $request->only([
-            'fb_ids', // Facebook ID
-            'go_ids', // Google ID
-            'username', // Username
-            'status', // status
+            'id_user',
+            'username',
+            'status', 
         ]);
 
-        $fbId = $requestData['fb_ids'] ?? null;
-        $goId = $requestData['go_ids'] ?? null;
+        $idUser = $requestData['id_user'] ?? null;
         $username = $requestData['username'] ?? null;
         $status = $requestData['status'] ?? null;
 
-        if (!$fbId && !$goId) {
-            return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
+        if (!$idUser) {
+            return ResultHelpers::errors('id_user must be provided.', 400, false);
         }
 
-        // Check if the user already exists in the table
-        if(!$fbId){
-            $data = Users::where('go_ids', $goId)->first();
-        }
-        
-        if(!$goId){
-            $data = Users::where('fb_ids', $fbId)->first();
-        }
+        $data = Users::where('id_user', $idUser)->first();
 
         if ($data) {    
             $username && $data->username = $username;
@@ -262,8 +252,7 @@ class UserController extends Controller
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              @OA\Property(property="fb_ids", type="string", example="1234567887654321"),
-     *              @OA\Property(property="go_ids", type="string", example=null),
+     *              @OA\Property(property="id_user", type="string", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -287,25 +276,16 @@ class UserController extends Controller
     public function showById(Request $request)
     {
         $requestData = $request->only([
-            'fb_ids', // Facebook ID
-            'go_ids', // Google ID
+            'id_user',
         ]);
 
-        $fbId = $requestData['fb_ids'] ?? null;
-        $goId = $requestData['go_ids'] ?? null;
+        $idUser = $requestData['id_user'] ?? null;
 
-        if (!$fbId && !$goId) {
-            return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
-        }
-
-        // Check if the user already exists in the table
-        if(!$fbId){
-            $data = Users::where('go_ids', $goId)->first();
+        if (!$idUser) {
+            return ResultHelpers::errors('id_user must be provided.', 400, false);
         }
         
-        if(!$goId){
-            $data = Users::where('fb_ids', $fbId)->first();
-        }
+        $data = Users::where('id_user', $idUser)->first();
 
         return ResultHelpers::success($data, 200, true);
     }
