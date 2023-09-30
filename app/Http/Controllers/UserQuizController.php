@@ -120,12 +120,15 @@ class UserQuizController extends Controller
         return ResultHelpers::errors('User Quiz Data Not Found from id_user_quiz inputed', 400, false);
       }
     }
-    
-    // Initialize an array to hold user quiz answers for the response
-    $userQuizAnswers = [];
-    // Initialize an array to store the IDs of answered questions
+
+    $userQuizAnswers = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)->get();
     $answeredQuestionIds = [];
-    $correctAnswersCount = 0; // Count of correct answers
+
+    // Loop through the userQuizAnswers collection
+    foreach ($userQuizAnswers as $userQuizAnswer) {
+        $answeredQuestionIds[] = $userQuizAnswer->id_quiz_questions;
+    }
+
     foreach ($answers as $answer) {
       $idQuizQuestion = $answer['id_quiz_questions'] ?? null;
       $idQuizListChoice = $answer['id_quiz_list_choice'] ?? null;
@@ -171,13 +174,6 @@ class UserQuizController extends Controller
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
-      
-          // Add the user quiz answer to the array
-          $userQuizAnswers[] = $userQuizAnswer;
-          // Check if the answer is correct
-          if ($quizListChoice->correct === 1) {
-            $correctAnswersCount++;
-          }
         } else {
           // Create a new record
           $userQuizAnswer = new UserQuizAnswer();
@@ -191,24 +187,22 @@ class UserQuizController extends Controller
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
-      
-          // Add the user quiz answer to the array
-          $userQuizAnswers[] = $userQuizAnswer;
-      
-          // Check if the answer is correct
-          if ($quizListChoice->correct === 1) {
-            $correctAnswersCount++;
-          }
         }
-      }   
-      
-      $answeredQuestionIds[] = $idQuizQuestion;         
+      }     
+      // Check if $idQuizQuestion is not already in $answeredQuestionIds and then add it
+      if (!in_array($idQuizQuestion, $answeredQuestionIds)) {
+        $answeredQuestionIds[] = $idQuizQuestion;
+      }
     }
     
     // Calculate the total number of questions in the quiz
     $totalQuestions = Quiz::find($idQuiz)->QuizQuestions->count();
+    // Count the number of correct answers in UserQuizAnswer for the given $idUserQuiz
+    $totalCorrect = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)
+        ->where('correct', 1) // Assuming 'correct' is a column indicating correctness
+        ->count();
     // Calculate the result percentage
-    $resultPercentage = ($correctAnswersCount / $totalQuestions) * 100;
+    $resultPercentage = ($totalCorrect / $totalQuestions) * 100;
     $resultPercentage = round($resultPercentage, 2); // Round to 2 decimal places
     $data->result = $resultPercentage;
 
@@ -222,6 +216,7 @@ class UserQuizController extends Controller
     $data->status = (count($answeredQuestionIds) === $totalQuestions) ? 1 : 0;
     $data->save();
 
+    $userQuizAnswers = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)->get();
     // Add the user quiz answers to the $data array
     $data['user_quiz_answers'] = $userQuizAnswers;  
     return ResultHelpers::success($data, 200, true);
