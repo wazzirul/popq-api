@@ -96,17 +96,23 @@ class UserQuizController extends Controller
     }
 
     if($idUserQuiz === null){
-      // Create a new user account
-      $data = new UserQuiz();
-      
-      $data->id_user = $idUser;
-      $data->id_quiz = $idQuiz;
-      $data->result = null;
-      $data->date_time = $dateTime;
-      $data->soft_delete = $softDelete;
-      $data->save();
-      
-      $idUserQuiz = $data->id_user_quiz; // Obtain the new id_user_quiz
+      // Check if the user already exists in the table
+      $data = UserQuiz::where('id_user', $idUser)->where('id_quiz', $idQuiz)->first();
+      if($data){
+        $data->date_time = $dateTime;
+        $data->soft_delete = $softDelete;
+        $data->save();
+      }else{
+        // Create a new user quiz data
+        $data = new UserQuiz();
+        
+        $data->id_user = $idUser;
+        $data->id_quiz = $idQuiz;
+        $data->result = null;
+        $data->date_time = $dateTime;
+        $data->soft_delete = $softDelete;
+        $data->save();
+      }
     }else{
       // Check if the user already exists in the table
       $data = UserQuiz::where('id_user_quiz', $idUserQuiz)->first();
@@ -121,6 +127,7 @@ class UserQuizController extends Controller
       }
     }
 
+    $idUserQuiz = $data->id_user_quiz; // Obtain the new id_user_quiz
     $userQuizAnswers = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)->get();
     $answeredQuestionIds = [];
 
