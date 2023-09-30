@@ -209,9 +209,7 @@ class UserQuizController extends Controller
     // Convert the array of answered question IDs to a comma-separated string
     $answered = implode(',', $answeredQuestionIds);    
     // Set the 'answered' field
-    $data->answered = $answered;    
-    // Calculate the total number of questions in the quiz
-    $totalQuestions = Quiz::find($idQuiz)->QuizQuestions->count();    
+    $data->answered = $answered;     
     // Calculate the 'status' field (1 if all questions answered, 0 otherwise)
     $data->status = (count($answeredQuestionIds) === $totalQuestions) ? 1 : 0;
     $data->save();

@@ -63,6 +63,10 @@ class UserController extends Controller
 
         // Check if the user already exists in the table
         $data = Users::where('fb_ids', $fbId)->orWhere('go_ids', $goId)->first();
+        
+        if($data->status !== 0){
+            return ResultHelpers::errors('This account has been banned.', 401, false);
+        }
 
         if (!$data) {
             // Create a new user account
@@ -72,10 +76,6 @@ class UserController extends Controller
             $goId && $data->go_ids = $goId;
             $data->soft_delete = 0; // Set other necessary fields
             $data->save();
-        }else{
-            if($data->status === 1){
-                return ResultHelpers::errors('This account has been banned.', 401, false);
-            }
         }
 
         // Add the code for generating and saving the authentication token
