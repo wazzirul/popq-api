@@ -146,7 +146,7 @@ class UserController extends Controller
 
         $idUser = $requestData['id_user'] ?? null;
         $username = $requestData['username'] ?? null;
-        $status = $requestData['status'] ?? null;
+        $status = $requestData['status'] ?? 0;
 
         if (!$idUser) {
             return ResultHelpers::errors('id_user must be provided.', 400, false);
@@ -156,7 +156,7 @@ class UserController extends Controller
 
         if ($data) {    
             $username && $data->username = $username;
-            $status && $data->status = $status;
+            $data->status = $status;
             $data->save();        
         }else{
             return ResultHelpers::errors('User Data Not Found.', 401, false);
