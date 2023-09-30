@@ -144,21 +144,23 @@ class UserQuizController extends Controller
       } 
 
       // Validate id_quiz_list_choice against QuizListChoice model
-      $quizListChoice = QuizListChoice::find($idQuizListChoice);
-      if (!$quizListChoice) {
-        return ResultHelpers::errors('Invalid id_quiz_list_choice provided', 400, false);
+      if($idQuizListChoice){
+        $quizListChoice = QuizListChoice::find($idQuizListChoice);
+        if (!$quizListChoice) {
+          return ResultHelpers::errors('Invalid id_quiz_list_choice provided', 400, false);
+        }
+        // Validate if QuizListChoice is related to the provided id_quiz
+        if ($quizListChoice->id_quiz !== $idQuiz) {
+          return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz', 400, false);
+        } 
+        // Validate if QuizListChoice is related to the provided id_quiz_questions
+        if ($quizListChoice->id_quiz_questions !== $idQuizQuestion) {
+          return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz_questions', 400, false);
+        } 
       }
-      // Validate if QuizListChoice is related to the provided id_quiz
-      if ($quizListChoice->id_quiz !== $idQuiz) {
-        return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz', 400, false);
-      } 
-      // Validate if QuizListChoice is related to the provided id_quiz_questions
-      if ($quizListChoice->id_quiz_questions !== $idQuizQuestion) {
-        return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz_questions', 400, false);
-      } 
 
 
-      if ($idQuizQuestion && $idQuizListChoice) {
+      if ($idQuizQuestion) {
         // Check if UserQuizAnswer data exists for the given id_user_quiz and id_quiz_questions
         $userQuizAnswer = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)
                         ->where('id_quiz_questions', $idQuizQuestion)
@@ -168,9 +170,13 @@ class UserQuizController extends Controller
           // Update the existing record
           $userQuizAnswer->id_quiz_list_choice = $idQuizListChoice;
       
-          // Retrieve the QuizListChoice and set 'correct' based on its value
-          $quizListChoice = QuizListChoice::find($idQuizListChoice);
-          $userQuizAnswer->correct = $quizListChoice->correct;
+          if($idQuizListChoice){
+            // Retrieve the QuizListChoice and set 'correct' based on its value
+            $quizListChoice = QuizListChoice::find($idQuizListChoice);
+            $userQuizAnswer->correct = $quizListChoice->correct;
+          }else{
+            $userQuizAnswer->correct = 0;
+          }
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
@@ -181,9 +187,13 @@ class UserQuizController extends Controller
           $userQuizAnswer->id_quiz_questions = $idQuizQuestion;
           $userQuizAnswer->id_quiz_list_choice = $idQuizListChoice;
       
-          // Retrieve the QuizListChoice and set 'correct' based on its value
-          $quizListChoice = QuizListChoice::find($idQuizListChoice);
-          $userQuizAnswer->correct = $quizListChoice->correct;
+          if($idQuizListChoice){
+            // Retrieve the QuizListChoice and set 'correct' based on its value
+            $quizListChoice = QuizListChoice::find($idQuizListChoice);
+            $userQuizAnswer->correct = $quizListChoice->correct;
+          }else{
+            $userQuizAnswer->correct = 0;
+          }
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
