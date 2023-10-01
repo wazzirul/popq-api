@@ -80,7 +80,7 @@ class UserController extends Controller
 
         // Add the code for generating and saving the authentication token
         $strToken = Str::random(100);
-        $expired = Carbon::now()->endOfDay();
+        $expired = Carbon::now()->addHours(24);
 
         $authToken = new AuthenticationToken();
         $authToken->user_auth = "user-" . $data->id_user;
