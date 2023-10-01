@@ -290,16 +290,21 @@ class UserQuizController extends Controller
     $idUser = $requestData['id_user'] ?? null;
     $idUserQuiz = $requestData['id_user_quiz'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
-    $page = $requestData['page'] ?? 1;;
+    $page = $requestData['page'] ?? 1;
   
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;        
   
     // Fetch paginated data
     $query = UserQuiz::where('soft_delete', 0)
-        ->orwhere('id_user', $idUser)
-        ->orWhere('id_user_quiz', $idUserQuiz)
-        ->with('Quiz.QuizQuestions.QuizListChoice','UserQuizAnswer');
+    ->when($idUser, function ($query) use ($idUser) {
+        return $query->where('id_user', $idUser);
+    })
+    ->when($idUserQuiz, function ($query) use ($idUserQuiz) {
+        return $query->Where('id_user_quiz', $idUserQuiz);
+    })
+    ->with('UserQuizAnswer.QuizListChoice', 'Quiz.QuizQuestions.QuizListChoice');
+
 
     $totalRecords = $query->count();
 
