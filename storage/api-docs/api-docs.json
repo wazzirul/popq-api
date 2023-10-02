@@ -524,6 +524,59 @@
                 }
             }
         },
+        "/poll/showUserLoginPoll": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Show Poll",
+                "description": "Returns Poll data",
+                "operationId": "showUserLoginPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n            <br> - id_user as references poll already submitted\n            <br> - id_categories as references poll if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": "null"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll-list-choice/create-edit": {
             "post": {
                 "tags": [
@@ -966,7 +1019,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showUserLoginQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - id_categories as references quiz if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -975,6 +1028,10 @@
                                     "id_user": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": "null"
                                     },
                                     "limit": {
                                         "type": "integer",

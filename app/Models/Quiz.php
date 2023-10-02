@@ -9,7 +9,7 @@ class Quiz extends Model
 {
     protected $table = 'quiz';
     protected $primaryKey = 'id_quiz';
-    protected $fillable = ['id_quiz','id_categories','title','subtitle','thumbnail','description','today_status','draft','soft_delete'];
+    protected $fillable = ['id_quiz','id_categories','title','slug','subtitle','thumbnail','description','today_status','draft','soft_delete'];
 
     public function Categories()
     {

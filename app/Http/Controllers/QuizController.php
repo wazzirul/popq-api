@@ -525,12 +525,14 @@ class QuizController extends Controller
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
             <br> - id_user as references quiz already submitted or not (default 10)
+            <br> - id_categories as references quiz if you want to filter by categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_user", type="int", example="1"),
+     *              @OA\Property(property="id_categories", type="int", example="null"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -557,11 +559,13 @@ class QuizController extends Controller
     {
       $requestData = $request->only([
         'id_user',
+        'id_categories',
         'limit',
         'page',
       ]);
 
-      $idUser = $requestData['id_user'] ?? null; // Default limit is 10
+      $idUser = $requestData['id_user'] ?? null; // Default limit is null
+      $idCategories = $requestData['id_categories'] ?? null; // Default limit is null
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -578,14 +582,20 @@ class QuizController extends Controller
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
 
-      $data = Quiz::leftJoin('user_quiz', function ($join) use ($idUser) {
+      $query = Quiz::leftJoin('user_quiz', function ($join) use ($idUser) {
         $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
             ->where('user_quiz.id_user', '=', $idUser);
         })
-        ->where('quiz.soft_delete', 0)
-        ->orderBy('quiz.id_quiz', 'DESC')
+        ->where('quiz.soft_delete', 0);
+
+      if ($idCategories !== null) {
+          // Add a filter for id_categories if idCategories is not null
+          $query->where('quiz.id_categories', $idCategories);
+      }
+
+      $data = $query->orderBy('quiz.id_quiz', 'DESC')
         ->with('Categories')
-        ->select('quiz.*', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
+        ->select('quiz.*','user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
         ->skip($offset)
         ->take($limit)
         ->get();

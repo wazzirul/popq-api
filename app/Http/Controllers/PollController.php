@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\PollListChoice;
+use App\Models\Users;
 use App\Models\UserPoll;
 
 class PollController extends Controller
@@ -520,4 +521,101 @@ class PollController extends Controller
           'total_pages' => $totalPages,
       ], 200, true);
     }
+    
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/showUserLoginPoll",
+     *      operationId="showUserLoginPoll",
+     *      tags={"Poll"},
+     *      summary="Show Poll",
+     *      description="Returns Poll data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+            <br> - id_user as references poll already submitted
+            <br> - id_categories as references poll if you want to filter by categories
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_user", type="int", example="1"),
+     *              @OA\Property(property="id_categories", type="int", example="null"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showUserLoginPoll(Request $request)
+    {
+      $requestData = $request->only([
+        'id_user',
+        'id_categories',
+        'limit',
+        'page',
+      ]);
+
+      $idUser = $requestData['id_user'] ?? null; // Default limit is null
+      $idCategories = $requestData['id_categories'] ?? null; // Default limit is null
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
+
+      $user = Users::where('id_user', $idUser)->first();
+
+      if (!$user) {
+        return ResultHelpers::error('User not found', 404);
+      }else if($user->soft_delete == 1){
+        return ResultHelpers::error('User has been deleted', 404);
+      }else if($user->status == 1){
+        return ResultHelpers::error('User has been blocked', 404);
+      }
+
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
+
+
+      $query = Poll::leftJoin('user_poll', function ($join) use ($idUser) {
+        $join->on('poll.id_poll', '=', 'user_poll.id_poll')
+            ->where('user_poll.id_user', '=', $idUser);
+        })
+        ->where('poll.soft_delete', 0);
+
+      if ($idCategories !== null) {
+          // Add a filter for id_categories if idCategories is not null
+          $query->where('poll.id_categories', $idCategories);
+      }
+
+      $data = $query->orderBy('poll.id_poll', 'DESC')
+        ->select('poll.*', 'user_poll.id_user_poll', 'user_poll.id_user', 'user_poll.id_poll_list_choice', 'user_poll.date_time')
+        ->with('Categories')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Poll::where('soft_delete', 0)->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
+    }   
 }
