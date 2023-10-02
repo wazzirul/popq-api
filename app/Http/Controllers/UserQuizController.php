@@ -96,17 +96,23 @@ class UserQuizController extends Controller
     }
 
     if($idUserQuiz === null){
-      // Create a new user account
-      $data = new UserQuiz();
-      
-      $data->id_user = $idUser;
-      $data->id_quiz = $idQuiz;
-      $data->result = null;
-      $data->date_time = $dateTime;
-      $data->soft_delete = $softDelete;
-      $data->save();
-      
-      $idUserQuiz = $data->id_user_quiz; // Obtain the new id_user_quiz
+      // Check if the user already exists in the table
+      $data = UserQuiz::where('id_user', $idUser)->where('id_quiz', $idQuiz)->first();
+      if($data){
+        $data->date_time = $dateTime;
+        $data->soft_delete = $softDelete;
+        $data->save();
+      }else{
+        // Create a new user quiz data
+        $data = new UserQuiz();
+        
+        $data->id_user = $idUser;
+        $data->id_quiz = $idQuiz;
+        $data->result = null;
+        $data->date_time = $dateTime;
+        $data->soft_delete = $softDelete;
+        $data->save();
+      }
     }else{
       // Check if the user already exists in the table
       $data = UserQuiz::where('id_user_quiz', $idUserQuiz)->first();
@@ -120,12 +126,16 @@ class UserQuizController extends Controller
         return ResultHelpers::errors('User Quiz Data Not Found from id_user_quiz inputed', 400, false);
       }
     }
-    
-    // Initialize an array to hold user quiz answers for the response
-    $userQuizAnswers = [];
-    // Initialize an array to store the IDs of answered questions
+
+    $idUserQuiz = $data->id_user_quiz; // Obtain the new id_user_quiz
+    $userQuizAnswers = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)->get();
     $answeredQuestionIds = [];
-    $correctAnswersCount = 0; // Count of correct answers
+
+    // Loop through the userQuizAnswers collection
+    foreach ($userQuizAnswers as $userQuizAnswer) {
+        $answeredQuestionIds[] = $userQuizAnswer->id_quiz_questions;
+    }
+
     foreach ($answers as $answer) {
       $idQuizQuestion = $answer['id_quiz_questions'] ?? null;
       $idQuizListChoice = $answer['id_quiz_list_choice'] ?? null;
@@ -141,21 +151,23 @@ class UserQuizController extends Controller
       } 
 
       // Validate id_quiz_list_choice against QuizListChoice model
-      $quizListChoice = QuizListChoice::find($idQuizListChoice);
-      if (!$quizListChoice) {
-        return ResultHelpers::errors('Invalid id_quiz_list_choice provided', 400, false);
+      if($idQuizListChoice){
+        $quizListChoice = QuizListChoice::find($idQuizListChoice);
+        if (!$quizListChoice) {
+          return ResultHelpers::errors('Invalid id_quiz_list_choice provided', 400, false);
+        }
+        // Validate if QuizListChoice is related to the provided id_quiz
+        if ($quizListChoice->id_quiz !== $idQuiz) {
+          return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz', 400, false);
+        } 
+        // Validate if QuizListChoice is related to the provided id_quiz_questions
+        if ($quizListChoice->id_quiz_questions !== $idQuizQuestion) {
+          return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz_questions', 400, false);
+        } 
       }
-      // Validate if QuizListChoice is related to the provided id_quiz
-      if ($quizListChoice->id_quiz !== $idQuiz) {
-        return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz', 400, false);
-      } 
-      // Validate if QuizListChoice is related to the provided id_quiz_questions
-      if ($quizListChoice->id_quiz_questions !== $idQuizQuestion) {
-        return ResultHelpers::errors('id_quiz_list_choice is not related to the provided id_quiz_questions', 400, false);
-      } 
 
 
-      if ($idQuizQuestion && $idQuizListChoice) {
+      if ($idQuizQuestion) {
         // Check if UserQuizAnswer data exists for the given id_user_quiz and id_quiz_questions
         $userQuizAnswer = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)
                         ->where('id_quiz_questions', $idQuizQuestion)
@@ -165,19 +177,16 @@ class UserQuizController extends Controller
           // Update the existing record
           $userQuizAnswer->id_quiz_list_choice = $idQuizListChoice;
       
-          // Retrieve the QuizListChoice and set 'correct' based on its value
-          $quizListChoice = QuizListChoice::find($idQuizListChoice);
-          $userQuizAnswer->correct = $quizListChoice->correct;
+          if($idQuizListChoice){
+            // Retrieve the QuizListChoice and set 'correct' based on its value
+            $quizListChoice = QuizListChoice::find($idQuizListChoice);
+            $userQuizAnswer->correct = $quizListChoice->correct;
+          }else{
+            $userQuizAnswer->correct = 0;
+          }
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
-      
-          // Add the user quiz answer to the array
-          $userQuizAnswers[] = $userQuizAnswer;
-          // Check if the answer is correct
-          if ($quizListChoice->correct === 1) {
-            $correctAnswersCount++;
-          }
         } else {
           // Create a new record
           $userQuizAnswer = new UserQuizAnswer();
@@ -185,43 +194,44 @@ class UserQuizController extends Controller
           $userQuizAnswer->id_quiz_questions = $idQuizQuestion;
           $userQuizAnswer->id_quiz_list_choice = $idQuizListChoice;
       
-          // Retrieve the QuizListChoice and set 'correct' based on its value
-          $quizListChoice = QuizListChoice::find($idQuizListChoice);
-          $userQuizAnswer->correct = $quizListChoice->correct;
+          if($idQuizListChoice){
+            // Retrieve the QuizListChoice and set 'correct' based on its value
+            $quizListChoice = QuizListChoice::find($idQuizListChoice);
+            $userQuizAnswer->correct = $quizListChoice->correct;
+          }else{
+            $userQuizAnswer->correct = 0;
+          }
       
           $userQuizAnswer->soft_delete = $softDelete;
           $userQuizAnswer->save();
-      
-          // Add the user quiz answer to the array
-          $userQuizAnswers[] = $userQuizAnswer;
-      
-          // Check if the answer is correct
-          if ($quizListChoice->correct === 1) {
-            $correctAnswersCount++;
-          }
         }
-      }   
-      
-      $answeredQuestionIds[] = $idQuizQuestion;         
+      }     
+      // Check if $idQuizQuestion is not already in $answeredQuestionIds and then add it
+      if (!in_array($idQuizQuestion, $answeredQuestionIds)) {
+        $answeredQuestionIds[] = $idQuizQuestion;
+      }
     }
     
     // Calculate the total number of questions in the quiz
     $totalQuestions = Quiz::find($idQuiz)->QuizQuestions->count();
+    // Count the number of correct answers in UserQuizAnswer for the given $idUserQuiz
+    $totalCorrect = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)
+        ->where('correct', 1) // Assuming 'correct' is a column indicating correctness
+        ->count();
     // Calculate the result percentage
-    $resultPercentage = ($correctAnswersCount / $totalQuestions) * 100;
+    $resultPercentage = ($totalCorrect / $totalQuestions) * 100;
     $resultPercentage = round($resultPercentage, 2); // Round to 2 decimal places
     $data->result = $resultPercentage;
 
     // Convert the array of answered question IDs to a comma-separated string
     $answered = implode(',', $answeredQuestionIds);    
     // Set the 'answered' field
-    $data->answered = $answered;    
-    // Calculate the total number of questions in the quiz
-    $totalQuestions = Quiz::find($idQuiz)->QuizQuestions->count();    
+    $data->answered = $answered;     
     // Calculate the 'status' field (1 if all questions answered, 0 otherwise)
     $data->status = (count($answeredQuestionIds) === $totalQuestions) ? 1 : 0;
     $data->save();
 
+    $userQuizAnswers = UserQuizAnswer::where('id_user_quiz', $idUserQuiz)->get();
     // Add the user quiz answers to the $data array
     $data['user_quiz_answers'] = $userQuizAnswers;  
     return ResultHelpers::success($data, 200, true);
@@ -238,12 +248,14 @@ class UserQuizController extends Controller
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
         <br> - id_user as a reference to the User Quiz data that will be returned
+        <br> - id_user_quiz as a reference to the User Quiz data that will be returned
         <br> - limit as limit show data (default 10)
         <br> - page as page show data (default 1)",
    *          required=true,
    *          @OA\JsonContent(
    *              type="object",
    *              @OA\Property(property="id_user", type="string", example="1"),
+   *              @OA\Property(property="id_user_quiz", type="string", example="1"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *          )
@@ -270,25 +282,29 @@ class UserQuizController extends Controller
   {
     $requestData = $request->only([
       'id_user',
+      'id_user_quiz',
       'limit',
       'page',
     ]);
   
     $idUser = $requestData['id_user'] ?? null;
+    $idUserQuiz = $requestData['id_user_quiz'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
-    $page = $requestData['page'] ?? 1;;
-  
-    if (!$idUser) {
-      return ResultHelpers::errors('id_user must be provided.', 400, false);
-    }
+    $page = $requestData['page'] ?? 1;
   
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;        
   
     // Fetch paginated data
-    $query = UserQuiz::where('id_user', $idUser)
-        ->where('soft_delete', 0)
-        ->with('Quiz.QuizQuestions.QuizListChoice.UserQuizAnswer');
+    $query = UserQuiz::where('soft_delete', 0)
+    ->when($idUser, function ($query) use ($idUser) {
+        return $query->where('id_user', $idUser);
+    })
+    ->when($idUserQuiz, function ($query) use ($idUserQuiz) {
+        return $query->Where('id_user_quiz', $idUserQuiz);
+    })
+    ->with('UserQuizAnswer.QuizListChoice', 'Quiz.QuizQuestions.QuizListChoice');
+
 
     $totalRecords = $query->count();
 

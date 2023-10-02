@@ -63,7 +63,7 @@ class UserController extends Controller
 
         // Check if the user already exists in the table
         $data = Users::where('fb_ids', $fbId)->orWhere('go_ids', $goId)->first();
-
+        
         if (!$data) {
             // Create a new user account
             $data = new Users();
@@ -73,14 +73,14 @@ class UserController extends Controller
             $data->soft_delete = 0; // Set other necessary fields
             $data->save();
         }else{
-            if($data->status === 1){
+            if($data->status !== 0){
                 return ResultHelpers::errors('This account has been banned.', 401, false);
             }
         }
 
         // Add the code for generating and saving the authentication token
         $strToken = Str::random(100);
-        $expired = Carbon::now()->endOfDay();
+        $expired = Carbon::now()->addHours(24);
 
         $authToken = new AuthenticationToken();
         $authToken->user_auth = "user-" . $data->id_user;
@@ -146,7 +146,7 @@ class UserController extends Controller
 
         $idUser = $requestData['id_user'] ?? null;
         $username = $requestData['username'] ?? null;
-        $status = $requestData['status'] ?? null;
+        $status = $requestData['status'] ?? 0;
 
         if (!$idUser) {
             return ResultHelpers::errors('id_user must be provided.', 400, false);
@@ -156,7 +156,7 @@ class UserController extends Controller
 
         if ($data) {    
             $username && $data->username = $username;
-            $status && $data->status = $status;
+            $data->status = $status;
             $data->save();        
         }else{
             return ResultHelpers::errors('User Data Not Found.', 401, false);
