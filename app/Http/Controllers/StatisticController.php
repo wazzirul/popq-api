@@ -179,58 +179,59 @@ class StatisticController extends Controller
         ];
 
         // Get all categories
-        $categories = Categories::all();
+        // $categories = Categories::all();
 
-        // Initialize an array to hold category statistics
-        $categoryStats = [];
+        // // Initialize an array to hold category statistics
+        // $categoryStats = [];
 
-        foreach ($categories as $category) {
-            $categoryName = $category->name_category;
+        // foreach ($categories as $category) {
+        //     $categoryName = $category->name_category;
 
-            // Get statistics for today
-            $todayCount = UserQuiz::distinct('id_quiz')
-                ->whereDate('created_at', $currentDate)
-                ->whereHas('Quiz', function ($query) use ($category) {
-                    $query->where('id_categories', $category->id_categories);
-                })
-                ->count('id_quiz');
+        //     // Get statistics for today
+        //     $todayCount = UserQuiz::distinct('id_quiz')
+        //         ->whereDate('created_at', $currentDate)
+        //         ->whereHas('Quiz', function ($query) use ($category) {
+        //             $query->where('id_categories', $category->id_categories);
+        //         })
+        //         ->count('id_quiz');
 
-            // Get statistics for this month
-            $thisMonthCount = UserQuiz::distinct('id_quiz')
-                ->whereYear('created_at', $year)
-                ->whereMonth('created_at', $currentDate->month)
-                ->whereHas('Quiz', function ($query) use ($category) {
-                    $query->where('id_categories', $category->id_categories);
-                })
-                ->count('id_quiz');
+        //     // Get statistics for this month
+        //     $thisMonthCount = UserQuiz::distinct('id_quiz')
+        //         ->whereYear('created_at', $year)
+        //         ->whereMonth('created_at', $currentDate->month)
+        //         ->whereHas('Quiz', function ($query) use ($category) {
+        //             $query->where('id_categories', $category->id_categories);
+        //         })
+        //         ->count('id_quiz');
 
-            // Get statistics for each month of the given year
-            $monthlyCounts = [];
-            for ($month = 1; $month <= 12; $month++) {
-                $monthlyCounts[$month] = UserQuiz::distinct('id_quiz')
-                    ->whereYear('created_at', $year)
-                    ->whereMonth('created_at', $month)
-                    ->whereHas('Quiz', function ($query) use ($category) {
-                        $query->where('id_categories', $category->id_categories);
-                    })
-                    ->count('id_quiz');
-            }
+        //     // Get statistics for each month of the given year
+        //     $monthlyCounts = [];
+        //     for ($month = 1; $month <= 12; $month++) {
+        //         $monthlyCounts[$month] = UserQuiz::distinct('id_quiz')
+        //             ->whereYear('created_at', $year)
+        //             ->whereMonth('created_at', $month)
+        //             ->whereHas('Quiz', function ($query) use ($category) {
+        //                 $query->where('id_categories', $category->id_categories);
+        //             })
+        //             ->count('id_quiz');
+        //     }
 
-            // Get statistics for this year
-            $thisYearCount = UserQuiz::distinct('id_quiz')
-                ->whereYear('created_at', $year)
-                ->whereHas('Quiz', function ($query) use ($category) {
-                    $query->where('id_categories', $category->id_categories);
-                })
-                ->count('id_quiz');
+        //     // Get statistics for this year
+        //     $thisYearCount = UserQuiz::distinct('id_quiz')
+        //         ->whereYear('created_at', $year)
+        //         ->whereHas('Quiz', function ($query) use ($category) {
+        //             $query->where('id_categories', $category->id_categories);
+        //         })
+        //         ->count('id_quiz');
 
-            $categoryStats[$categoryName] = [
-                'today' => $todayCount,
-                'this_month' => $thisMonthCount,
-                'per_month' => $monthlyCounts,
-                'this_year' => $thisYearCount,
-            ];
-        }
+        //     $categoryStats[$categoryName] = [
+        //         'category' => $category,
+        //         'today' => $todayCount,
+        //         'this_month' => $thisMonthCount,
+        //         'per_month' => $monthlyCounts,
+        //         'this_year' => $thisYearCount,
+        //     ];
+        // }
 
         return ResultHelpers::success($data, 200, true);
     }
@@ -280,7 +281,7 @@ class StatisticController extends Controller
         $year = $requestData['year'] ?? $currentDate->year;
 
         // Get all categories
-        $categories = Categories::all();
+        $categories = Categories::where('soft_delete', 0)->get();
 
         // Initialize an array to hold category statistics
         $categoryStats = [];
@@ -326,6 +327,11 @@ class StatisticController extends Controller
                 ->count('id_quiz');
 
             $categoryStats[$categoryName] = [
+                'id_categories' => $category->id_categories,
+                'name_category' => $category->name_category,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'color_hex' => $category->color_hex,
                 'today' => $todayCount,
                 'this_month' => $thisMonthCount,
                 'per_month' => $monthlyCounts,
@@ -372,7 +378,7 @@ class StatisticController extends Controller
         $totalPolls = Poll::where('soft_delete', 0)->count();
 
         // categories total quiz and total poll
-        $categories = Categories::all();
+        $categories = Categories::where('soft_delete', 0)->get();
 
         $categoryCounts = [];
 
@@ -383,6 +389,11 @@ class StatisticController extends Controller
             $pollCount = Poll::where('id_categories', $category->id_categories)->count();
 
             $categoryCounts[$categoryName] = [
+                'id_categories' => $category->id_categories,
+                'name_category' => $category->name_category,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'color_hex' => $category->color_hex,
                 'total_quizzes' => $quizCount,
                 'total_polls' => $pollCount,
             ];
@@ -413,6 +424,93 @@ class StatisticController extends Controller
             'total_all_polls' => $totalPolls,
             'total_polls_this_week' => $pollCounts,
         ];
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+    
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/statistics/showScoresUser",
+     *      operationId="statisticsshowScoresUser",
+     *      tags={"Statistics"},
+     *      summary="Show Score User Statistics Data",
+     *      description="Returns User score total quiz submit and average score, and highest score from each category",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b><br> - <b>id_user</b> as a reference to the user data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_user", type="string", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showScoresUser(Request $request)
+    {
+        $requestData = $request->only([
+            'id_user',
+        ]);
+
+        $idUser = $requestData['id_user'];
+
+        $user = Users::where('id_user', $idUser)->first();
+
+        if (!$user) {
+            return ResultHelpers::error('User not found', 404);
+        }
+
+        // Calculate the average score for the user's quizzes
+        $totalQuizSubmitted = UserQuiz::where('id_user', $idUser)->count();
+        $averageScore = number_format(UserQuiz::where('id_user', $idUser)->avg('result') / 10, 1) . '/10';
+
+        // Get the user's top score for each category
+        $categories = Categories::all();
+
+        // Initialize an array to store top scores for each category
+        $topScores = [];
+        foreach ($categories as $category) {
+            $categoryId = $category->id_categories;
+            $topScore = number_format(UserQuiz::where('id_user', $idUser)
+                ->whereHas('Quiz', function ($query) use ($categoryId) {
+                    $query->where('id_categories', $categoryId);
+                })
+                ->max('result') / 10, 1) . '/10';
+                
+            $topScores[$category->name_category] = [
+                'id_categories' => $category->id_categories,
+                'name_category' => $category->name_category,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'color_hex' => $category->color_hex,
+                'top_score' => $topScore,
+            ];
+        }
+
+        $data = [
+            'total_quiz' => $totalQuizSubmitted,
+            'average_score' => $averageScore,
+            'top_score' => $topScores,
+        ];
+        
 
         return ResultHelpers::success($data, 200, true);
     }

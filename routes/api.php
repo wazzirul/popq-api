@@ -65,6 +65,7 @@ Route::post('/statistics/showUser', [StatisticController::class, 'showUser'])->n
 Route::post('/statistics/showQuiz', [StatisticController::class, 'showQuiz'])->name('statistics--showQuiz');
 Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'showQuizByCategories'])->name('statistics--showQuizByCategories');
 Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
+Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScoresUser'])->name('statistics--showScoresUser');
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // GROUP OF JWT TOKEN
@@ -90,6 +91,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Quiz
     Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
+    Route::post('/quiz/showUserLoginQuiz', [QuizController::class, 'showUserLoginQuiz'])->name('quiz--showUserLoginQuiz');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');

@@ -11,6 +11,7 @@ use App\Models\Categories;
 use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
+use App\Models\Users;
 use App\Models\UserQuiz;
 use App\Models\UserQuizAnswer;
 
@@ -512,4 +513,89 @@ class QuizController extends Controller
         'total_pages' => $totalPages,
       ], 200, true);
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/showUserLoginQuiz",
+     *      operationId="showUserLoginQuiz",
+     *      tags={"Quiz"},
+     *      summary="Show Quiz",
+     *      description="Returns Quiz data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+            <br> - id_user as references quiz already submitted or not (default 10)
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_user", type="int", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showUserLoginQuiz(Request $request)
+    {
+      $requestData = $request->only([
+        'id_user',
+        'limit',
+        'page',
+      ]);
+
+      $idUser = $requestData['id_user'] ?? null; // Default limit is 10
+      $limit = $requestData['limit'] ?? 10; // Default limit is 10
+      $page = $requestData['page'] ?? 1;
+
+      $user = Users::where('id_user', $idUser)->first();
+
+      if (!$user) {
+        return ResultHelpers::error('User not found', 404);
+      }else if($user->soft_delete == 1){
+        return ResultHelpers::error('User has been deleted', 404);
+      }else if($user->status == 1){
+        return ResultHelpers::error('User has been blocked', 404);
+      }
+
+      // Calculate the offset based on the page and limit
+      $offset = ($page - 1) * $limit;
+
+      $data = Quiz::leftJoin('user_quiz', function ($join) use ($idUser) {
+        $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
+            ->where('user_quiz.id_user', '=', $idUser);
+        })
+        ->where('quiz.soft_delete', 0)
+        ->orderBy('quiz.id_quiz', 'DESC')
+        ->with('Categories')
+        ->select('quiz.*', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
+        ->skip($offset)
+        ->take($limit)
+        ->get();
+
+      $totalRecords = Quiz::where('soft_delete', 0)->count();
+      $totalPages = ceil($totalRecords / $limit);
+  
+      return ResultHelpers::success([
+        'data' => $data,
+        'total_pages' => $totalPages,
+      ], 200, true);
+    }    
 }
