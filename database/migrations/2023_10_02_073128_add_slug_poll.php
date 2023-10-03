@@ -14,7 +14,7 @@ return new class extends Migration
         });
 
         // Generate slugs for existing poll
-        $poll = Poll::all();
+        $polls = Poll::all();
         foreach ($polls as $poll) {
             $poll->slug = Str::slug($poll->title, '-');
             $poll->save();
