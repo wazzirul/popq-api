@@ -14,7 +14,7 @@ return new class extends Migration
         });
 
         // Generate slugs for existing quiz
-        $quiz = Quiz::all();
+        $quizs = Quiz::all();
         foreach ($quizs as $quiz) {
             $quiz->slug = Str::slug($quiz->title, '-');
             $quiz->save();
