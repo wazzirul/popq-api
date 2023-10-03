@@ -334,11 +334,13 @@ class PollController extends Controller
      *      description="Returns Poll Data based on id_poll",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-                <br> - id_poll as a reference to the poll data that will be returned",
+                <br> - id_poll as a reference to the poll data that will be returned
+                <br> - slug as a reference to the poll data that will be returned",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_poll", type="string", example="1"),
+     *              @OA\Property(property="slug", type="string", example=null),
      *          )
      *      ),
      *      @OA\Response(
@@ -362,20 +364,30 @@ class PollController extends Controller
     public function showById(Request $request)
     {
         $requestData = $request->only([
-            'id_poll', // Facebook ID
+            'id_poll',
+            'slug',
         ]);
 
         $idPoll = $requestData['id_poll'] ?? null;
+        $slugPoll = $requestData['slug'] ?? null;
 
-        if (!$idPoll) {
-          return ResultHelpers::errors('id_poll must be provided.', 400, false);
+        if (!$idPoll && !$slugPoll) {
+            return ResultHelpers::errors('id_poll or slug poll must be provided.', 400, false);
         }
-
-        // Check if the user already exists in the table
-        // Return Created / Updated Poll Data with its Relation.
-        $poll = Poll::where('id_poll', $idPoll)
-        ->with('Categories', 'PollListChoice')
-        ->first();
+    
+        $poll = null;
+    
+        if ($idPoll) {
+          // Check by idPoll if provided
+          $poll = Poll::where('id_poll', $idPoll)
+            ->with('Categories', 'PollListChoice')
+            ->first();
+        } elseif ($slugPoll) {
+          // Check by slugPoll if provided
+          $poll = Poll::where('slug', $slugPoll)
+            ->with('Categories', 'PollListChoice')
+            ->first();
+        }
 
         if (!$poll) {
           return ResultHelpers::errors('Poll not found.', 404, false);

@@ -334,14 +334,16 @@ class QuizController extends Controller
      *      operationId="showByIdQuiz",
      *      tags={"Quiz"},
      *      summary="Show BY Id Quiz Data",
-     *      description="Returns Quiz Data based on id_quiz",
+     *      description="Returns Quiz Data based on id_quiz / slug",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-                <br> - id_quiz as a reference to the quiz data that will be returned",
+                <br> - id_quiz as a reference to the quiz data that will be returned
+                <br> - slug as a reference to the quiz data that will be returned",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_quiz", type="string", example="1"),
+     *              @OA\Property(property="slug", type="string", example=null),
      *          )
      *      ),
      *      @OA\Response(
@@ -365,18 +367,26 @@ class QuizController extends Controller
     public function showById(Request $request)
     {
         $requestData = $request->only([
-            'id_quiz', // Facebook ID
+            'id_quiz',
+            'slug',
         ]);
 
         $idQuiz = $requestData['id_quiz'] ?? null;
+        $slugQuiz = $requestData['slug'] ?? null;
 
-        if (!$idQuiz) {
-            return ResultHelpers::errors('id_quiz must be provided.', 400, false);
+        if (!$idQuiz && !$slugQuiz) {
+            return ResultHelpers::errors('id_quiz or slug quiz must be provided.', 400, false);
         }
-
-        // Check if the user already exists in the table
-        // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('id_quiz', $idQuiz)->with('Categories')->first();
+    
+        $data = null;
+    
+        if ($idQuiz) {
+            // Check by idQuiz if provided
+            $data = Quiz::where('id_quiz', $idQuiz)->with('Categories')->first();
+        } elseif ($slugQuiz) {
+            // Check by slugQuiz if provided
+            $data = Quiz::where('slug', $slugQuiz)->with('Categories')->first();
+        }
     
         if (!$data) {
             return ResultHelpers::errors('Quiz not found.', 404, false);

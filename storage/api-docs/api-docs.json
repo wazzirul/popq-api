@@ -410,7 +410,7 @@
                 "description": "Returns Poll Data based on id_poll",
                 "operationId": "showByIdPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll data that will be returned\n                <br> - slug as a reference to the poll data that will be returned",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -419,6 +419,10 @@
                                     "id_poll": {
                                         "type": "string",
                                         "example": "1"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": null
                                     }
                                 },
                                 "type": "object"
@@ -897,10 +901,10 @@
                     "Quiz"
                 ],
                 "summary": "Show BY Id Quiz Data",
-                "description": "Returns Quiz Data based on id_quiz",
+                "description": "Returns Quiz Data based on id_quiz / slug",
                 "operationId": "showByIdQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_quiz as a reference to the quiz data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_quiz as a reference to the quiz data that will be returned\n                <br> - slug as a reference to the quiz data that will be returned",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -909,6 +913,10 @@
                                     "id_quiz": {
                                         "type": "string",
                                         "example": "1"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": null
                                     }
                                 },
                                 "type": "object"
