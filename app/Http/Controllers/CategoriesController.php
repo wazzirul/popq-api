@@ -55,6 +55,7 @@ class CategoriesController extends Controller
      *          description="<b>Note:</b>
                <br><b>id_categories</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>name_category</b> : name of category
+               <br><b>slug</b> : slug category (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>icon</b> : must be base64 string
                <br><b>color</b> : name of color
                <br><b>color_hex</b> : hex of color
@@ -66,9 +67,10 @@ class CategoriesController extends Controller
      *              type="object",
      *              @OA\Property(property="id_categories", type="int", example="1"),
      *              @OA\Property(property="name_category", type="string", example="Movies"),
+     *              @OA\Property(property="slug", type="string", example="slug-category"),
      *              @OA\Property(property="icon", type="string", example="base_64string"),
      *              @OA\Property(property="color", type="string", example="red"),
-     *              @OA\Property(property="color_hex", type="string", example="#FF0000"),
+     *              @OA\Property(property="color_hex", type="string", example="#88E2CE"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
      *          )
      *      ),
@@ -93,22 +95,34 @@ class CategoriesController extends Controller
     public function createEdit(Request $request)
     {
         $requestData = $request->only([
-            'id_categories', // ID Categories
-            'name_category', // Name Categories
-            'icon', // Icon Categories using base64
-            'color', // Color Categories
-            'color_hex', // Color Hex Categories
-            'soft_delete', // Soft Delete
+            'id_categories',
+            'name_category',
+            'slug', 
+            'icon',
+            'color',
+            'color_hex',
+            'soft_delete',
         ]);
 
         $idCategories = $requestData['id_categories'] ?? null;
         $nameCategories = $requestData['name_category'] ?? null;
+        $slugCategories = $requestData['slug'] ?? null;
         $iconCategories = $requestData['icon'] ?? null;
         $colorCategories = $requestData['color'] ?? null;
         $colorHexCategories = $requestData['color_hex'] ?? null;
         $softDeleteCategories = $requestData['soft_delete'] ?? 0;
         
         $iconUrl = null;
+
+        $allCategories = Categories::where('soft_delete', 0)->get();
+        foreach ($allCategories as $key => $value) {
+            if($value->name_category == $nameCategories && $value->id_categories != $idCategories){
+                return ResultHelpers::errors('Name Categories Already Exists', 400, false);
+            }
+            if($value->slug == $slugCategories && $value->id_categories != $idCategories){
+                return ResultHelpers::errors('Slug Categories Already Exists', 400, false);
+            }
+        }
 
         if ($iconCategories) {
             // Check if icon input data is a valid base64 string
@@ -137,6 +151,7 @@ class CategoriesController extends Controller
         }
 
         $nameCategories && $data->name_category = $nameCategories;
+        $slugCategories && $data->slug = $slugCategories;
         $iconUrl && $data->icon = $iconUrl;
         $colorCategories && $data->color = $colorCategories;
         $colorHexCategories && $data->color_hex = $colorHexCategories;

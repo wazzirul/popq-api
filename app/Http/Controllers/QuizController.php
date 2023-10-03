@@ -61,6 +61,7 @@ class QuizController extends Controller
                <br><b>id_quiz</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
                <br><b>title</b> : title quiz
+               <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle quiz
                <br><b>thumbnail</b> : must be base64 string
                <br><b>description</b> : description quiz
@@ -76,9 +77,10 @@ class QuizController extends Controller
      *              @OA\Property(property="id_quiz", type="int", example="1"),
      *              @OA\Property(property="id_categories", type="int", example="1"),
      *              @OA\Property(property="title", type="string", example="Which scene in The Empire Strikes Back best showcases Luke's growth as a character?"),
-     *              @OA\Property(property="subtitle", type="string", example="STAR WARS"),
+     *              @OA\Property(property="slug", type="string", example="slug-quiz"),
+     *              @OA\Property(property="subtitle", type="string", example="Star Wars"),
      *              @OA\Property(property="thumbnail", type="string", example="base_64string"),
-     *              @OA\Property(property="description", type="string", example="lorem ipsum sir dolor amet"),
+     *              @OA\Property(property="description", type="string", example="The Last Jedi"),
      *              @OA\Property(property="today_status", type="int", example="0"),
      *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
@@ -105,20 +107,22 @@ class QuizController extends Controller
     public function createEdit(Request $request)
     {
         $requestData = $request->only([
-            'id_quiz', // ID Quiz
-            'id_categories', // ID Categories
-            'title', // title Quiz
-            'subtitle', // subtitle Quiz
-            'thumbnail', // Thumbnail Quiz using base64
-            'description', // description Quiz
-            'today_status', // today_status Quiz
-            'draft', // draft Quiz
-            'soft_delete', // Soft Delete
+            'id_quiz', 
+            'id_categories', 
+            'title', 
+            'slug',
+            'subtitle',
+            'thumbnail',
+            'description',
+            'today_status',
+            'draft',
+            'soft_delete',
         ]);
 
         $idQuiz = $requestData['id_quiz'] ?? null;
         $idCategories = $requestData['id_categories'] ?? null;
         $titleQuiz = $requestData['title'] ?? null;
+        $slugQuiz = $requestData['slug'] ?? null;
         $subtitleQuiz = $requestData['subtitle'] ?? null;
         $thumbnailQuiz = $requestData['thumbnail'] ?? null;
         $descriptionQuiz = $requestData['description'] ?? 0;
@@ -130,6 +134,13 @@ class QuizController extends Controller
 
         if(!$dataCategories){
             return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+        }
+      
+        $allQuiz = Quiz::where('soft_delete', 0)->get();
+        foreach ($allQuiz as $key => $value) {
+            if($value->slug == $slugQuiz && $value->id_quiz != $idQuiz){
+                return ResultHelpers::errors('Slug Quiz Already Exists', 400, false);
+            }
         }
 
         // Generate the URL of the uploaded file
@@ -162,6 +173,7 @@ class QuizController extends Controller
             
         $idCategories && $data->id_categories = $idCategories;
         $titleQuiz && $data->title = $titleQuiz;
+        $slugQuiz && $data->slug = $slugQuiz;
         $subtitleQuiz && $data->subtitle = $subtitleQuiz;
         $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;

@@ -59,6 +59,7 @@ class PollController extends Controller
                <br><b>id_poll</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
                <br><b>title</b> : title poll
+               <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle poll
                <br><b>thumbnail</b> : must be base64 string
                <br><b>description</b> : description poll
@@ -74,9 +75,10 @@ class PollController extends Controller
      *              @OA\Property(property="id_poll", type="int", example="1"),
      *              @OA\Property(property="id_categories", type="int", example="1"),
      *              @OA\Property(property="title", type="string", example="Who is your favorite player in the Premier League?"),
+     *              @OA\Property(property="slug", type="string", example="slug-poll"),
      *              @OA\Property(property="subtitle", type="string", example="Football"),
      *              @OA\Property(property="thumbnail", type="string", example="base_64string"),
-     *              @OA\Property(property="description", type="string", example="lorem ipsum sir dolor amet"),
+     *              @OA\Property(property="description", type="string", example="Premier League"),
      *              @OA\Property(property="today_status", type="int", example="0"),
      *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
@@ -103,20 +105,22 @@ class PollController extends Controller
     public function createEdit(Request $request)
     {
       $requestData = $request->only([
-        'id_poll', // ID Poll
-        'id_categories', // ID Categories
-        'title', // title Poll
-        'subtitle', // subtitle Poll
-        'thumbnail', // Thumbnail Poll using base64
-        'description', // description Poll
-        'today_status', // today_status Poll
-        'draft', // draft Poll
-        'soft_delete', // Soft Delete
+        'id_poll', 
+        'id_categories',
+        'title', 
+        'slug',
+        'subtitle', 
+        'thumbnail',
+        'description',
+        'today_status',
+        'draft',
+        'soft_delete',
       ]);
 
       $idPoll = $requestData['id_poll'] ?? null;
       $idCategories = $requestData['id_categories'] ?? null;
       $titlePoll = $requestData['title'] ?? null;
+      $slugPoll = $requestData['slug'] ?? null;
       $subtitlePoll = $requestData['subtitle'] ?? null;
       $thumbnailPoll = $requestData['thumbnail'] ?? null;
       $descriptionPoll = $requestData['description'] ?? 0;
@@ -128,6 +132,13 @@ class PollController extends Controller
 
       if(!$dataCategories){
         return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+      }
+      
+      $allPoll = Poll::where('soft_delete', 0)->get();
+      foreach ($allPoll as $key => $value) {
+          if($value->slug == $slugPoll && $value->id_poll != $idPoll){
+              return ResultHelpers::errors('Slug Poll Already Exists', 400, false);
+          }
       }
 
       $thumbnailUrl = null;
@@ -149,33 +160,24 @@ class PollController extends Controller
       if($idPoll === null){
         // Create a new user account
         $data = new Poll();
-        
-        $idCategories && $data->id_categories = $idCategories;
-        $titlePoll && $data->title = $titlePoll;
-        $subtitlePoll && $data->subtitle = $subtitlePoll;
-        $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
-        $descriptionPoll && $data->description = $descriptionPoll;
-        $todayStatusPoll && $data->today_status = $todayStatusPoll;
-        $draftPoll && $data->draft = $draftPoll;
-        $softDeletePoll && $data->soft_delete = $softDeletePoll;
-        $data->save();
       }else{
         // Check if the user already exists in the table
         $data = Poll::where('id_poll', $idPoll)->first();
-        if ($data) {
-          $idCategories && $data->id_categories = $idCategories;
-          $titlePoll && $data->title = $titlePoll;
-          $subtitlePoll && $data->subtitle = $subtitlePoll;
-          $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
-          $descriptionPoll && $data->description = $descriptionPoll;
-          $todayStatusPoll && $data->today_status = $todayStatusPoll;
-          $draftPoll && $data->draft = $draftPoll;
-          $softDeletePoll && $data->soft_delete = $softDeletePoll;
-          $data->save();
-        }else{
+        if (!$data) {
           return ResultHelpers::errors('Poll Data Not Found from id_poll inputed', 400, false);
         }
       }
+      
+      $idCategories && $data->id_categories = $idCategories;
+      $titlePoll && $data->title = $titlePoll;
+      $slugPoll && $data->slug = $slugPoll;
+      $subtitlePoll && $data->subtitle = $subtitlePoll;
+      $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+      $descriptionPoll && $data->description = $descriptionPoll;
+      $todayStatusPoll && $data->today_status = $todayStatusPoll;
+      $draftPoll && $data->draft = $draftPoll;
+      $softDeletePoll && $data->soft_delete = $softDeletePoll;
+      $data->save();
 
       return ResultHelpers::success($data, 200, true);
     }
