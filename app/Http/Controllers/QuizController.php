@@ -414,7 +414,7 @@ class QuizController extends Controller
         }
     
         // Retrieve the quiz questions for the quiz
-        $quizQuestions = QuizQuestions::where('id_quiz', $idQuiz)->get();
+        $quizQuestions = QuizQuestions::where('id_quiz', $data->id_quiz)->get();
 
         // Shuffle the quiz list choices for each quiz question
         $quizQuestions->each(function ($question) {
