@@ -190,7 +190,7 @@ class CategoriesController extends Controller
     public function show(Request $request)
     {
         $data = Categories::where('soft_delete', 0)
-            ->orderBy('id_categories', 'DESC')
+            ->orderBy('id_categories', 'ASC')
             ->get();
 
         return ResultHelpers::success($data, 200, true);

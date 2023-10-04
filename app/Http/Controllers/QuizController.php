@@ -258,14 +258,16 @@ class QuizController extends Controller
      *      operationId="showByCategoriesQuiz",
      *      tags={"Quiz"},
      *      summary="Show BY Categories Quiz Data",
-     *      description="Returns Quiz Data based on id_categories",
+     *      description="Returns Quiz Data based on id_categories and slug_categories",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-                <br> - id_categories as a reference to the categories quiz data that will be returned",
+                <br> - id_categories as a reference to the categories quiz data that will be returned
+                <br> - slug_categories as a reference to the categories quiz data that will be returned",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -291,34 +293,42 @@ class QuizController extends Controller
     public function showByCategories(Request $request)
     {
       $requestData = $request->only([
-        'id_categories', // Facebook ID
+        'id_categories',
+        'slug_categories',
         'limit',
         'page',
         ]);
 
       $idCategories = $requestData['id_categories'] ?? null;
+      $slugCategories = $requestData['slug_categories'] ?? null;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
 
-      if (!$idCategories) {
-          return ResultHelpers::errors('id_categories must be provided.', 400, false);
+      if (!$idCategories && !$slugCategories) {
+          return ResultHelpers::errors('id_categories or slug_categories must be provided.', 400, false);
+      }
+
+      $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0);
+
+      if ($idCategories !== null) {
+        // Add a filter for id_categories if idCategories is not null
+        $query->where('quiz.id_categories', $idCategories);
+      }elseif ($slugCategories !==null) {
+        $query->where('categories.slug', $slugCategories);
       }
 
       // Check if the user already exists in the table
       // Return Created / Updated Quiz Data with its Relation.
-      $data = Quiz::where('id_categories', $idCategories)
-        ->where('soft_delete', 0)
-        ->with('Categories')
+      $data = $query->with('Categories')
         ->skip($offset)
         ->take($limit)
         ->get();
 
-      $totalRecords = Quiz::where('id_categories', $idCategories)
-        ->where('soft_delete', 0)
-        ->count();
+      $totalRecords = $query->count();
       $totalPages = ceil($totalRecords / $limit);
 
       return ResultHelpers::success([
@@ -548,13 +558,15 @@ class QuizController extends Controller
      *          description="<b>Note:</b>
             <br> - id_user as references quiz already submitted or not (default 10)
             <br> - id_categories as references quiz if you want to filter by categories
+            <br> - slug_categories as references quiz if you want to filter by categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_user", type="int", example="1"),
-     *              @OA\Property(property="id_categories", type="int", example="null"),
+     *              @OA\Property(property="id_categories", type="int", example=null),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -582,12 +594,14 @@ class QuizController extends Controller
       $requestData = $request->only([
         'id_user',
         'id_categories',
+        'slug_categories',
         'limit',
         'page',
       ]);
 
       $idUser = $requestData['id_user'] ?? null; // Default limit is null
       $idCategories = $requestData['id_categories'] ?? null; // Default limit is null
+      $slugCategories = $requestData['slug_categories'] ?? null; // Default limit is null
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -603,16 +617,19 @@ class QuizController extends Controller
 
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
-
+      
       $query = Quiz::leftJoin('user_quiz', function ($join) use ($idUser) {
         $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
             ->where('user_quiz.id_user', '=', $idUser);
-        })
-        ->where('quiz.soft_delete', 0);
+        })->leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0);
+    
 
       if ($idCategories !== null) {
-          // Add a filter for id_categories if idCategories is not null
-          $query->where('quiz.id_categories', $idCategories);
+        // Add a filter for id_categories if idCategories is not null
+        $query->where('quiz.id_categories', $idCategories);
+      }elseif ($slugCategories !==null) {
+        $query->where('categories.slug', $slugCategories);
       }
 
       $data = $query->orderBy('quiz.id_quiz', 'DESC')
@@ -622,7 +639,7 @@ class QuizController extends Controller
         ->take($limit)
         ->get();
 
-      $totalRecords = Quiz::where('soft_delete', 0)->count();
+      $totalRecords = $query->orderBy('quiz.id_quiz', 'DESC')->with('Categories')->select('quiz.*','user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')->count();
       $totalPages = ceil($totalRecords / $limit);
   
       return ResultHelpers::success([

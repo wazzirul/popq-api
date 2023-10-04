@@ -358,10 +358,10 @@
                     "Poll"
                 ],
                 "summary": "Show BY Categories Poll Data",
-                "description": "Returns Poll Data based on id_categories",
+                "description": "Returns Poll Data based on id_categories or slug",
                 "operationId": "showByCategoriesPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories poll data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories poll data that will be returned\n                <br> - slug_categories as a reference to the categories poll data that will be returned",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -370,6 +370,10 @@
                                     "id_categories": {
                                         "type": "string",
                                         "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "limit": {
                                         "type": "integer",
@@ -410,7 +414,7 @@
                 "description": "Returns Poll Data based on id_poll",
                 "operationId": "showByIdPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll data that will be returned\n                <br> - slug as a reference to the poll data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_poll as a reference to the poll data that will be returned\n                <br> - slug as a reference to the poll data that will be returned\n                <br> - id_user as a reference to the poll data that will be returned (if the user already logged in)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -545,7 +549,7 @@
                 "description": "Returns Poll data",
                 "operationId": "showUserLoginPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - id_user as references poll already submitted\n            <br> - id_categories as references poll if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - id_user as references poll already submitted\n            <br> - id_categories as references poll if you want to filter by categories\n            <br> - slug_categories as references poll if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -557,7 +561,11 @@
                                     },
                                     "id_categories": {
                                         "type": "integer",
-                                        "example": "null"
+                                        "example": null
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "limit": {
                                         "type": "integer",
@@ -852,10 +860,10 @@
                     "Quiz"
                 ],
                 "summary": "Show BY Categories Quiz Data",
-                "description": "Returns Quiz Data based on id_categories",
+                "description": "Returns Quiz Data based on id_categories and slug_categories",
                 "operationId": "showByCategoriesQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned\n                <br> - slug_categories as a reference to the categories quiz data that will be returned",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -864,6 +872,10 @@
                                     "id_categories": {
                                         "type": "string",
                                         "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "limit": {
                                         "type": "integer",
@@ -1039,7 +1051,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showUserLoginQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - id_categories as references quiz if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - id_categories as references quiz if you want to filter by categories\n            <br> - slug_categories as references quiz if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1051,7 +1063,11 @@
                                     },
                                     "id_categories": {
                                         "type": "integer",
-                                        "example": "null"
+                                        "example": null
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "limit": {
                                         "type": "integer",

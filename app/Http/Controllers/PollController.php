@@ -256,14 +256,16 @@ class PollController extends Controller
      *      operationId="showByCategoriesPoll",
      *      tags={"Poll"},
      *      summary="Show BY Categories Poll Data",
-     *      description="Returns Poll Data based on id_categories",
+     *      description="Returns Poll Data based on id_categories or slug",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-                <br> - id_categories as a reference to the categories poll data that will be returned",
+                <br> - id_categories as a reference to the categories poll data that will be returned
+                <br> - slug_categories as a reference to the categories poll data that will be returned",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -289,7 +291,8 @@ class PollController extends Controller
     public function showByCategories(Request $request)
     {
       $requestData = $request->only([
-        'id_categories', // Facebook ID
+        'id_categories', 
+        'slug_categories',
         'limit',
         'page',
       ]);
@@ -301,21 +304,30 @@ class PollController extends Controller
       $offset = ($page - 1) * $limit;
 
       $idCategories = $requestData['id_categories'] ?? null;
+      $slugCategories = $requestData['slug_categories'] ?? null;
 
-      if (!$idCategories) {
-        return ResultHelpers::errors('id_categories must be provided.', 400, false);
+      if (!$idCategories && !$slugCategories) {
+        return ResultHelpers::errors('id_categories or slug categories must be provided.', 400, false);
+      }
+        
+      $query = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
+      ->where('poll.soft_delete', 0);
+
+      if ($idCategories !== null) {
+        // Add a filter for id_categories if idCategories is not null
+        $query->where('poll.id_categories', $idCategories);
+      }elseif ($slugCategories !== null) {
+        $query->where('categories.slug', $slugCategories);
       }
 
       // Check if the user already exists in the table
-      // Return Created / Updated Poll Data with its Relation.
-      $data = Poll::where('id_categories', $idCategories)
-        ->where('soft_delete', 0)->with('Categories')
+      // Return Created / Updated Quiz Data with its Relation.
+      $data = $query->with('Categories')
         ->skip($offset)
         ->take($limit)
         ->get();
 
-      $totalRecords = Poll::where('id_categories', $idCategories)
-        ->where('soft_delete', 0)->count();
+      $totalRecords = $query->count();
       $totalPages = ceil($totalRecords / $limit);
   
       return ResultHelpers::success([
@@ -335,7 +347,8 @@ class PollController extends Controller
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
                 <br> - id_poll as a reference to the poll data that will be returned
-                <br> - slug as a reference to the poll data that will be returned",
+                <br> - slug as a reference to the poll data that will be returned
+                <br> - id_user as a reference to the poll data that will be returned (if the user already logged in)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
@@ -372,35 +385,42 @@ class PollController extends Controller
         $slugPoll = $requestData['slug'] ?? null;
 
         if (!$idPoll && !$slugPoll) {
-            return ResultHelpers::errors('id_poll or slug poll must be provided.', 400, false);
+          return ResultHelpers::errors('id_poll or slug poll must be provided.', 400, false);
         }
-    
+        
+        $query = Poll::where('poll.soft_delete', 0);
         $poll = null;
     
         if ($idPoll) {
           // Check by idPoll if provided
-          $poll = Poll::where('id_poll', $idPoll)
-            ->with('Categories', 'PollListChoice')
-            ->first();
+          $query->where('id_poll', $idPoll);
         } elseif ($slugPoll) {
           // Check by slugPoll if provided
-          $poll = Poll::where('slug', $slugPoll)
-            ->with('Categories', 'PollListChoice')
-            ->first();
+          $query->where('slug', $slugPoll);
         }
+
+        $poll = $query->with('Categories', 'PollListChoice')->first();
 
         if (!$poll) {
           return ResultHelpers::errors('Poll not found.', 404, false);
         }
 
+        // Calculate the total number of votes for all choices for this poll
+        $totalVotes = UserPoll::whereIn('id_poll', [$poll->id_poll])->count();
+
         // Load the associated PollListChoice records
         $poll->load(['PollListChoice']);
-    
-        // Count the number of selections for each PollListChoice using UserPoll
+        
+        // Calculate and set the percentage for each choice
         foreach ($poll->PollListChoice as $choice) {
             $pollCount = UserPoll::where('id_poll_list_choice', $choice->id_poll_list_choice)
                 ->count();
+            
+            // Calculate the percentage (rounded to 2 decimal places)
+            $percentage = $totalVotes > 0 ? round(($pollCount / $totalVotes) * 100, 2) : 0;
+            
             $choice->poll_count = $pollCount;
+            $choice->percentage = $percentage;
         }
     
         return ResultHelpers::success($poll, 200, true);
@@ -549,13 +569,15 @@ class PollController extends Controller
      *          description="<b>Note:</b>
             <br> - id_user as references poll already submitted
             <br> - id_categories as references poll if you want to filter by categories
+            <br> - slug_categories as references poll if you want to filter by categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_user", type="int", example="1"),
-     *              @OA\Property(property="id_categories", type="int", example="null"),
+     *              @OA\Property(property="id_categories", type="int", example=null),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -583,12 +605,14 @@ class PollController extends Controller
       $requestData = $request->only([
         'id_user',
         'id_categories',
+        'slug_categories',
         'limit',
         'page',
       ]);
 
       $idUser = $requestData['id_user'] ?? null; // Default limit is null
       $idCategories = $requestData['id_categories'] ?? null; // Default limit is null
+      $slugCategories = $requestData['slug_categories'] ?? null; // Default limit is null
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -609,13 +633,15 @@ class PollController extends Controller
       $query = Poll::leftJoin('user_poll', function ($join) use ($idUser) {
         $join->on('poll.id_poll', '=', 'user_poll.id_poll')
             ->where('user_poll.id_user', '=', $idUser);
-        })
+        })->leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
         ->where('poll.soft_delete', 0);
 
-      if ($idCategories !== null) {
+        if ($idCategories !== null) {
           // Add a filter for id_categories if idCategories is not null
           $query->where('poll.id_categories', $idCategories);
-      }
+        }elseif ($slugCategories !==null) {
+          $query->where('categories.slug', $slugCategories);
+        }
 
       $data = $query->orderBy('poll.id_poll', 'DESC')
         ->select('poll.*', 'user_poll.id_user_poll', 'user_poll.id_user', 'user_poll.id_poll_list_choice', 'user_poll.date_time')
