@@ -326,7 +326,18 @@ class QuizController extends Controller
       $data = $query->with('Categories')
         ->skip($offset)
         ->take($limit)
-        ->get();
+        ->get([
+          'quiz.id_quiz',
+          'quiz.id_categories',
+          'quiz.title',
+          'quiz.slug',
+          'quiz.subtitle',
+          'quiz.thumbnail',
+          'quiz.description',
+          'quiz.today_status',
+          'quiz.draft',
+          'quiz.soft_delete',
+        ]);
 
       $totalRecords = $query->count();
       $totalPages = ceil($totalRecords / $limit);

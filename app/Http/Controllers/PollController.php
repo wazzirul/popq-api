@@ -325,7 +325,18 @@ class PollController extends Controller
       $data = $query->with('Categories')
         ->skip($offset)
         ->take($limit)
-        ->get();
+        ->get([
+          'poll.id_poll',
+          'poll.id_categories',
+          'poll.title',
+          'poll.slug',
+          'poll.subtitle',
+          'poll.thumbnail',
+          'poll.description',
+          'poll.today_status',
+          'poll.draft',
+          'poll.soft_delete',
+        ]);
 
       $totalRecords = $query->count();
       $totalPages = ceil($totalRecords / $limit);
