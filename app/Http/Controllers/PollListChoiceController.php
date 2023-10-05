@@ -7,6 +7,7 @@ use App\Helpers\ResultHelpers;
 
 use App\Models\Poll;
 use App\Models\PollListChoice;
+use App\Models\UserPoll;
 
 class PollListChoiceController extends Controller
 {
@@ -78,7 +79,9 @@ class PollListChoiceController extends Controller
             
             $idPoll && $data->id_poll = $idPoll;
             $poll_choice && $data->poll_choice = $poll_choice;
-            $softDelete && $data->soft_delete = $softDelete;
+            if ($softDelete !== null) {
+              $data->soft_delete = $softDelete;
+            }
             $data->save();
         }else{
             // Check if the user already exists in the table
@@ -86,7 +89,9 @@ class PollListChoiceController extends Controller
             if ($data) {
                 $idPoll && $data->id_poll = $idPoll;
                 $poll_choice && $data->poll_choice = $poll_choice;
-                $softDelete && $data->soft_delete = $softDelete;
+                if ($softDelete !== null) {
+                  $data->soft_delete = $softDelete;
+                }
                 $data->save();
             }else{
                 return ResultHelpers::errors('Poll List Choice Data Not Found from id_poll_list_choice inputed', 400, false);
@@ -94,6 +99,100 @@ class PollListChoiceController extends Controller
         }
 
         return ResultHelpers::success($data, 200, true);
+    }
+
+
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll-list-choice/create-edit-v2",
+     *      operationId="createEditPollListChoiceV2",
+     *      tags={"Poll List Choice"},
+     *      summary="Create / Edit Poll List Choice Data",
+     *      description="Returns Poll List Choice Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_poll_list_choice</b> : null / empty if want to create data, fill the id number if want to update data
+               <br><b>id_poll</b> : id poll from table poll
+               <br><b>poll_choice</b> : string of poll_choice example (Cristiano Ronaldo)
+               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+    *          required=true,
+    *          @OA\JsonContent(
+    *              type="object",
+    *              @OA\Property(property="data", type="array", @OA\Items(
+    *                  @OA\Property(property="id_poll_list_choice", type="int", example="1"),
+    *                  @OA\Property(property="id_poll", type="int", example="1"),
+    *                  @OA\Property(property="poll_choice", type="string", example="Cristiano Ronaldo"),
+    *                  @OA\Property(property="soft_delete", type="int", example="0"),
+    *              )),
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *      ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function createEditV2(Request $request)
+    {
+        $requestData = $request->input('data', []);
+    
+        if (empty($requestData)) {
+            return ResultHelpers::errors('No data provided in the request', 400, false);
+        }
+
+        $storedData = [];
+        foreach ($requestData as $data) {
+            $idPollListChoice = $data['id_poll_list_choice'] ?? null;
+            $idPoll = $data['id_poll'] ?? null;
+            $poll_choice = $data['poll_choice'] ?? '';
+            $softDelete = $data['soft_delete'] ?? 0;
+
+            // $dataPoll = Poll::where('id_poll', $idPoll)->first();
+            // if(!$dataPoll){
+            //     return ResultHelpers::errors('Poll Data Not Found from id_poll inputed', 400, false);
+            // }
+    
+            if ($idPollListChoice === null) {
+                $newData = new PollListChoice();
+                
+                $idPoll && $newData->id_poll = $idPoll;
+                $poll_choice && $newData->poll_choice = $poll_choice;
+                if ($softDelete !== null) {
+                  $newData->soft_delete = $softDelete;
+                }
+                $newData->save();
+                $storedData[] = $newData;
+            } else {
+                $existingData = PollListChoice::where('id_poll_list_choice', $idPollListChoice)->first();
+                if ($existingData) {
+                    $idPoll && $existingData->id_poll = $idPoll;
+                    $poll_choice && $existingData->poll_choice = $poll_choice;
+                    if ($softDelete !== null) {
+                      $existingData->soft_delete = $softDelete;
+                    }
+                    $existingData->save();
+                    $storedData[] = $existingData;
+                } else {
+                    return ResultHelpers::errors('Poll List Choice Data Not Found from id_poll_list_choice inputed', 400, false);
+                }
+            }
+        }
+    
+        return ResultHelpers::success($storedData, 200, true);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

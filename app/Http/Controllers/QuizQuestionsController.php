@@ -91,7 +91,9 @@ class QuizQuestionsController extends Controller
             $numberQuestion && $data->number_question = $numberQuestion;
             $question && $data->question = $question;
             $duration && $data->duration = $duration;
-            $softDelete && $data->soft_delete = $softDelete;
+            if ($softDelete !== null) {
+              $data->soft_delete = $softDelete;
+            }
             $data->save();
         }else{
             // Check if the user already exists in the table
@@ -101,7 +103,9 @@ class QuizQuestionsController extends Controller
                 $numberQuestion && $data->number_question = $numberQuestion;
                 $question && $data->question = $question;
                 $duration && $data->duration = $duration;
-                $softDelete && $data->soft_delete = $softDelete;
+                if ($softDelete !== null) {
+                  $data->soft_delete = $softDelete;
+                }
                 $data->save();
             }else{
                 return ResultHelpers::errors('Quiz Questions Data Not Found from id_quiz_questions inputed', 400, false);

@@ -130,10 +130,11 @@ class QuizController extends Controller
         $draftQuiz = $requestData['draft'] ?? 0;
         $softDeleteQuiz = $requestData['soft_delete'] ?? 0;
 
-        $dataCategories = Categories::where('id_categories', $idCategories)->first();
-
-        if(!$dataCategories){
+        if($idCategories){
+          $dataCategories = Categories::find($idCategories);    
+          if(!$dataCategories){
             return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+          }
         }
       
         $allQuiz = Quiz::where('soft_delete', 0)->get();
@@ -179,7 +180,9 @@ class QuizController extends Controller
         $descriptionQuiz && $data->description = $descriptionQuiz;
         $todayStatusQuiz && $data->today_status = $todayStatusQuiz;
         $draftQuiz && $data->draft = $draftQuiz;
-        $softDeleteQuiz && $data->soft_delete = $softDeleteQuiz;
+        if ($softDeleteQuiz !== null) {
+          $data->soft_delete = $softDeleteQuiz;
+        }
         $data->save();
 
         return ResultHelpers::success($data, 200, true);

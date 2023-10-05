@@ -106,6 +106,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');
+    Route::post('/poll-list-choice/create-edit-v2', [PollListChoiceController::class, 'createEditV2'])->name('poll-question--createEditV2');
 
     // User Poll
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');

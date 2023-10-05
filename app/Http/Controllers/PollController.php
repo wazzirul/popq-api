@@ -128,10 +128,12 @@ class PollController extends Controller
       $draftPoll = $requestData['draft'] ?? 0;
       $softDeletePoll = $requestData['soft_delete'] ?? 0;
 
-      $dataCategories = Categories::find($idCategories);
-
-      if(!$dataCategories){
-        return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+      if($idCategories){
+        $dataCategories = Categories::find($idCategories);
+  
+        if(!$dataCategories){
+          return ResultHelpers::errors('Categories Data Not Found from id_categories inputed', 400, false);
+        }
       }
       
       $allPoll = Poll::where('soft_delete', 0)->get();
@@ -176,7 +178,9 @@ class PollController extends Controller
       $descriptionPoll && $data->description = $descriptionPoll;
       $todayStatusPoll && $data->today_status = $todayStatusPoll;
       $draftPoll && $data->draft = $draftPoll;
-      $softDeletePoll && $data->soft_delete = $softDeletePoll;
+      if ($softDeletePoll !== null) {
+        $data->soft_delete = $softDeletePoll;
+      }
       $data->save();
 
       return ResultHelpers::success($data, 200, true);

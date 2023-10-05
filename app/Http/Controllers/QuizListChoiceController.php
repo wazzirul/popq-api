@@ -130,43 +130,44 @@ class QuizListChoiceController extends Controller
      *      description="Returns Quiz List Choice Data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-               <br><b>id_quiz_list_choice</b> : null / empty if want to create data, fill the id number if want to update data
-               <br><b>id_quiz</b> : id quiz from table quiz
-               <br><b>id_quiz_questions</b> : id_quiz_questions from table quiz questions
-               <br><b>answer</b> : string of answer choice
-               <br><b>correct</b> : correct answer, 0 = false, 1 = true, default 0
-               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
-     *          required=true,
-     *          @OA\JsonContent(
-     *              type="object",
-     *              @OA\Property(property="data", type="array", @OA\Items(
-     *                  @OA\Property(property="id_quiz_list_choice", type="int", example="1"),
-     *                  @OA\Property(property="id_quiz", type="int", example="1"),
-     *                  @OA\Property(property="id_quiz_questions", type="int", example="1"),
-     *                  @OA\Property(property="answer", type="string", example="Tauntaun"),
-     *                  @OA\Property(property="correct", type="int", example="0"),
-     *                  @OA\Property(property="soft_delete", type="int", example="0"),
-     *              )),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful Operation",
-     *       ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="Bad Request"
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Server Error"
-     *      )
-     * )
-     */
+            <br><b>id_quiz_list_choice</b> : null / empty if you want to create data, fill the id number if you want to update data
+            <br><b>id_quiz</b> : id quiz from table quiz
+            <br><b>id_quiz_questions</b> : id_quiz_questions from table quiz questions
+            <br><b>answer</b> : string of answer choice
+            <br><b>correct</b> : correct answer, 0 = false, 1 = true, default 0
+            <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+    *          required=true,
+    *          @OA\JsonContent(
+    *              type="object",
+    *              @OA\Property(property="data", type="array", @OA\Items(
+    *                  @OA\Property(property="id_quiz_list_choice", type="int", example="1"),
+    *                  @OA\Property(property="id_quiz", type="int", example="1"),
+    *                  @OA\Property(property="id_quiz_questions", type="int", example="1"),
+    *                  @OA\Property(property="answer", type="string", example="Tauntaun"),
+    *                  @OA\Property(property="correct", type="int", example="0"),
+    *                  @OA\Property(property="soft_delete", type="int", example="0"),
+    *              )),
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *      ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+
     public function createEditV2(Request $request)
     {
         $requestData = $request->input('data', []);
