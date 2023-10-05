@@ -123,10 +123,10 @@ class PollController extends Controller
       $slugPoll = $requestData['slug'] ?? null;
       $subtitlePoll = $requestData['subtitle'] ?? null;
       $thumbnailPoll = $requestData['thumbnail'] ?? null;
-      $descriptionPoll = $requestData['description'] ?? 0;
-      $todayStatusPoll = $requestData['today_status'] ?? 0;
-      $draftPoll = $requestData['draft'] ?? 0;
-      $softDeletePoll = $requestData['soft_delete'] ?? 0;
+      $descriptionPoll = $requestData['description'] ?? "0";
+      $todayStatusPoll = $requestData['today_status'] ?? "0";
+      $draftPoll = $requestData['draft'] ?? "0";
+      $softDeletePoll = $requestData['soft_delete'] ?? "0";
 
       if($idCategories){
         $dataCategories = Categories::find($idCategories);
@@ -176,8 +176,12 @@ class PollController extends Controller
       $subtitlePoll && $data->subtitle = $subtitlePoll;
       $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
       $descriptionPoll && $data->description = $descriptionPoll;
-      $todayStatusPoll && $data->today_status = $todayStatusPoll;
-      $draftPoll && $data->draft = $draftPoll;
+      if ($todayStatusPoll !== null) {
+        $data->today_status = $todayStatusPoll;
+      }
+      if ($draftPoll !== null) {
+        $data->draft = $draftPoll;
+      }
       if ($softDeletePoll !== null) {
         $data->soft_delete = $softDeletePoll;
       }
@@ -197,11 +201,13 @@ class PollController extends Controller
      *      description="Returns Poll data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - draft as draft show data (default 0 / published) (1 = drafted poll)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
+     *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -227,10 +233,12 @@ class PollController extends Controller
     public function show(Request $request)
     {
       $requestData = $request->only([
+        'draft',
         'limit',
         'page',
       ]);
 
+      $draft = $requestData['draft'] ?? 0;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -238,6 +246,7 @@ class PollController extends Controller
       $offset = ($page - 1) * $limit;
 
       $data = Poll::where('soft_delete', 0)
+        ->where('quiz.draft', $draft)
         ->orderBy('id_poll', 'DESC')
         ->with('Categories')
         ->skip($offset)

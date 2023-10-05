@@ -178,8 +178,12 @@ class QuizController extends Controller
         $subtitleQuiz && $data->subtitle = $subtitleQuiz;
         $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;
-        $todayStatusQuiz && $data->today_status = $todayStatusQuiz;
-        $draftQuiz && $data->draft = $draftQuiz;
+        if ($todayStatusQuiz !== null) {
+          $data->today_status = $todayStatusQuiz;
+        }
+        if ($draftQuiz !== null) {
+          $data->draft = $draftQuiz;
+        }
         if ($softDeleteQuiz !== null) {
           $data->soft_delete = $softDeleteQuiz;
         }
@@ -198,11 +202,13 @@ class QuizController extends Controller
      *      description="Returns Quiz data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
+     *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -228,10 +234,12 @@ class QuizController extends Controller
     public function show(Request $request)
     {
       $requestData = $request->only([
+        'draft',
         'limit',
         'page',
       ]);
 
+      $draft = $requestData['draft'] ?? 0;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -239,6 +247,7 @@ class QuizController extends Controller
       $offset = ($page - 1) * $limit;
 
       $data = Quiz::where('soft_delete', 0)
+        ->where('quiz.draft', $draft)
         ->orderBy('id_quiz', 'DESC')
         ->with('Categories')
         ->skip($offset)

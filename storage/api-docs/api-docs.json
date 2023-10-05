@@ -316,12 +316,16 @@
                 "description": "Returns Poll data",
                 "operationId": "showPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted poll)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "draft": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    },
                                     "limit": {
                                         "type": "integer",
                                         "example": "10"
@@ -879,12 +883,16 @@
                 "description": "Returns Quiz data",
                 "operationId": "showQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "draft": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    },
                                     "limit": {
                                         "type": "integer",
                                         "example": "10"
