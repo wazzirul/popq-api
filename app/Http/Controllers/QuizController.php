@@ -247,7 +247,7 @@ class QuizController extends Controller
       $offset = ($page - 1) * $limit;
 
       $data = Quiz::where('soft_delete', 0)
-        ->where('quiz.draft', $draft)
+        ->where('draft', $draft)
         ->orderBy('id_quiz', 'DESC')
         ->with('Categories')
         ->skip($offset)

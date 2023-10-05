@@ -246,7 +246,7 @@ class PollController extends Controller
       $offset = ($page - 1) * $limit;
 
       $data = Poll::where('soft_delete', 0)
-        ->where('quiz.draft', $draft)
+        ->where('draft', $draft)
         ->orderBy('id_poll', 'DESC')
         ->with('Categories')
         ->skip($offset)
