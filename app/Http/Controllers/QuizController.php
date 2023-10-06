@@ -645,7 +645,8 @@ class QuizController extends Controller
         $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
             ->where('user_quiz.id_user', '=', $idUser);
         })->leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
-      ->where('quiz.soft_delete', 0);
+      ->where('quiz.soft_delete', 0)
+      ->where('quiz.draft', 0);
     
 
       if ($idCategories !== null) {

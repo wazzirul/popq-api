@@ -658,7 +658,8 @@ class PollController extends Controller
         $join->on('poll.id_poll', '=', 'user_poll.id_poll')
             ->where('user_poll.id_user', '=', $idUser);
         })->leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
-        ->where('poll.soft_delete', 0);
+        ->where('poll.soft_delete', 0)
+        ->where('poll.draft', 0);
 
         if ($idCategories !== null) {
           // Add a filter for id_categories if idCategories is not null
