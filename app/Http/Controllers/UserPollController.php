@@ -165,12 +165,15 @@ class UserPollController extends Controller
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
         <br> - id_user as a reference to the User Poll data that will be returned
+        <br> - id_poll as a reference to the User Poll data that will be returned
         <br> - limit as limit show data (default 10)
         <br> - page as page show data (default 1)",
    *          required=true,
    *          @OA\JsonContent(
    *              type="object",
    *              @OA\Property(property="id_user", type="string", example="1"),
+   *              @OA\Property(property="id_poll", type="string", example="1"),
+   *              @OA\Property(property="slug_poll", type="string", example=null),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *          )
@@ -197,11 +200,15 @@ class UserPollController extends Controller
   {
     $requestData = $request->only([
       'id_user',
+      'id_poll',
+      'slug_poll',
       'limit',
       'page',
     ]);
   
     $idUser = $requestData['id_user'] ?? null;
+    $idPoll = $requestData['id_poll'] ?? null;
+    $slugPoll = $requestData['slug_poll'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;;
   
@@ -213,9 +220,18 @@ class UserPollController extends Controller
     $offset = ($page - 1) * $limit;
 
     // Fetch paginated data
-    $query = UserPoll::where('id_user', $idUser)
-        ->where('soft_delete', 0)
+    $query = UserPoll::leftJoin('poll', 'poll.id_poll', '=', 'user_poll.id_poll')
+        ->where('user_poll.id_user', $idUser)
+        ->where('user_poll.soft_delete', 0)
         ->with('Poll.PollListChoice');
+
+    if($idPoll){
+      $query->where('user_poll.id_poll', $idPoll);
+    }
+
+    if($slugPoll){
+      $query->where('poll.slug', $slugPoll);
+    }
 
     $totalRecords = $query->count();
 
