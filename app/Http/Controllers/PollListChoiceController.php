@@ -245,8 +245,11 @@ class PollListChoiceController extends Controller
         // Check if the user already exists in the table
         // Return Created / Updated Poll Data with its Relation.
         $poll = Poll::where('id_poll', $idPoll)
-        ->with('Categories', 'PollListChoice')
+        ->with(['Categories', 'PollListChoice' => function ($query) {
+            $query->where('soft_delete', "0");
+        }])
         ->first();
+
 
         if (!$poll) {
           return ResultHelpers::errors('Poll not found.', 404, false);
