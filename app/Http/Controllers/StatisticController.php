@@ -490,8 +490,12 @@ class StatisticController extends Controller
         foreach ($categories as $category) {
             $categoryId = $category->id_categories;
             $topScore = number_format(UserQuiz::join('quiz', 'user_quiz.id_quiz', '=', 'quiz.id_quiz')
+                ->join('categories', 'quiz.id_categories', '=', 'categories.id_categories')
                 ->where('user_quiz.id_user', $idUser)
                 ->where('quiz.id_categories', $categoryId)
+                ->where('quiz.soft_delete', 0)
+                ->where('categories.soft_delete', 0)
+                ->where('user_quiz.status', 1)
                 ->max('user_quiz.result') / 10, 0) . '/10';
                 
             $topScores[$category->name_category] = [
