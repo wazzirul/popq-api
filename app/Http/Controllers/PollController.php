@@ -201,7 +201,7 @@ class PollController extends Controller
      *      description="Returns Poll data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-            <br> - draft as draft show data (default 0 / published) (1 = drafted poll)
+            <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
@@ -245,15 +245,28 @@ class PollController extends Controller
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
 
-      $data = Poll::where('soft_delete', 0)
-        ->where('draft', $draft)
-        ->orderBy('id_poll', 'DESC')
-        ->with('Categories')
-        ->skip($offset)
-        ->take($limit)
-        ->get();
-
-      $totalRecords = Poll::where('soft_delete', 0)->count();
+      // Initialize the query builder for the main data retrieval
+      $query = Poll::where('soft_delete', 0)
+          ->orderBy('id_poll', 'DESC')
+          ->with('Categories')
+          ->withCount('PollListChoice') // Load the total poll list choices count
+          ->skip($offset)
+          ->take($limit);
+  
+      // Initialize the query builder for the total records count
+      $totalRecordsQuery = Poll::where('soft_delete', 0);
+  
+      // Conditionally add the 'draft' where clause if draft is not 100
+      if ($draft != 100) {
+          $query->where('draft', $draft);
+          $totalRecordsQuery->where('draft', $draft);
+      }
+  
+      // Execute the query to retrieve data
+      $data = $query->get();
+  
+      // Execute the query to get the total records count
+      $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
   
       return ResultHelpers::success([

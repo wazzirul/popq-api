@@ -95,6 +95,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
+    Route::post('/quiz-question/create-edit-v2', [QuizQuestionsController::class, 'createEditV2'])->name('quiz-question--createEditV2');
 
     // Quiz List Choice
     Route::post('/quiz-list-choice/create-edit', [QuizListChoiceController::class, 'createEdit'])->name('quiz-question--createEdit');

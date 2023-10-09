@@ -202,7 +202,7 @@ class QuizController extends Controller
      *      description="Returns Quiz data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
-            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz)
+            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)",
      *          required=true,
@@ -246,15 +246,28 @@ class QuizController extends Controller
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
 
-      $data = Quiz::where('soft_delete', 0)
-        ->where('draft', $draft)
-        ->orderBy('id_quiz', 'DESC')
-        ->with('Categories')
-        ->skip($offset)
-        ->take($limit)
-        ->get();
-
-      $totalRecords = Quiz::where('soft_delete', 0)->count();
+      // Initialize the query builder for the main data retrieval
+      $query = Quiz::where('soft_delete', 0)
+          ->orderBy('id_quiz', 'DESC')
+          ->with('Categories')
+          ->withCount('quizQuestions') // Load the total quiz questions count
+          ->skip($offset)
+          ->take($limit);
+  
+      // Initialize the query builder for the total records count
+      $totalRecordsQuery = Quiz::where('soft_delete', 0);
+  
+      // Conditionally add the 'draft' where clause if draft is not 100
+      if ($draft != 100) {
+          $query->where('draft', $draft);
+          $totalRecordsQuery->where('draft', $draft);
+      }
+  
+      // Execute the query to retrieve data
+      $data = $query->get();
+  
+      // Execute the query to get the total records count
+      $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
   
       return ResultHelpers::success([
@@ -426,7 +439,7 @@ class QuizController extends Controller
         }
     
         // Retrieve the quiz questions for the quiz
-        $quizQuestions = QuizQuestions::where('id_quiz', $data->id_quiz)->get();
+        $quizQuestions = QuizQuestions::where('id_quiz', $data->id_quiz)->where('soft_delete', 0)->get();
 
         // Shuffle the quiz list choices for each quiz question
         $quizQuestions->each(function ($question) {

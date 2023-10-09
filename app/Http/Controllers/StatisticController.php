@@ -409,20 +409,46 @@ class StatisticController extends Controller
         })->where('status', 1)
         ->whereBetween('date_time', [$startDate, $endDate])
         ->count();
+
         // Count the number of polls polled this week for each id_poll
-        $pollCounts = UserPoll::whereHas('Poll', function ($query) use ($startDate, $endDate) {
+        $pollCountsThisWeek = UserPoll::whereHas('Poll', function ($query) use ($startDate, $endDate) {
             $query->where('soft_delete', 0);
         })
         ->whereBetween('date_time', [$startDate, $endDate])
         ->groupBy('id_poll')
         ->count();
 
+        $categoryCountsThisWeek = [];
+        foreach ($categories as $category) {
+            $categoryName = $category->name_category;
+    
+            $quizCountThisWeek = Quiz::where('id_categories', $category->id_categories)
+                ->where('soft_delete', 0)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+            $pollCountThisWeek = Poll::where('id_categories', $category->id_categories)
+                ->where('soft_delete', 0)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
+    
+            $categoryCountsThisWeek[$categoryName] = [
+                'id_categories' => $category->id_categories,
+                'name_category' => $category->name_category,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'color_hex' => $category->color_hex,
+                'total_quizzes_this_week' => $quizCountThisWeek,
+                'total_polls_this_week' => $pollCountThisWeek,
+            ];
+        }
+
         $data = [
             'category' => $categoryCounts,
+            'category_this_week' => $categoryCountsThisWeek,
             'total_all_quizzes' => $totalQuizzes,
             'total_completed_quizzes_this_week' => $totalCompletedQuizzesThisWeek,
             'total_all_polls' => $totalPolls,
-            'total_polls_this_week' => $pollCounts,
+            'total_polls_this_week' => $pollCountsThisWeek,
         ];
 
         return ResultHelpers::success($data, 200, true);

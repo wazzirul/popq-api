@@ -115,6 +115,131 @@ class QuizQuestionsController extends Controller
         return ResultHelpers::success($data, 200, true);
     }
 
+
+    //
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz-question/create-edit-v2",
+     *      operationId="createEditQuizQuestionV2",
+     *      tags={"Quiz Question"},
+     *      summary="Create / Edit Quiz Question Array Data",
+     *      description="Returns Quiz Question Array Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_quiz_questions </b> : null / empty if want to create data, fill the id number if want to update data
+               <br><b>id_quiz</b> : id quiz from table quiz
+               <br><b>number_question</b> : number of question
+               <br><b>question</b> : question of quiz
+               <br><b>duration</b> : duration of quiz by(seconds)
+               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="data", type="array", @OA\Items(
+     *                  
+     *              @OA\Property(property="id_quiz_questions", type="int", example="1"),
+     *              @OA\Property(property="id_quiz", type="int", example="1"),
+     *              @OA\Property(property="number_question", type="int", example="1"),
+     *              @OA\Property(property="question", type="string", example="What is the name of the creature that captures Luke Skywalker on Hoth?"),
+     *              @OA\Property(property="duration", type="int", example="30"),
+     *              @OA\Property(property="soft_delete", type="int", example="0"),
+     *              )),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function createEditV2(Request $request)
+    {
+        $requestData = $request->input('data', []);
+    
+        if (empty($requestData)) {
+            return ResultHelpers::errors('No data provided in the request', 400, false);
+        }
+
+        $storedData = [];
+        foreach ($requestData as $data) {
+            $idQuizQuestions = $data['id_quiz_questions'] ?? null;
+            $idQuiz = $data['id_quiz'] ?? null;
+            $numberQuestion = $data['number_question'] ?? null;
+            $question = $data['question'] ?? null;
+            $duration = $data['duration'] ?? null;
+            $softDelete = $data['soft_delete'] ?? 0;
+
+            $dataQuiz = Quiz::where('id_quiz', $idQuiz)->first();
+
+            if(!$dataQuiz){
+                return ResultHelpers::errors('Quiz Data Not Found from id_quiz inputed', 400, false);
+            }
+
+            if($idQuizQuestions === null){
+                
+                $existingData = QuizQuestions::where('id_quiz', $idQuiz)
+                  ->where('number_question',$numberQuestion)->first();
+                if ($existingData) {
+                  $idQuiz && $existingData->id_quiz = $idQuiz;
+                  $numberQuestion && $existingData->number_question = $numberQuestion;
+                  $question && $existingData->question = $question;
+                  $duration && $existingData->duration = $duration;
+                  if ($softDelete !== null) {
+                  $existingData->soft_delete = $softDelete;
+                  }
+                  $existingData->save();
+                  $storedData[] = $existingData;                  
+                }else{
+                  // Create a new user account
+                  $newData = new QuizQuestions();
+                  
+                  $idQuiz && $newData->id_quiz = $idQuiz;
+                  $numberQuestion && $newData->number_question = $numberQuestion;
+                  $question && $newData->question = $question;
+                  $duration && $newData->duration = $duration;
+                  if ($softDelete !== null) {
+                  $newData->soft_delete = $softDelete;
+                  }
+                  $newData->save();
+                  $storedData[] = $newData;
+                }
+            }else{
+                // Check if the user already exists in the table
+                $existingData = QuizQuestions::where('id_quiz_questions', $idQuizQuestions)->first();
+                if ($existingData) {
+                    $idQuiz && $existingData->id_quiz = $idQuiz;
+                    $numberQuestion && $existingData->number_question = $numberQuestion;
+                    $question && $existingData->question = $question;
+                    $duration && $existingData->duration = $duration;
+                    if ($softDelete !== null) {
+                    $existingData->soft_delete = $softDelete;
+                    }
+                    $existingData->save();
+                    $storedData[] = $existingData;
+                }else{
+                    return ResultHelpers::errors('Quiz Questions Data Not Found from id_quiz_questions inputed', 400, false);
+                }
+            }
+        }
+
+
+        return ResultHelpers::success($storedData, 200, true);
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Get(

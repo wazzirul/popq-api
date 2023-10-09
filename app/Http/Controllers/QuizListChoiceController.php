@@ -126,8 +126,8 @@ class QuizListChoiceController extends Controller
      *      path="/quiz-list-choice/create-edit-v2",
      *      operationId="createEditQuizListChoiceV2",
      *      tags={"Quiz List Choice"},
-     *      summary="Create / Edit Quiz List Choice Data",
-     *      description="Returns Quiz List Choice Data",
+     *      summary="Create / Edit Quiz List Choice Array Data",
+     *      description="Returns Quiz List Choice Array Data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
             <br><b>id_quiz_list_choice</b> : null / empty if you want to create data, fill the id number if you want to update data
