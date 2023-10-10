@@ -671,7 +671,7 @@ class QuizController extends Controller
 
       $data = $query->orderBy('quiz.id_quiz', 'DESC')
         ->with('Categories')
-        ->select('quiz.*','user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
+        ->select('quiz.*','user_quiz.id_user_quiz','user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
         ->skip($offset)
         ->take($limit)
         ->get();
