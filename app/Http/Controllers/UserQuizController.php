@@ -258,6 +258,7 @@ class UserQuizController extends Controller
    *              @OA\Property(property="id_user", type="string", example="1"),
    *              @OA\Property(property="id_user_quiz", type="string", example=null),
    *              @OA\Property(property="id_quiz", type="string", example=null),
+   *              @OA\Property(property="slug", type="string", example=null),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *          )
@@ -286,6 +287,7 @@ class UserQuizController extends Controller
       'id_user',
       'id_user_quiz',
       'id_quiz',
+      'slug',
       'limit',
       'page',
     ]);
@@ -293,6 +295,7 @@ class UserQuizController extends Controller
     $idUser = $requestData['id_user'] ?? null;
     $idUserQuiz = $requestData['id_user_quiz'] ?? null;
     $idQuiz = $requestData['id_quiz'] ?? null;
+    $slug = $requestData['slug'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
   
@@ -300,17 +303,21 @@ class UserQuizController extends Controller
     $offset = ($page - 1) * $limit;        
   
     // Fetch paginated data
-    $query = UserQuiz::where('soft_delete', 0)
+    $query = UserQuiz::leftJoin('quiz', 'quiz.id_quiz', '=', 'user_quiz.id_quiz')
+    ->where('user_quiz.soft_delete', 0)
     ->when($idUser, function ($query) use ($idUser) {
-        return $query->where('id_user', $idUser);
+        return $query->where('user_quiz.id_user', $idUser);
     })
     ->when($idUserQuiz, function ($query) use ($idUserQuiz) {
-        return $query->Where('id_user_quiz', $idUserQuiz);
+        return $query->Where('user_quiz.id_user_quiz', $idUserQuiz);
     })
     ->when($idQuiz, function ($query) use ($idQuiz) {
-        return $query->Where('id_quiz', $idQuiz);
+        return $query->Where('user_quiz.id_quiz', $idQuiz);
     })
-    ->with('UserQuizAnswer.QuizListChoice', 'Quiz.QuizQuestions.QuizListChoice');
+    ->when($slug, function ($query) use ($slug) {
+        return $query->Where('quiz.slug', $slug);
+    })
+    ->with('UserQuizAnswer.QuizListChoice');
 
 
     $totalRecords = $query->count();
