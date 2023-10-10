@@ -249,13 +249,15 @@ class UserQuizController extends Controller
    *          description="<b>Note:</b>
         <br> - id_user as a reference to the User Quiz data that will be returned
         <br> - id_user_quiz as a reference to the User Quiz data that will be returned
+        <br> - id_quiz as a reference to the User Quiz data that will be returned
         <br> - limit as limit show data (default 10)
         <br> - page as page show data (default 1)",
    *          required=true,
    *          @OA\JsonContent(
    *              type="object",
    *              @OA\Property(property="id_user", type="string", example="1"),
-   *              @OA\Property(property="id_user_quiz", type="string", example="1"),
+   *              @OA\Property(property="id_user_quiz", type="string", example=null),
+   *              @OA\Property(property="id_quiz", type="string", example=null),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *          )
@@ -283,12 +285,14 @@ class UserQuizController extends Controller
     $requestData = $request->only([
       'id_user',
       'id_user_quiz',
+      'id_quiz',
       'limit',
       'page',
     ]);
   
     $idUser = $requestData['id_user'] ?? null;
     $idUserQuiz = $requestData['id_user_quiz'] ?? null;
+    $idQuiz = $requestData['id_quiz'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
   
@@ -302,6 +306,9 @@ class UserQuizController extends Controller
     })
     ->when($idUserQuiz, function ($query) use ($idUserQuiz) {
         return $query->Where('id_user_quiz', $idUserQuiz);
+    })
+    ->when($idQuiz, function ($query) use ($idQuiz) {
+        return $query->Where('id_quiz', $idQuiz);
     })
     ->with('UserQuizAnswer.QuizListChoice', 'Quiz.QuizQuestions.QuizListChoice');
 
