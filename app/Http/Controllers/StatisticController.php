@@ -385,8 +385,8 @@ class StatisticController extends Controller
         foreach ($categories as $category) {
             $categoryName = $category->name_category;
 
-            $quizCount = Quiz::where('id_categories', $category->id_categories)->count();
-            $pollCount = Poll::where('id_categories', $category->id_categories)->count();
+            $quizCount = Quiz::where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
+            $pollCount = Poll::where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
 
             $categoryCounts[$categoryName] = [
                 'id_categories' => $category->id_categories,
@@ -422,14 +422,22 @@ class StatisticController extends Controller
         foreach ($categories as $category) {
             $categoryName = $category->name_category;
     
-            $quizCountThisWeek = Quiz::where('id_categories', $category->id_categories)
-                ->where('soft_delete', 0)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->count();
-            $pollCountThisWeek = Poll::where('id_categories', $category->id_categories)
-                ->where('soft_delete', 0)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->count();
+            $quizCountThisWeek = UserQuiz::leftJoin('quiz', 'user_quiz.id_quiz', '=', 'quiz.id_quiz')
+            ->where('quiz.id_categories', $category->id_categories)
+            ->where('quiz.soft_delete', 0)
+            ->where('user_quiz.soft_delete', 0)
+            ->where('user_quiz.status', 1)
+            ->whereBetween('user_quiz.date_time', [$startDate, $endDate])
+            ->groupBy('user_quiz.id_user_quiz')
+            ->count();
+            
+            $pollCountThisWeek = UserPoll::leftJoin('poll', 'user_poll.id_poll', '=', 'poll.id_poll')
+            ->where('poll.id_categories', $category->id_categories)
+            ->where('poll.soft_delete', 0)
+            ->where('user_poll.soft_delete', 0)
+            ->whereBetween('date_time', [$startDate, $endDate])
+            ->groupBy('poll.id_poll')
+            ->count();
     
             $categoryCountsThisWeek[$categoryName] = [
                 'id_categories' => $category->id_categories,
@@ -444,7 +452,7 @@ class StatisticController extends Controller
 
         $data = [
             'category' => $categoryCounts,
-            'category_this_week' => $categoryCountsThisWeek,
+            'category_submitted_this_week' => $categoryCountsThisWeek,
             'total_all_quizzes' => $totalQuizzes,
             'total_completed_quizzes_this_week' => $totalCompletedQuizzesThisWeek,
             'total_all_polls' => $totalPolls,
