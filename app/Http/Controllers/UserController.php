@@ -57,12 +57,15 @@ class UserController extends Controller
         $fbId = $requestData['fb_ids'] ?? null;
         $goId = $requestData['go_ids'] ?? null;
 
-        if (!$fbId && !$goId) {
+        if($fbId){
+            // Check if the user already exists in the table
+            $data = Users::where('fb_ids', $fbId)->first();
+        }else if($goId){
+            // Check if the user already exists in the table
+            $data = Users::where('go_ids', $goId)->first();
+        }else{
             return ResultHelpers::errors('Either fb_ids or go_ids must be provided.', 400, false);
         }
-
-        // Check if the user already exists in the table
-        $data = Users::where('fb_ids', $fbId)->orWhere('go_ids', $goId)->first();
         
         if (!$data) {
             // Create a new user account
