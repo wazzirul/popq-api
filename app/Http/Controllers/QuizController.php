@@ -34,11 +34,11 @@ class QuizController extends Controller
         $extension = end($mimeParts);
 
         // Generate a unique filename
-        $filename = 'icon_' . time() . '.' . $extension;
-
+        $filename = 'thumbnail_' . time() . '.' . $extension;
+  
         // Convert base64 to binary data and save it to a file
         $decodedData = base64_decode($base64Data);
-        $path = 'icons/' . $filename; // Set the desired directory within the public storage folder
+        $path = 'quiz_thumbnail/' . $filename; // Set the desired directory within the public storage folder
 
         // Save the file to the storage disk
         Storage::disk('public')->put($path, $decodedData);

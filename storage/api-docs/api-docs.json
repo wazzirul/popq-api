@@ -601,6 +601,50 @@
                 }
             }
         },
+        "/poll/importPoll": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Import Poll Data",
+                "description": "Returns Poll Data",
+                "operationId": "importPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                 <br><b>file_poll</b> : file excel of poll data that will be imported",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file_poll"
+                                ],
+                                "properties": {
+                                    "file_poll": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll-list-choice/create-edit": {
             "post": {
                 "tags": [

@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Imports;
+
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use App\Models\Poll;
+use App\Models\PollListChoice;
+use App\Models\Categories;
+use Illuminate\Support\Facades\Storage;
+
+
+class PollsImport implements ToModel, WithStartRow
+{
+  /**
+  * @param array $row
+  *
+  * @return \Illuminate\Database\Eloquent\Model|null
+  */
+  public function startRow(): int
+  {
+      return 2;
+  }
+  
+  private function uploadImageFromBase64($base64Icon)
+  {
+      // Extract the MIME type and base64 data from the input
+      list($mime, $base64Data) = explode(';', $base64Icon);
+      list(, $base64Data) = explode(',', $base64Data);
+
+      // Determine the file extension based on the MIME type
+      $mimeParts = explode('/', $mime);
+      $extension = end($mimeParts);
+
+      // Generate a unique filename
+      $filename = 'thumbnail_' . time() . '.' . $extension;
+
+      // Convert base64 to binary data and save it to a file
+      $decodedData = base64_decode($base64Data);
+      $path = 'poll_thumbnail/' . $filename; // Set the desired directory within the public storage folder
+
+      // Save the file to the storage disk
+      Storage::disk('public')->put($path, $decodedData);
+
+      // Return the path to the uploaded file
+      return $path;
+  }
+
+  public function model(array $row)
+  {
+    $categories = Categories::where('name_category', $row[3])->first();
+
+    if (!$categories) {
+        $categories = new Categories;
+        $categories->name_category = $row[3];
+        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+        $categories->color = "Transparent";
+        $categories->color_hex = "#00000000";
+        $categories->save();
+    }
+    
+    $thumbnailPoll = $row[5] ?? null;
+    $thumbnailUrl = null;
+    if ($thumbnailPoll) {
+      if (filter_var($thumbnailPoll, FILTER_VALIDATE_URL)) {
+        // Thumbnail is a URL
+        $urlParts = parse_url($thumbnailPoll);
+        $pathInfo = pathinfo($urlParts['path']);
+        $extension = isset($pathInfo['extension']) ? $pathInfo['extension'] : 'png'; // Default to jpeg if no extension is found
+        
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+            $downloadedData = file_get_contents($thumbnailPoll);
+            if ($downloadedData !== false) {
+                // Upload the downloaded image
+                $thumbnailPath = $this->uploadImageFromBase64('data:image/' . $extension . ';base64,' . base64_encode($downloadedData));
+                $thumbnailUrl = Storage::disk('public')->url($thumbnailPath);
+            }
+        } else {
+            // Handle unsupported file format
+            return ResultHelpers::errors('Unsupported file format for thumbnail', 400, false);
+        }
+      }    
+    } else {
+        $thumbnailPath = null;
+    }
+
+    $idCategories = $categories->id_categories;
+    $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
+    $titlePoll = $row[4];
+    $subtitlePoll = $row[2];
+    $descriptionPoll = $row[1];
+    
+    $poll = Poll::where('slug', $slugPoll)->orWhere('title', $titlePoll)->first();
+    if(!$poll){
+      $poll = new Poll;
+    }
+      
+    $poll->id_categories = $idCategories;
+    $poll->title = $titlePoll;
+    $poll->slug = $slugPoll;
+    $poll->subtitle = $subtitlePoll;
+    $poll->thumbnail = $thumbnailUrl;
+    $poll->description = $descriptionPoll;
+    $poll->today_status = 0;
+    $poll->draft = 0;
+    $poll->soft_delete = 0;
+    $poll->save();
+    
+    if (!empty($row[6])) {
+      PollListChoice::create([
+        'id_poll' => $poll->id_poll,
+        'poll_choice' => $row[6],
+      ]);
+    }
+
+    if (!empty($row[7])) {
+      PollListChoice::create([
+        'id_poll' => $poll->id_poll,
+        'poll_choice' => $row[7],
+      ]);
+    }
+
+    if (!empty($row[8])) {
+      PollListChoice::create([
+        'id_poll' => $poll->id_poll,
+        'poll_choice' => $row[8],
+      ]);
+    }
+
+    if (!empty($row[9])) {
+      PollListChoice::create([
+        'id_poll' => $poll->id_poll,
+        'poll_choice' => $row[9],
+      ]);
+    }
+
+    return $poll;
+  }
+}

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use Maatwebsite\Excel\Facades\Excel;
+
+use App\Imports\PollsImport;
 
 use App\Models\Categories;
 use App\Models\Poll;
@@ -32,11 +35,11 @@ class PollController extends Controller
         $extension = end($mimeParts);
 
         // Generate a unique filename
-        $filename = 'icon_' . time() . '.' . $extension;
-
+        $filename = 'thumbnail_' . time() . '.' . $extension;
+  
         // Convert base64 to binary data and save it to a file
         $decodedData = base64_decode($base64Data);
-        $path = 'icons/' . $filename; // Set the desired directory within the public storage folder
+        $path = 'poll_thumbnail/' . $filename; // Set the desired directory within the public storage folder
 
         // Save the file to the storage disk
         Storage::disk('public')->put($path, $decodedData);
@@ -696,4 +699,67 @@ class PollController extends Controller
         'total_pages' => $totalPages,
       ], 200, true);
     }   
+
+
+
+    
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/importPoll",
+     *      operationId="importPoll",
+     *      tags={"Poll"},
+     *      summary="Import Poll Data",
+     *      description="Returns Poll Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                 <br><b>file_poll</b> : file excel of poll data that will be imported",
+    *          required=true,
+    *          @OA\MediaType(
+    *              mediaType="multipart/form-data",
+    *              @OA\Schema(
+    *                  required={"file_poll"},
+    *                  @OA\Property(
+    *                      property="file_poll",
+    *                      type="string",
+    *                      format="binary",
+    *                  ),
+    *              )
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *       ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function importPoll(Request $request){
+      $requestData = $request->only([
+        'file_poll',
+      ]);
+
+      $this->validate($request, [
+        'file_poll' => 'required|mimes:xlsx',
+      ]);
+
+      $filePoll = $requestData['file_poll'] ?? null;
+
+      Excel::import(new PollsImport, $filePoll);
+
+      return ResultHelpers::success("Success Importing Data", 200, true);
+    }
 }
