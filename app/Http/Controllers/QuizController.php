@@ -287,12 +287,16 @@ class QuizController extends Controller
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
                 <br> - id_categories as a reference to the categories quiz data that will be returned
-                <br> - slug_categories as a reference to the categories quiz data that will be returned",
+                <br> - slug_categories as a reference to the categories quiz data that will be returned
+                <br> - draft as a reference to the categories poll data that will be returned, use (2) for all published and draft, default (0) for published polls
+                <br> - limit as limit show data (default 10)
+                <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
      *              @OA\Property(property="slug_categories", type="string", example=null),
+     *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -320,12 +324,14 @@ class QuizController extends Controller
       $requestData = $request->only([
         'id_categories',
         'slug_categories',
+        'draft',
         'limit',
         'page',
         ]);
 
       $idCategories = $requestData['id_categories'] ?? null;
       $slugCategories = $requestData['slug_categories'] ?? null;
+      $draft = $requestData['draft'] ?? 0; // Default draft is 0 / published
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -342,8 +348,14 @@ class QuizController extends Controller
       if ($idCategories !== null) {
         // Add a filter for id_categories if idCategories is not null
         $query->where('quiz.id_categories', $idCategories);
-      }elseif ($slugCategories !==null) {
+      }
+      
+      if ($slugCategories !==null) {
         $query->where('categories.slug', $slugCategories);
+      }
+      
+      if ($draft !== 2){
+        $query->where('quiz.draft', $draft);
       }
 
       // Check if the user already exists in the table

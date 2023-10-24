@@ -410,7 +410,7 @@
                 "description": "Returns Poll Data based on id_categories or slug",
                 "operationId": "showByCategoriesPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories poll data that will be returned\n                <br> - slug_categories as a reference to the categories poll data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories poll data that will be returned\n                <br> - slug_categories as a reference to the categories poll data that will be returned\n                <br> - draft as a reference to the categories poll data that will be returned, use (2) for all published and draft, default (0) for published polls\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -423,6 +423,10 @@
                                     "slug_categories": {
                                         "type": "string",
                                         "example": null
+                                    },
+                                    "draft": {
+                                        "type": "integer",
+                                        "example": "0"
                                     },
                                     "limit": {
                                         "type": "integer",
@@ -1021,7 +1025,7 @@
                 "description": "Returns Quiz Data based on id_categories and slug_categories",
                 "operationId": "showByCategoriesQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned\n                <br> - slug_categories as a reference to the categories quiz data that will be returned",
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned\n                <br> - slug_categories as a reference to the categories quiz data that will be returned\n                <br> - draft as a reference to the categories poll data that will be returned, use (2) for all published and draft, default (0) for published polls\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1034,6 +1038,10 @@
                                     "slug_categories": {
                                         "type": "string",
                                         "example": null
+                                    },
+                                    "draft": {
+                                        "type": "integer",
+                                        "example": "0"
                                     },
                                     "limit": {
                                         "type": "integer",

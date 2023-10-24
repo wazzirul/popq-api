@@ -289,12 +289,16 @@ class PollController extends Controller
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
                 <br> - id_categories as a reference to the categories poll data that will be returned
-                <br> - slug_categories as a reference to the categories poll data that will be returned",
+                <br> - slug_categories as a reference to the categories poll data that will be returned
+                <br> - draft as a reference to the categories poll data that will be returned, use (2) for all published and draft, default (0) for published polls
+                <br> - limit as limit show data (default 10)
+                <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
      *              @OA\Property(property="slug_categories", type="string", example=null),
+     *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -322,10 +326,12 @@ class PollController extends Controller
       $requestData = $request->only([
         'id_categories', 
         'slug_categories',
+        'draft',
         'limit',
         'page',
       ]);
 
+      $draft = $requestData['draft'] ?? 0; // Default draft is 0 / published
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -345,9 +351,16 @@ class PollController extends Controller
       if ($idCategories !== null) {
         // Add a filter for id_categories if idCategories is not null
         $query->where('poll.id_categories', $idCategories);
-      }elseif ($slugCategories !== null) {
+      }
+      
+      if ($slugCategories !== null) {
         $query->where('categories.slug', $slugCategories);
       }
+      
+      if ($draft !== 2){
+        $query->where('poll.draft', $draft);
+      }
+      
 
       // Check if the user already exists in the table
       // Return Created / Updated Quiz Data with its Relation.
