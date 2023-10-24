@@ -365,6 +365,7 @@ class PollController extends Controller
       // Check if the user already exists in the table
       // Return Created / Updated Quiz Data with its Relation.
       $data = $query->with('Categories')
+        ->orderBy('poll.id_poll', 'DESC')
         ->skip($offset)
         ->take($limit)
         ->get([

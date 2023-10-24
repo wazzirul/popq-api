@@ -361,6 +361,7 @@ class QuizController extends Controller
       // Check if the user already exists in the table
       // Return Created / Updated Quiz Data with its Relation.
       $data = $query->with('Categories')
+      ->orderBy('quiz.id_quiz', 'DESC')
         ->skip($offset)
         ->take($limit)
         ->get([
