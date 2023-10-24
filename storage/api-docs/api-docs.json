@@ -230,6 +230,51 @@
                 }
             }
         },
+        "/categories/showByID": {
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Show categories by id or slug",
+                "description": "Returns categories data",
+                "operationId": "showCategoriesByID",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_categories</b> : id of category\n               <br><b>slug_categories</b> : slug of category",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll/create-edit": {
             "post": {
                 "tags": [

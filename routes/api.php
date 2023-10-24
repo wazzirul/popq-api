@@ -31,6 +31,7 @@ Route::post('/user/login', [UserController::class, 'login'])->name('users--Login
 
 // Categories
 Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
+Route::post('/categories/showByID', [CategoriesController::class, 'showByID'])->name('categories--showByID');
 
 // Quiz
 Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');

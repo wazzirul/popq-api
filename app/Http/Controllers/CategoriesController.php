@@ -195,4 +195,67 @@ class CategoriesController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/categories/showByID",
+     *      operationId="showCategoriesByID",
+     *      tags={"Categories"},
+     *      summary="Show categories by id or slug",
+     *      description="Returns categories data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_categories</b> : id of category
+               <br><b>slug_categories</b> : slug of category",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_categories", type="int", example="1"),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showByID(Request $request)
+    {   
+        
+        $requestData = $request->only([
+            'id_categories',
+            'slug_categories',
+        ]);
+
+        $idCategories = $requestData['id_categories'] ?? null;
+        $slugCategories = $requestData['slug_categories'] ?? null;
+
+        if($idCategories){
+            $data = Categories::where('soft_delete', 0)
+                ->where('id_categories', $idCategories)
+                ->first();            
+        }elseif($slugCategories){
+            $data = Categories::where('soft_delete', 0)
+                ->where('slug', $slugCategories)
+                ->first();
+        }else{
+            return ResultHelpers::errors('Categories Data Not Found from id_categories or slug inputed', 400, false);            
+        }
+
+        return ResultHelpers::success($data, 200, true);
+    }
 }
