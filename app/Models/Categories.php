@@ -9,7 +9,7 @@ class Categories extends Model
 {
     protected $table = 'categories';
     protected $primaryKey = 'id_categories';
-    protected $fillable = ['id_categories','name_category','slug','icon','soft_delete'];
+    protected $fillable = ['id_categories','name_category','slug','icon','color','color_hex','soft_delete'];
 
     public function Quiz(){
         return $this->hasMany(Quiz::class,'id_categories','id_categories');

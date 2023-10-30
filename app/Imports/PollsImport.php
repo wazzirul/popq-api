@@ -5,9 +5,13 @@ namespace App\Imports;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+
+use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\PollListChoice;
-use App\Models\Categories;
+use App\Models\Quiz;
+use App\Models\QuizListChoice;
+use App\Models\QuizQuestions;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -22,7 +26,7 @@ class PollsImport implements ToModel, WithStartRow
   {
       return 2;
   }
-  
+
   private function uploadImageFromBase64($base64Icon)
   {
       // Extract the MIME type and base64 data from the input
@@ -38,7 +42,7 @@ class PollsImport implements ToModel, WithStartRow
 
       // Convert base64 to binary data and save it to a file
       $decodedData = base64_decode($base64Data);
-      $path = 'poll_thumbnail/' . $filename; // Set the desired directory within the public storage folder
+      $path = 'images/' . $filename; // Set the desired directory within the public storage folder
 
       // Save the file to the storage disk
       Storage::disk('public')->put($path, $decodedData);
@@ -55,7 +59,6 @@ class PollsImport implements ToModel, WithStartRow
         $categories = new Categories;
         $categories->name_category = $row[3];
         $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
-        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
         $categories->color = "Transparent";
         $categories->color_hex = "#00000000";
         $categories->save();
@@ -63,6 +66,7 @@ class PollsImport implements ToModel, WithStartRow
     
     $thumbnailPoll = $row[5] ?? null;
     $thumbnailUrl = null;
+    $imagesIdPoll = null;
     if ($thumbnailPoll) {
       if (filter_var($thumbnailPoll, FILTER_VALIDATE_URL)) {
         // Thumbnail is a URL
@@ -81,7 +85,9 @@ class PollsImport implements ToModel, WithStartRow
             // Handle unsupported file format
             return ResultHelpers::errors('Unsupported file format for thumbnail', 400, false);
         }
-      }    
+      }else{
+        $imagesIdPoll = $row[5];
+      } 
     } else {
         $thumbnailPath = null;
     }
@@ -89,6 +95,7 @@ class PollsImport implements ToModel, WithStartRow
     $idCategories = $categories->id_categories;
     $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
     $titlePoll = $row[4];
+    $topicPoll = $row[0];
     $subtitlePoll = $row[2];
     $descriptionPoll = $row[1];
     
@@ -98,9 +105,11 @@ class PollsImport implements ToModel, WithStartRow
     }
       
     $poll->id_categories = $idCategories;
+    $poll->topic = $topicPoll;
     $poll->title = $titlePoll;
     $poll->slug = $slugPoll;
     $poll->subtitle = $subtitlePoll;
+    $poll->images_id = $imagesIdPoll;
     $poll->thumbnail = $thumbnailUrl;
     $poll->description = $descriptionPoll;
     $poll->today_status = 0;

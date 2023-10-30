@@ -14,6 +14,7 @@ use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
 use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
+use App\Http\Controllers\ImportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -107,6 +108,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/poll/importPoll', [PollController::class, 'importPoll'])->name('poll--importPoll');
     Route::post('/poll/importImagesPoll', [PollController::class, 'importImagesPoll'])->name('poll--importImagesPoll');
     Route::post('/poll/showUserLoginPoll', [PollController::class, 'showUserLoginPoll'])->name('poll--showUserLoginPoll');
+
+    // Imports
+    Route::post('/import/importTriviaPoll', [ImportController::class, 'importTriviaPoll'])->name('import--importTriviaPoll');
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');

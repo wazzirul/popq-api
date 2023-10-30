@@ -275,6 +275,50 @@
                 }
             }
         },
+        "/import/importTriviaPoll": {
+            "post": {
+                "tags": [
+                    "Import"
+                ],
+                "summary": "import Trivia & Poll Data",
+                "description": "route / url for import trivia & poll data",
+                "operationId": "importTriviaPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                 <br><b>file_import</b> : file excel of trivia & poll data that will be imported",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file_import"
+                                ],
+                                "properties": {
+                                    "file_import": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll/create-edit": {
             "post": {
                 "tags": [
