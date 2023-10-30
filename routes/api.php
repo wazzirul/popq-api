@@ -105,6 +105,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Poll
     Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
     Route::post('/poll/importPoll', [PollController::class, 'importPoll'])->name('poll--importPoll');
+    Route::post('/poll/importImagesPoll', [PollController::class, 'importImagesPoll'])->name('poll--importImagesPoll');
     Route::post('/poll/showUserLoginPoll', [PollController::class, 'showUserLoginPoll'])->name('poll--showUserLoginPoll');
 
     // Poll List Choice

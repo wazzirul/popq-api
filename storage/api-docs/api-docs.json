@@ -702,6 +702,50 @@
                 }
             }
         },
+        "/poll/importImagesPoll": {
+            "post": {
+                "tags": [
+                    "Poll"
+                ],
+                "summary": "Import Images Poll Data",
+                "description": "Returns Images Poll Data",
+                "operationId": "importImagesPoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                 <br><b>zip_file</b> : file zip of images with names of images_id references for images poll that will be imported",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "zip_file"
+                                ],
+                                "properties": {
+                                    "zip_file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll-list-choice/create-edit": {
             "post": {
                 "tags": [
