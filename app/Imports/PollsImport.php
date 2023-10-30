@@ -4,7 +4,6 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 use App\Models\Categories;
 use App\Models\Poll;
@@ -53,15 +52,19 @@ class PollsImport implements ToModel, WithStartRow
 
   public function model(array $row)
   {
-    $categories = Categories::where('name_category', $row[3])->first();
-
-    if (!$categories) {
-        $categories = new Categories;
-        $categories->name_category = $row[3];
-        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
-        $categories->color = "Transparent";
-        $categories->color_hex = "#00000000";
-        $categories->save();
+    if(!empty($row[3])){
+        $categories = Categories::where('name_category', $row[3])->first();
+    
+        if (!$categories) {
+            $categories = new Categories;
+            $categories->name_category = $row[3]; // Set the name_category from the Excel data
+            $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+            $categories->color = "Transparent";
+            $categories->color_hex = "#00000000";
+            $categories->save();
+        }
+        
+        $idCategories = $categories->id_categories;
     }
     
     $thumbnailPoll = $row[5] ?? null;
@@ -91,60 +94,58 @@ class PollsImport implements ToModel, WithStartRow
     } else {
         $thumbnailPath = null;
     }
-
-    $idCategories = $categories->id_categories;
-    $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
-    $titlePoll = $row[4];
-    $topicPoll = $row[0];
-    $subtitlePoll = $row[2];
-    $descriptionPoll = $row[1];
     
-    $poll = Poll::where('slug', $slugPoll)->orWhere('title', $titlePoll)->first();
-    if(!$poll){
-      $poll = new Poll;
-    }
-      
-    $poll->id_categories = $idCategories;
-    $poll->topic = $topicPoll;
-    $poll->title = $titlePoll;
-    $poll->slug = $slugPoll;
-    $poll->subtitle = $subtitlePoll;
-    $poll->images_id = $imagesIdPoll;
-    $poll->thumbnail = $thumbnailUrl;
-    $poll->description = $descriptionPoll;
-    $poll->today_status = 0;
-    $poll->draft = 0;
-    $poll->soft_delete = 0;
-    $poll->save();
+    if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
+        $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
+        $titlePoll = $row[4];
+        $topicPoll = $row[0];
+        $subtitlePoll = $row[2];
+        $descriptionPoll = $row[1];
+        $poll = Poll::where('slug', $slugPoll)->orWhere('title', $titlePoll)->first();
+        if(!$poll){
+        $poll = new Poll;
+        }
+
+        $poll->id_categories = $idCategories;
+        $poll->topic = $topicPoll;
+        $poll->title = $titlePoll;
+        $poll->slug = $slugPoll;
+        $poll->subtitle = $subtitlePoll;
+        $poll->images_id = $imagesIdPoll;
+        $poll->thumbnail = $thumbnailUrl;
+        $poll->description = $descriptionPoll;
+        $poll->today_status = 0;
+        $poll->draft = 0;
+        $poll->soft_delete = 0;
+        $poll->save();
+        
+        if (!empty($row[6])) {
+          PollListChoice::create([
+            'id_poll' => $poll->id_poll,
+            'poll_choice' => $row[6],
+          ]);
+        }
     
-    if (!empty($row[6])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[6],
-      ]);
+        if (!empty($row[7])) {
+          PollListChoice::create([
+            'id_poll' => $poll->id_poll,
+            'poll_choice' => $row[7],
+          ]);
+        }
+    
+        if (!empty($row[8])) {
+          PollListChoice::create([
+            'id_poll' => $poll->id_poll,
+            'poll_choice' => $row[8],
+          ]);
+        }
+    
+        if (!empty($row[9])) {
+          PollListChoice::create([
+            'id_poll' => $poll->id_poll,
+            'poll_choice' => $row[9],
+          ]);
+        }
     }
-
-    if (!empty($row[7])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[7],
-      ]);
-    }
-
-    if (!empty($row[8])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[8],
-      ]);
-    }
-
-    if (!empty($row[9])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[9],
-      ]);
-    }
-
-    return $poll;
   }
 }
