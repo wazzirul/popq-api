@@ -61,9 +61,11 @@ class PollController extends Controller
      *          description="<b>Note:</b>
                <br><b>id_poll</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
+               <br><b>topic</b> : topic quiz
                <br><b>title</b> : title poll
                <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle poll
+               <br><b>images_id</b> : images_id for importing process (nullable)
                <br><b>thumbnail</b> : must be base64 string
                <br><b>description</b> : description poll
                <br><b>today_status</b> : today_status poll for todays trivia (default 0 = false, 1 = true)
@@ -77,9 +79,11 @@ class PollController extends Controller
      *              type="object",
      *              @OA\Property(property="id_poll", type="int", example="1"),
      *              @OA\Property(property="id_categories", type="int", example="1"),
+     *              @OA\Property(property="topic", type="string", example="Premier League Players"),
      *              @OA\Property(property="title", type="string", example="Who is your favorite player in the Premier League?"),
      *              @OA\Property(property="slug", type="string", example="slug-poll"),
      *              @OA\Property(property="subtitle", type="string", example="Football"),
+     *              @OA\Property(property="images_id", type="string", example=null),
      *              @OA\Property(property="thumbnail", type="string", example="base_64string"),
      *              @OA\Property(property="description", type="string", example="Premier League"),
      *              @OA\Property(property="today_status", type="int", example="0"),
@@ -110,9 +114,11 @@ class PollController extends Controller
       $requestData = $request->only([
         'id_poll', 
         'id_categories',
+        'topic',
         'title', 
         'slug',
         'subtitle', 
+        'images_id',
         'thumbnail',
         'description',
         'today_status',
@@ -122,9 +128,11 @@ class PollController extends Controller
 
       $idPoll = $requestData['id_poll'] ?? null;
       $idCategories = $requestData['id_categories'] ?? null;
+      $topicPoll = $requestData['topic'] ?? null;
       $titlePoll = $requestData['title'] ?? null;
       $slugPoll = $requestData['slug'] ?? null;
       $subtitlePoll = $requestData['subtitle'] ?? null;
+      $imagesIdPoll = $requestData['images_id'] ?? null;
       $thumbnailPoll = $requestData['thumbnail'] ?? null;
       $descriptionPoll = $requestData['description'] ?? "0";
       $todayStatusPoll = $requestData['today_status'] ?? "0";
@@ -174,9 +182,11 @@ class PollController extends Controller
       }
       
       $idCategories && $data->id_categories = $idCategories;
+      $topicPoll && $data->topic = $topicPoll;
       $titlePoll && $data->title = $titlePoll;
       $slugPoll && $data->slug = $slugPoll;
       $subtitlePoll && $data->subtitle = $subtitlePoll;
+      $imagesIdPoll && $data->images_id = $imagesIdPoll;
       $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
       $descriptionPoll && $data->description = $descriptionPoll;
       if ($todayStatusPoll !== null) {
@@ -371,9 +381,11 @@ class PollController extends Controller
         ->get([
           'poll.id_poll',
           'poll.id_categories',
+          'poll.topic',
           'poll.title',
           'poll.slug',
           'poll.subtitle',
+          'poll.images_id',
           'poll.thumbnail',
           'poll.description',
           'poll.today_status',

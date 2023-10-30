@@ -60,9 +60,11 @@ class QuizController extends Controller
      *          description="<b>Note:</b>
                <br><b>id_quiz</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
+               <br><b>topic</b> : topic quiz
                <br><b>title</b> : title quiz
                <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle quiz
+               <br><b>images_id</b> : images_id for importing process (nullable)
                <br><b>thumbnail</b> : must be base64 string
                <br><b>description</b> : description quiz
                <br><b>today_status</b> : today_status quiz for todays trivia (default 0 = false, 1 = true)
@@ -76,9 +78,11 @@ class QuizController extends Controller
      *              type="object",
      *              @OA\Property(property="id_quiz", type="int", example="1"),
      *              @OA\Property(property="id_categories", type="int", example="1"),
-     *              @OA\Property(property="title", type="string", example="Which scene in The Empire Strikes Back best showcases Luke's growth as a character?"),
+     *              @OA\Property(property="topic", type="string", example="Obi-wan Kenobi"),
+     *              @OA\Property(property="title", type="string", example="Obi-wan Kenobi"),
      *              @OA\Property(property="slug", type="string", example="slug-quiz"),
      *              @OA\Property(property="subtitle", type="string", example="Star Wars"),
+     *              @OA\Property(property="images_id", type="string", example=null),
      *              @OA\Property(property="thumbnail", type="string", example="base_64string"),
      *              @OA\Property(property="description", type="string", example="The Last Jedi"),
      *              @OA\Property(property="today_status", type="int", example="0"),
@@ -109,9 +113,11 @@ class QuizController extends Controller
         $requestData = $request->only([
             'id_quiz', 
             'id_categories', 
+            'topic',
             'title', 
             'slug',
             'subtitle',
+            'images_id',
             'thumbnail',
             'description',
             'today_status',
@@ -121,9 +127,11 @@ class QuizController extends Controller
 
         $idQuiz = $requestData['id_quiz'] ?? null;
         $idCategories = $requestData['id_categories'] ?? null;
+        $topicQuiz = $requestData['topic'] ?? null;
         $titleQuiz = $requestData['title'] ?? null;
         $slugQuiz = $requestData['slug'] ?? null;
         $subtitleQuiz = $requestData['subtitle'] ?? null;
+        $imagesIdQuiz = $requestData['images_id'] ?? null;
         $thumbnailQuiz = $requestData['thumbnail'] ?? null;
         $descriptionQuiz = $requestData['description'] ?? 0;
         $todayStatusQuiz = $requestData['today_status'] ?? 0;
@@ -173,9 +181,11 @@ class QuizController extends Controller
         }
             
         $idCategories && $data->id_categories = $idCategories;
+        $topicQuiz && $data->topic = $topicQuiz;
         $titleQuiz && $data->title = $titleQuiz;
         $slugQuiz && $data->slug = $slugQuiz;
         $subtitleQuiz && $data->subtitle = $subtitleQuiz;
+        $imagesIdQuiz && $data->images_id = $imagesIdQuiz;
         $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;
         if ($todayStatusQuiz !== null) {
@@ -367,9 +377,11 @@ class QuizController extends Controller
         ->get([
           'quiz.id_quiz',
           'quiz.id_categories',
+          'quiz.topic',
           'quiz.title',
           'quiz.slug',
           'quiz.subtitle',
+          'quiz.images_id',
           'quiz.thumbnail',
           'quiz.description',
           'quiz.today_status',
