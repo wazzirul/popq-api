@@ -54,15 +54,19 @@ class TriviaImport implements ToModel, WithStartRow
 
   public function model(array $row)
   {
-    $categories = Categories::where('name_category', $row[3])->first();
-
-    if (!$categories) {
-        $categories = new Categories;
-        $categories->name_category = $row[3];
-        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
-        $categories->color = "Transparent";
-        $categories->color_hex = "#00000000";
-        $categories->save();
+    if(!empty($row[3])){
+      $categories = Categories::where('name_category', $row[3])->first();
+  
+      if (!$categories) {
+          $categories = new Categories;
+          $categories->name_category = $row[3]; // Set the name_category from the Excel data
+          $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+          $categories->color = "Transparent";
+          $categories->color_hex = "#00000000";
+          $categories->save();
+      }
+      
+      $idCategories = $categories->id_categories;
     }
     
     $thumbnailQuiz = $row[5] ?? null;
@@ -92,109 +96,109 @@ class TriviaImport implements ToModel, WithStartRow
     } else {
         $thumbnailPath = null;
     }
-
-    $idCategories = $categories->id_categories;
-    $slugQuiz = strtolower(str_replace(' ', '-', $row[0]));
-    $titleQuiz = $row[0];
-    $topicQuiz = $row[0];
-    $subtitleQuiz = $row[2];
-    $descriptionQuiz = $row[1];
-    $questionQuiz = $row[4];
-    $correctAnswer = $row[6];
-    $incorrectAnswerOne = $row[7];
-    $incorrectAnswerTwo = $row[8];
-    $incorrectAnswerThree = $row[9];
     
-    $quiz = Quiz::where('slug', $slugQuiz)->orWhere('title', $titleQuiz)->first();
-    if(!$quiz){
-      $quiz = new Quiz;
-    }
+    if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
+      $idCategories = $categories->id_categories;
+      $slugQuiz = strtolower(str_replace(' ', '-', $row[0]));
+      $titleQuiz = $row[0];
+      $topicQuiz = $row[0];
+      $subtitleQuiz = $row[2];
+      $descriptionQuiz = $row[1];
+      $questionQuiz = $row[4];
+      $correctAnswer = $row[6];
+      $incorrectAnswerOne = $row[7];
+      $incorrectAnswerTwo = $row[8];
+      $incorrectAnswerThree = $row[9];
       
-    $quiz->id_categories = $idCategories;
-    $quiz->topic = $topicQuiz;
-    $quiz->title = $titleQuiz;
-    $quiz->slug = $slugQuiz;
-    $quiz->subtitle = $subtitleQuiz;
-    $quiz->images_id = $imagesIdQuiz;
-    $quiz->thumbnail = $thumbnailUrl;
-    $quiz->description = $descriptionQuiz;
-    $quiz->today_status = 0;
-    $quiz->draft = 0;
-    $quiz->soft_delete = 0;
-    $quiz->save();
-    
-    
-    if (!empty($row[4])) {
-        $quizQuestions = QuizQuestions::where('question', $questionQuiz)->first();
-        if(!$quizQuestions){
-          $quizQuestions = new QuizQuestions;
-        }
-    
-        $quizQuestions->id_quiz = $quiz->id_quiz;
-        $quizQuestions->number_question = null;
-        $quizQuestions->question = $questionQuiz;
-        $quizQuestions->duration = 15;
-        $quizQuestions->soft_delete = 0;
-        $quizQuestions->save();
-    }
+      $quiz = Quiz::where('slug', $slugQuiz)->orWhere('title', $titleQuiz)->first();
+      if(!$quiz){
+        $quiz = new Quiz;
+      }
+        
+      $quiz->id_categories = $idCategories;
+      $quiz->topic = $topicQuiz;
+      $quiz->title = $titleQuiz;
+      $quiz->slug = $slugQuiz;
+      $quiz->subtitle = $subtitleQuiz;
+      $quiz->images_id = $imagesIdQuiz;
+      $quiz->thumbnail = $thumbnailUrl;
+      $quiz->description = $descriptionQuiz;
+      $quiz->today_status = 0;
+      $quiz->draft = 0;
+      $quiz->soft_delete = 0;
+      $quiz->save();
+      
+      
+      if (!empty($row[4])) {
+          $quizQuestions = QuizQuestions::where('question', $questionQuiz)->first();
+          if(!$quizQuestions){
+            $quizQuestions = new QuizQuestions;
+          }
+      
+          $quizQuestions->id_quiz = $quiz->id_quiz;
+          $quizQuestions->number_question = null;
+          $quizQuestions->question = $questionQuiz;
+          $quizQuestions->duration = 15;
+          $quizQuestions->soft_delete = 0;
+          $quizQuestions->save();
+      }
 
-    
-    if ($quizQuestions && !empty($row[6])) {
-        $quizListChoiceCorrect = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
-        if(!$quizListChoiceCorrect){
-          $quizListChoiceCorrect = new QuizListChoice;
-        }
-        
-        $quizListChoiceCorrect->id_quiz = $quiz->id_quiz;
-        $quizListChoiceCorrect->id_quiz_questions = $quizQuestions->id_quiz_questions;
-        $quizListChoiceCorrect->answer = $correctAnswer;
-        $quizListChoiceCorrect->correct = 1;
-        $quizListChoiceCorrect->soft_delete = 0;
-        $quizListChoiceCorrect->save();
+      
+      if ($quizQuestions && !empty($row[6])) {
+          $quizListChoiceCorrect = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+          if(!$quizListChoiceCorrect){
+            $quizListChoiceCorrect = new QuizListChoice;
+          }
+          
+          $quizListChoiceCorrect->id_quiz = $quiz->id_quiz;
+          $quizListChoiceCorrect->id_quiz_questions = $quizQuestions->id_quiz_questions;
+          $quizListChoiceCorrect->answer = $correctAnswer;
+          $quizListChoiceCorrect->correct = 1;
+          $quizListChoiceCorrect->soft_delete = 0;
+          $quizListChoiceCorrect->save();
+      }
+      
+      if ($quizQuestions && !empty($row[7])) {
+          $quizListChoiceIncorrectOne = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+          if(!$quizListChoiceIncorrectOne){
+            $quizListChoiceIncorrectOne = new QuizListChoice;
+          }
+          
+          $quizListChoiceIncorrectOne->id_quiz = $quiz->id_quiz;
+          $quizListChoiceIncorrectOne->id_quiz_questions = $quizQuestions->id_quiz_questions;
+          $quizListChoiceIncorrectOne->answer = $correctAnswer;
+          $quizListChoiceIncorrectOne->correct = 0;
+          $quizListChoiceIncorrectOne->soft_delete = 0;
+          $quizListChoiceIncorrectOne->save();
+      }
+      
+      if ($quizQuestions && !empty($row[8])) {
+          $quizListChoiceIncorrectTwo = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+          if(!$quizListChoiceIncorrectTwo){
+            $quizListChoiceIncorrectTwo = new QuizListChoice;
+          }
+          
+          $quizListChoiceIncorrectTwo->id_quiz = $quiz->id_quiz;
+          $quizListChoiceIncorrectTwo->id_quiz_questions = $quizQuestions->id_quiz_questions;
+          $quizListChoiceIncorrectTwo->answer = $correctAnswer;
+          $quizListChoiceIncorrectTwo->correct = 0;
+          $quizListChoiceIncorrectTwo->soft_delete = 0;
+          $quizListChoiceIncorrectTwo->save();
+      }
+      
+      if ($quizQuestions && !empty($row[9])) {
+          $quizListChoiceIncorrectThree = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+          if(!$quizListChoiceIncorrectThree){
+            $quizListChoiceIncorrectThree = new QuizListChoice;
+          }
+          
+          $quizListChoiceIncorrectThree->id_quiz = $quiz->id_quiz;
+          $quizListChoiceIncorrectThree->id_quiz_questions = $quizQuestions->id_quiz_questions;
+          $quizListChoiceIncorrectThree->answer = $correctAnswer;
+          $quizListChoiceIncorrectThree->correct = 0;
+          $quizListChoiceIncorrectThree->soft_delete = 0;
+          $quizListChoiceIncorrectThree->save();
+      }
     }
-    
-    if ($quizQuestions && !empty($row[7])) {
-        $quizListChoiceIncorrectOne = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
-        if(!$quizListChoiceIncorrectOne){
-          $quizListChoiceIncorrectOne = new QuizListChoice;
-        }
-        
-        $quizListChoiceIncorrectOne->id_quiz = $quiz->id_quiz;
-        $quizListChoiceIncorrectOne->id_quiz_questions = $quizQuestions->id_quiz_questions;
-        $quizListChoiceIncorrectOne->answer = $correctAnswer;
-        $quizListChoiceIncorrectOne->correct = 0;
-        $quizListChoiceIncorrectOne->soft_delete = 0;
-        $quizListChoiceIncorrectOne->save();
-    }
-    
-    if ($quizQuestions && !empty($row[8])) {
-        $quizListChoiceIncorrectTwo = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
-        if(!$quizListChoiceIncorrectTwo){
-          $quizListChoiceIncorrectTwo = new QuizListChoice;
-        }
-        
-        $quizListChoiceIncorrectTwo->id_quiz = $quiz->id_quiz;
-        $quizListChoiceIncorrectTwo->id_quiz_questions = $quizQuestions->id_quiz_questions;
-        $quizListChoiceIncorrectTwo->answer = $correctAnswer;
-        $quizListChoiceIncorrectTwo->correct = 0;
-        $quizListChoiceIncorrectTwo->soft_delete = 0;
-        $quizListChoiceIncorrectTwo->save();
-    }
-    
-    if ($quizQuestions && !empty($row[9])) {
-        $quizListChoiceIncorrectThree = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
-        if(!$quizListChoiceIncorrectThree){
-          $quizListChoiceIncorrectThree = new QuizListChoice;
-        }
-        
-        $quizListChoiceIncorrectThree->id_quiz = $quiz->id_quiz;
-        $quizListChoiceIncorrectThree->id_quiz_questions = $quizQuestions->id_quiz_questions;
-        $quizListChoiceIncorrectThree->answer = $correctAnswer;
-        $quizListChoiceIncorrectThree->correct = 0;
-        $quizListChoiceIncorrectThree->soft_delete = 0;
-        $quizListChoiceIncorrectThree->save();
-    }
-
-    return $quiz;
   }
 }
