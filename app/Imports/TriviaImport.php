@@ -69,7 +69,7 @@ class TriviaImport implements ToModel, WithStartRow
       $idCategories = $categories->id_categories;
     }
     
-    $thumbnailQuiz = $row[5] ?? null;
+    $thumbnailQuiz = $row[9] ?? null;
     $thumbnailUrl = null;
     $imagesIdQuiz = null;
     if ($thumbnailQuiz) {
@@ -91,7 +91,7 @@ class TriviaImport implements ToModel, WithStartRow
             return ResultHelpers::errors('Unsupported file format for thumbnail', 400, false);
         }
       }else{
-        $imagesIdQuiz = $row[5];
+        $imagesIdQuiz = rtrim($row[9], ';');
       } 
     } else {
         $thumbnailPath = null;
@@ -105,10 +105,10 @@ class TriviaImport implements ToModel, WithStartRow
       $subtitleQuiz = $row[2];
       $descriptionQuiz = $row[1];
       $questionQuiz = $row[4];
-      $correctAnswer = $row[6];
-      $incorrectAnswerOne = $row[7];
-      $incorrectAnswerTwo = $row[8];
-      $incorrectAnswerThree = $row[9];
+      $correctAnswer = $row[5];
+      $incorrectAnswerOne = $row[6];
+      $incorrectAnswerTwo = $row[7];
+      $incorrectAnswerThree = $row[8];
       
       $quiz = Quiz::where('slug', $slugQuiz)->orWhere('title', $titleQuiz)->first();
       if(!$quiz){
@@ -144,7 +144,7 @@ class TriviaImport implements ToModel, WithStartRow
       }
 
       
-      if ($quizQuestions && !empty($row[6])) {
+      if ($quizQuestions && !empty($row[5])) {
           $quizListChoiceCorrect = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
           if(!$quizListChoiceCorrect){
             $quizListChoiceCorrect = new QuizListChoice;
@@ -158,43 +158,43 @@ class TriviaImport implements ToModel, WithStartRow
           $quizListChoiceCorrect->save();
       }
       
-      if ($quizQuestions && !empty($row[7])) {
-          $quizListChoiceIncorrectOne = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+      if ($quizQuestions && !empty($row[6])) {
+          $quizListChoiceIncorrectOne = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $incorrectAnswerOne)->first();
           if(!$quizListChoiceIncorrectOne){
             $quizListChoiceIncorrectOne = new QuizListChoice;
           }
           
           $quizListChoiceIncorrectOne->id_quiz = $quiz->id_quiz;
           $quizListChoiceIncorrectOne->id_quiz_questions = $quizQuestions->id_quiz_questions;
-          $quizListChoiceIncorrectOne->answer = $correctAnswer;
+          $quizListChoiceIncorrectOne->answer = $incorrectAnswerOne;
           $quizListChoiceIncorrectOne->correct = 0;
           $quizListChoiceIncorrectOne->soft_delete = 0;
           $quizListChoiceIncorrectOne->save();
       }
       
-      if ($quizQuestions && !empty($row[8])) {
-          $quizListChoiceIncorrectTwo = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+      if ($quizQuestions && !empty($row[7])) {
+          $quizListChoiceIncorrectTwo = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $incorrectAnswerTwo)->first();
           if(!$quizListChoiceIncorrectTwo){
             $quizListChoiceIncorrectTwo = new QuizListChoice;
           }
           
           $quizListChoiceIncorrectTwo->id_quiz = $quiz->id_quiz;
           $quizListChoiceIncorrectTwo->id_quiz_questions = $quizQuestions->id_quiz_questions;
-          $quizListChoiceIncorrectTwo->answer = $correctAnswer;
+          $quizListChoiceIncorrectTwo->answer = $incorrectAnswerTwo;
           $quizListChoiceIncorrectTwo->correct = 0;
           $quizListChoiceIncorrectTwo->soft_delete = 0;
           $quizListChoiceIncorrectTwo->save();
       }
       
-      if ($quizQuestions && !empty($row[9])) {
-          $quizListChoiceIncorrectThree = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $correctAnswer)->first();
+      if ($quizQuestions && !empty($row[8])) {
+          $quizListChoiceIncorrectThree = QuizListChoice::where('id_quiz', $quiz->id_quiz)->where('id_quiz_questions', $quizQuestions->id_quiz_questions)->where('answer', $incorrectAnswerThree)->first();
           if(!$quizListChoiceIncorrectThree){
             $quizListChoiceIncorrectThree = new QuizListChoice;
           }
           
           $quizListChoiceIncorrectThree->id_quiz = $quiz->id_quiz;
           $quizListChoiceIncorrectThree->id_quiz_questions = $quizQuestions->id_quiz_questions;
-          $quizListChoiceIncorrectThree->answer = $correctAnswer;
+          $quizListChoiceIncorrectThree->answer = $incorrectAnswerThree;
           $quizListChoiceIncorrectThree->correct = 0;
           $quizListChoiceIncorrectThree->soft_delete = 0;
           $quizListChoiceIncorrectThree->save();

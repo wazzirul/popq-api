@@ -67,7 +67,7 @@ class PollsImport implements ToModel, WithStartRow
         $idCategories = $categories->id_categories;
     }
     
-    $thumbnailPoll = $row[5] ?? null;
+    $thumbnailPoll = $row[9] ?? null;
     $thumbnailUrl = null;
     $imagesIdPoll = null;
     if ($thumbnailPoll) {
@@ -89,7 +89,7 @@ class PollsImport implements ToModel, WithStartRow
             return ResultHelpers::errors('Unsupported file format for thumbnail', 400, false);
         }
       }else{
-        $imagesIdPoll = $row[5];
+        $imagesIdPoll = rtrim($row[9], ';');
       } 
     } else {
         $thumbnailPath = null;
@@ -119,6 +119,13 @@ class PollsImport implements ToModel, WithStartRow
         $poll->soft_delete = 0;
         $poll->save();
         
+        if (!empty($row[5])) {
+          PollListChoice::create([
+            'id_poll' => $poll->id_poll,
+            'poll_choice' => $row[5],
+          ]);
+        }
+    
         if (!empty($row[6])) {
           PollListChoice::create([
             'id_poll' => $poll->id_poll,
@@ -137,13 +144,6 @@ class PollsImport implements ToModel, WithStartRow
           PollListChoice::create([
             'id_poll' => $poll->id_poll,
             'poll_choice' => $row[8],
-          ]);
-        }
-    
-        if (!empty($row[9])) {
-          PollListChoice::create([
-            'id_poll' => $poll->id_poll,
-            'poll_choice' => $row[9],
           ]);
         }
     }

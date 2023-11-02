@@ -93,6 +93,8 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Quiz
     Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
+    Route::post('/quiz/importQuiz', [QuizController::class, 'importQuiz'])->name('quiz--importQuiz');
+    Route::post('/quiz/importImagesQuiz', [QuizController::class, 'importImagesQuiz'])->name('quiz--importImagesQuiz');
     Route::post('/quiz/showUserLoginQuiz', [QuizController::class, 'showUserLoginQuiz'])->name('quiz--showUserLoginQuiz');
 
     // Quiz Questions
@@ -111,6 +113,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Imports
     Route::post('/import/importTriviaPoll', [ImportController::class, 'importTriviaPoll'])->name('import--importTriviaPoll');
+    Route::post('/import/importImages', [ImportController::class, 'importImages'])->name('import--importImages');
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');

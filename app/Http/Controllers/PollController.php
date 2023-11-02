@@ -779,7 +779,7 @@ class PollController extends Controller
       ]);
 
       $this->validate($request, [
-        'file_poll' => 'required|mimes:xlsx',
+        'file_poll' => 'required|mimes:xlsx,txt,csv',
       ]);
 
       $filePoll = $requestData['file_poll'] ?? null;
@@ -868,7 +868,7 @@ class PollController extends Controller
               // Generate the URL of the uploaded file
               $imageUrl = Storage::disk('public')->url($path);
 
-              $data = Poll::where('images_id', $imageId)->first();
+              $data = Poll::where('poll.images_id', $imageId)->first();
               if ($data) {
                   $data->thumbnail = $imageUrl;
                   $data->save();

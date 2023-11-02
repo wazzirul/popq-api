@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use Maatwebsite\Excel\Facades\Excel;
+
+use App\Imports\TriviaImport;
 
 use App\Models\Categories;
 use App\Models\Quiz;
@@ -62,7 +65,7 @@ class QuizController extends Controller
                <br><b>id_categories</b> : id of categories
                <br><b>topic</b> : topic quiz
                <br><b>title</b> : title quiz
-               <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
+               <br><b>slug</b> : slug quiz (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle quiz
                <br><b>images_id</b> : images_id for importing process (nullable)
                <br><b>thumbnail</b> : must be base64 string
@@ -298,7 +301,7 @@ class QuizController extends Controller
      *          description="<b>Note:</b>
                 <br> - id_categories as a reference to the categories quiz data that will be returned
                 <br> - slug_categories as a reference to the categories quiz data that will be returned
-                <br> - draft as a reference to the categories poll data that will be returned, use (2) for all published and draft, default (0) for published polls
+                <br> - draft as a reference to the categories quiz data that will be returned, use (2) for all published and draft, default (0) for published quiz
                 <br> - limit as limit show data (default 10)
                 <br> - page as page show data (default 1)",
      *          required=true,
@@ -709,4 +712,174 @@ class QuizController extends Controller
         'total_pages' => $totalPages,
       ], 200, true);
     }    
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/importQuiz",
+     *      operationId="importQuiz",
+     *      tags={"Quiz"},
+     *      summary="Import Quiz Data",
+     *      description="Returns Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                 <br><b>file_quiz</b> : file excel of quiz data that will be imported",
+    *          required=true,
+    *          @OA\MediaType(
+    *              mediaType="multipart/form-data",
+    *              @OA\Schema(
+    *                  required={"file_quiz"},
+    *                  @OA\Property(
+    *                      property="file_quiz",
+    *                      type="string",
+    *                      format="binary",
+    *                  ),
+    *              )
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *       ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function importQuiz(Request $request){
+      $requestData = $request->only([
+        'file_quiz',
+      ]);
+
+      $this->validate($request, [
+        'file_quiz' => 'required|mimes:xlsx,txt,csv',
+      ]);
+
+      $fileQuiz = $requestData['file_quiz'] ?? null;
+
+      Excel::import(new TriviaImport, $fileQuiz);
+
+      return ResultHelpers::success("Success Importing Data", 200, true);
+    }
+
+
+    
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/importImagesQuiz",
+     *      operationId="importImagesQuiz",
+     *      tags={"Quiz"},
+     *      summary="Import Images Quiz Data",
+     *      description="Returns Images Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                 <br><b>zip_file</b> : file zip of images with names of images_id references for images quiz that will be imported",
+    *          required=true,
+    *          @OA\MediaType(
+    *              mediaType="multipart/form-data",
+    *              @OA\Schema(
+    *                  required={"zip_file"},
+    *                  @OA\Property(
+    *                      property="zip_file",
+    *                      type="string",
+    *                      format="binary",
+    *                  ),
+    *              )
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *       ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function importImagesQuiz(Request $request){
+      $requestData = $request->only([
+        'zip_file',
+      ]);
+
+      $this->validate($request, [
+        'zip_file' => 'required|mimes:zip,rar',
+      ]);
+
+      $zipFile = $request->file('zip_file');
+      $extractPath = storage_path('app/temp_zip_extract');
+
+      $zipFile->move($extractPath, $zipFile->getClientOriginalName());
+
+      // Extract images from the zip file
+      $zip = new \ZipArchive();
+      $zip->open($extractPath . '/' . $zipFile->getClientOriginalName());
+      $images = [];
+
+      $errors = [];
+
+      for ($i = 0; $i < $zip->numFiles; $i++) {
+          $filename = $zip->getNameIndex($i);
+          $imageId = pathinfo($filename, PATHINFO_FILENAME);
+          $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+          if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+              $path = "images/{$imageId}.{$extension}";
+              // Move the image to your desired storage directory
+              Storage::disk('public')->put($path, $zip->getFromIndex($i));
+              // Generate the URL of the uploaded file
+              $imageUrl = Storage::disk('public')->url($path);
+
+              $data = Quiz::where('quiz.images_id', $imageId)->first();
+              if ($data) {
+                  $data->thumbnail = $imageUrl;
+                  $data->save();
+              }
+              
+              $images[] = [
+                'image_id' => $imageId,
+                'file_path' => $filename,
+                'extension' => $extension,
+                'image_url' => $imageUrl,
+                'data' => $data,
+            ];
+          } else {
+              $errors[] = "File {$filename} is not an image";
+          }
+      }
+
+      $zip->close();
+
+      // Clean up the extracted files
+      unlink($extractPath . '/' . $zipFile->getClientOriginalName());
+
+      $results = [
+          'message' => "Complete Importing Images Data",
+          'images' => $images,
+          'errors' => $errors,
+      ];
+
+      return ResultHelpers::success($results , 200, true);
+    }
 }
