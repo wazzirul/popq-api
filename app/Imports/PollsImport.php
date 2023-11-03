@@ -112,7 +112,6 @@ class PollsImport implements ToModel, WithStartRow
         $poll->slug = $slugPoll;
         $poll->subtitle = $subtitlePoll;
         $poll->images_id = $imagesIdPoll;
-        $poll->thumbnail = $thumbnailUrl;
         $poll->description = $descriptionPoll;
         $poll->today_status = 0;
         $poll->draft = 0;
