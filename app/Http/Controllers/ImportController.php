@@ -156,25 +156,17 @@ class ImportController extends Controller
               // Generate the URL of the uploaded file
               $imageUrl = Storage::disk('public')->url($path);
 
-              $dataQuiz = Quiz::where('quiz.images_id', $imageId)->first();
-              if ($dataQuiz) {
-                  $dataQuiz->thumbnail = $imageUrl;
-                  $dataQuiz->save();
-              }
+              Quiz::where('images_id', $imageId)->update(['thumbnail' => $imageUrl]);
+              Poll::where('images_id', $imageId)->update(['thumbnail' => $imageUrl]);
 
-              $dataPoll = Poll::where('poll.images_id', $imageId)->first();
-              if ($dataPoll) {
-                  $dataPoll->thumbnail = $imageUrl;
-                  $dataPoll->save();
-              }
+              Quiz::where('images_id', $imageId . ';')->update(['thumbnail' => $imageUrl]);
+              Poll::where('images_id', $imageId . ';')->update(['thumbnail' => $imageUrl]);
               
               $images[] = [
                 'image_id' => $imageId,
                 'file_path' => $filename,
                 'extension' => $extension,
                 'image_url' => $imageUrl,
-                'dataQuiz' => $dataQuiz,
-                'dataPoll' => $dataPoll,
             ];
           } else {
               $errors[] = "File {$filename} is not an image";
