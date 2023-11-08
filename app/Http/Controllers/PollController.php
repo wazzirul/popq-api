@@ -538,10 +538,9 @@ class PollController extends Controller
         if (!$todayStatusPoll) {
             return ResultHelpers::errors('today_status must be provided.', 400, false);
         }
-
-        // Check if the user already exists in the table
-        // Return Created / Updated Poll Data with its Relation.
-        $data = Poll::where('today_status', $todayStatusPoll)->with('Categories','PollListChoice')->first();
+        
+        // Get a random poll where today_status = 1
+        $data = Poll::where('today_status', $todayStatusPoll)->where('soft_delete', 0)->inRandomOrder()->with('Categories', 'PollListChoice')->first();
 
         return ResultHelpers::success($data, 200, true);
     } 
@@ -785,6 +784,12 @@ class PollController extends Controller
       $filePoll = $requestData['file_poll'] ?? null;
 
       Excel::import(new PollsImport, $filePoll);
+
+      $latestPoll = Poll::latest()->first();
+      if ($latestPoll) {
+        $latestPoll->today_status = 1;
+        $latestPoll->save();
+      }    
 
       return ResultHelpers::success("Success Importing Data", 200, true);
     }

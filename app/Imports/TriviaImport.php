@@ -120,7 +120,8 @@ class TriviaImport implements ToModel, WithStartRow
       $quiz->title = $titleQuiz;
       $quiz->slug = $slugQuiz;
       $quiz->subtitle = $subtitleQuiz;
-      $quiz->images_id = $imagesIdQuiz;
+      $imagesIdQuiz && $quiz->images_id = $imagesIdQuiz;
+      $thumbnailUrl && $quiz->thumbnail = $thumbnailUrl;
       $quiz->description = $descriptionQuiz;
       $quiz->today_status = 0;
       $quiz->draft = 0;

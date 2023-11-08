@@ -527,9 +527,8 @@ class QuizController extends Controller
             return ResultHelpers::errors('today_status must be provided.', 400, false);
         }
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('today_status', $todayStatusQuiz)->with('Categories','QuizQuestions.QuizListChoice')->first();
+        // Get a random quiz where today_status = 1
+        $data = Quiz::where('today_status', $todayStatusQuiz)->where('soft_delete', 0)->inRandomOrder()->with('Categories','QuizQuestions.QuizListChoice')->first();
 
         return ResultHelpers::success($data, 200, true);
     } 
@@ -768,6 +767,12 @@ class QuizController extends Controller
       $fileQuiz = $requestData['file_quiz'] ?? null;
 
       Excel::import(new TriviaImport, $fileQuiz);
+      
+      $latestQuiz = Quiz::latest()->first();
+      if ($latestQuiz) {
+        $latestQuiz->today_status = 1;
+        $latestQuiz->save();
+      }    
 
       return ResultHelpers::success("Success Importing Data", 200, true);
     }

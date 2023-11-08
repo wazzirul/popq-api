@@ -72,11 +72,13 @@ class ImportController extends Controller
       ]);
 
       $this->validate($request, [
-        'file_import' => 'required|mimes:xlsx',
+        'file_import' => 'required|mimes:xlsx,txt,csv',
       ]);
 
       $fileImport = $requestData['file_import'] ?? null;
+
       Excel::import(new QuizPollImport, $fileImport);
+      
       return ResultHelpers::success("Success Importing Data", 200, true);
     }
 
