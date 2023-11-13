@@ -58,7 +58,7 @@ class PollsImport implements ToModel, WithStartRow
         if (!$categories) {
             $categories = new Categories;
             $categories->name_category = $row[3]; // Set the name_category from the Excel data
-            $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+            $categories->slug = strtolower(str_replace(['', '?'], ['-', ' '], $row[3]));
             $categories->color = "Transparent";
             $categories->color_hex = "#00000000";
             $categories->save();
@@ -96,7 +96,7 @@ class PollsImport implements ToModel, WithStartRow
     }
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
-        $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
+        $slugPoll = strtolower(str_replace(['', '?'], ['-', ' '], $row[4]));
         $titlePoll = $row[4];
         $topicPoll = $row[0];
         $subtitlePoll = $row[2];
@@ -120,31 +120,47 @@ class PollsImport implements ToModel, WithStartRow
         $poll->save();
         
         if (!empty($row[5])) {
-          PollListChoice::create([
-            'id_poll' => $poll->id_poll,
-            'poll_choice' => $row[5],
-          ]);
+          $existingChoice = PollListChoice::where('poll_choice', $row[5])->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[5],
+              ]);
+          }
         }
-    
+        
         if (!empty($row[6])) {
-          PollListChoice::create([
-            'id_poll' => $poll->id_poll,
-            'poll_choice' => $row[6],
-          ]);
+          $existingChoice = PollListChoice::where('poll_choice', $row[6])->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[6],
+              ]);
+          }
         }
-    
+        
         if (!empty($row[7])) {
-          PollListChoice::create([
-            'id_poll' => $poll->id_poll,
-            'poll_choice' => $row[7],
-          ]);
+          $existingChoice = PollListChoice::where('poll_choice', $row[7])->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[7],
+              ]);
+          }
         }
-    
+        
         if (!empty($row[8])) {
-          PollListChoice::create([
-            'id_poll' => $poll->id_poll,
-            'poll_choice' => $row[8],
-          ]);
+          $existingChoice = PollListChoice::where('poll_choice', $row[8])->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[8],
+              ]);
+          }
         }
     }
   }

@@ -60,7 +60,7 @@ class TriviaImport implements ToModel, WithStartRow
       if (!$categories) {
           $categories = new Categories;
           $categories->name_category = $row[3]; // Set the name_category from the Excel data
-          $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
+          $categories->slug = strtolower(str_replace(['', '?'], ['-', ' '], $row[3]));
           $categories->color = "Transparent";
           $categories->color_hex = "#00000000";
           $categories->save();
@@ -99,7 +99,7 @@ class TriviaImport implements ToModel, WithStartRow
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
       $idCategories = $categories->id_categories;
-      $slugQuiz = strtolower(str_replace(' ', '-', $row[0]));
+      $slugQuiz = strtolower(str_replace(['', '?'], ['-', ' '], $row[0]));
       $titleQuiz = $row[0];
       $topicQuiz = $row[0];
       $subtitleQuiz = $row[2];
