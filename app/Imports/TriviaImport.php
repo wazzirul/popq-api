@@ -4,9 +4,7 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
-use Maatwebsite\Excel\Concerns\WithConditionalSheets;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 use App\Models\Categories;
 use App\Models\Poll;
@@ -16,7 +14,7 @@ use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 use Illuminate\Support\Facades\Storage;
 
-class TriviaImport implements ToModel, WithStartRow
+class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
 {
   /**
   * @param array $row
@@ -200,5 +198,12 @@ class TriviaImport implements ToModel, WithStartRow
           $quizListChoiceIncorrectThree->save();
       }
     }
+  }
+    
+  public function getCsvSettings(): array
+  {
+    return [
+      'delimiter' => "|"
+    ];
   }
 }

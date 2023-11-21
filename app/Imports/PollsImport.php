@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 use App\Models\Categories;
 use App\Models\Poll;
@@ -14,7 +15,7 @@ use App\Models\QuizQuestions;
 use Illuminate\Support\Facades\Storage;
 
 
-class PollsImport implements ToModel, WithStartRow
+class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
 {
   /**
   * @param array $row
@@ -163,5 +164,12 @@ class PollsImport implements ToModel, WithStartRow
           }
         }
     }
+  }
+    
+  public function getCsvSettings(): array
+  {
+    return [
+      'delimiter' => "|"
+    ];
   }
 }
