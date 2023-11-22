@@ -54,7 +54,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
   public function model(array $row)
   {
     if(!empty($row[3])){
-        $categories = Categories::where('name_category', $row[3])->first();
+        $categories = Categories::where('name_category', 'like', '%' . $row[3] . '%')->first();
     
         if (!$categories) {
             $categories = new Categories;

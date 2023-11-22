@@ -127,65 +127,65 @@ class ImportController extends Controller
     */
     public function importImages(Request $request){
       $requestData = $request->only([
-        'zip_file',
+          'zip_file',
       ]);
-
+  
       $this->validate($request, [
-        'zip_file' => 'required|mimes:zip,rar',
+          'zip_file' => 'required|mimes:zip,rar',
       ]);
-
+  
       $zipFile = $request->file('zip_file');
       $extractPath = storage_path('app/temp_zip_extract');
-
+  
       $zipFile->move($extractPath, $zipFile->getClientOriginalName());
-
-      // Extract images from the zip file
+  
+      // Extract images from any folder inside the zip file
       $zip = new \ZipArchive();
       $zip->open($extractPath . '/' . $zipFile->getClientOriginalName());
+  
       $images = [];
-
       $errors = [];
-
+  
       for ($i = 0; $i < $zip->numFiles; $i++) {
           $filename = $zip->getNameIndex($i);
           $imageId = pathinfo($filename, PATHINFO_FILENAME);
           $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
+  
           if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
               $path = "images/{$imageId}.{$extension}";
               // Move the image to your desired storage directory
               Storage::disk('public')->put($path, $zip->getFromIndex($i));
               // Generate the URL of the uploaded file
               $imageUrl = Storage::disk('public')->url($path);
-
+  
               Quiz::where('images_id', $imageId)->update(['thumbnail' => $imageUrl]);
               Poll::where('images_id', $imageId)->update(['thumbnail' => $imageUrl]);
-
+  
               Quiz::where('images_id', $imageId . ';')->update(['thumbnail' => $imageUrl]);
               Poll::where('images_id', $imageId . ';')->update(['thumbnail' => $imageUrl]);
-              
+  
               $images[] = [
-                'image_id' => $imageId,
-                'file_path' => $filename,
-                'extension' => $extension,
-                'image_url' => $imageUrl,
-            ];
+                  'image_id' => $imageId,
+                  'file_path' => $filename,
+                  'extension' => $extension,
+                  'image_url' => $imageUrl,
+              ];
           } else {
               $errors[] = "File {$filename} is not an image";
           }
       }
-
+  
       $zip->close();
-
+  
       // Clean up the extracted files
       unlink($extractPath . '/' . $zipFile->getClientOriginalName());
-
+  
       $results = [
           'message' => "Complete Importing Images Data",
           'images' => $images,
           'errors' => $errors,
       ];
-
-      return ResultHelpers::success($results , 200, true);
+  
+      return ResultHelpers::success($results, 200, true);
     }
 }
