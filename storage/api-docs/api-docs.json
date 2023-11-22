@@ -1136,12 +1136,20 @@
                 "description": "Returns Quiz data",
                 "operationId": "showQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "search": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": null
+                                    },
                                     "draft": {
                                         "type": "integer",
                                         "example": "0"
@@ -1151,6 +1159,10 @@
                                         "example": "10"
                                     },
                                     "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "sort": {
                                         "type": "integer",
                                         "example": "1"
                                     }
