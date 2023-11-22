@@ -59,7 +59,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         if (!$categories) {
             $categories = new Categories;
             $categories->name_category = $row[3]; // Set the name_category from the Excel data
-            $categories->slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', $row[3]));
+            $categories->slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[3]));
             $categories->color = "Transparent";
             $categories->color_hex = "#00000000";
             $categories->save();
@@ -97,7 +97,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
     }
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
-        $slugPoll = strtolower(preg_replace('/[^a-z0-9]+/', '-', $row[4]));
+        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4]));
         $titlePoll = $row[4];
         $topicPoll = $row[0];
         $subtitlePoll = $row[2];
