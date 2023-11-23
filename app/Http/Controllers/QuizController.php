@@ -191,15 +191,9 @@ class QuizController extends Controller
         $imagesIdQuiz && $data->images_id = $imagesIdQuiz;
         $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;
-        if ($todayStatusQuiz !== null) {
-          $data->today_status = $todayStatusQuiz;
-        }
-        if ($draftQuiz !== null) {
-          $data->draft = $draftQuiz;
-        }
-        if ($softDeleteQuiz !== null) {
-          $data->soft_delete = $softDeleteQuiz;
-        }
+        $todayStatusQuiz != null && $data->today_status = $todayStatusQuiz;
+        $draftQuiz != null && $data->draft = $draftQuiz;
+        $softDeleteQuiz != null && $data->soft_delete = $softDeleteQuiz;
         $data->save();
 
         return ResultHelpers::success($data, 200, true);
