@@ -283,23 +283,23 @@ class QuizController extends Controller
   
       // Initialize the query builder for the total records count
       $totalRecordsQuery = Quiz::where('soft_delete', 0);
-  
+      
       if ($search) {
-        $query->orWhere(function ($query) use ($search) {
+        $query->where(function ($query) use ($search) {
             $query->where('topic', 'LIKE', '%' . $search . '%')
                   ->orWhere('title', 'LIKE', '%' . $search . '%')
                   ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
                   ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
     
-        $totalRecordsQuery->orWhere(function ($query) use ($search) {
+        $totalRecordsQuery->where(function ($query) use ($search) {
             $query->where('topic', 'LIKE', '%' . $search . '%')
                   ->orWhere('title', 'LIKE', '%' . $search . '%')
                   ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
                   ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
-      }    
-  
+      } 
+      
       if ($idCategories) {
           $query->where('id_categories', $idCategories);
           $totalRecordsQuery->where('id_categories', $idCategories);

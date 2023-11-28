@@ -108,7 +108,7 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
       $incorrectAnswerTwo = $row[7];
       $incorrectAnswerThree = $row[8];
       
-      $quiz = Quiz::where('slug', $slugQuiz)->orWhere('title', $titleQuiz)->first();
+      $quiz = Quiz::where('title', $titleQuiz)->orWhere('slug', $slugQuiz)->first();
       if(!$quiz){
         $quiz = new Quiz;
       }

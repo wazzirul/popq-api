@@ -102,7 +102,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         $topicPoll = $row[0];
         $subtitlePoll = $row[2];
         $descriptionPoll = $row[1];
-        $poll = Poll::where('slug', $slugPoll)->orWhere('title', $titlePoll)->first();
+        $poll = Poll::Where('title', $titlePoll)->orWhere('slug', $slugPoll)->first();
         if(!$poll){
         $poll = new Poll;
         }

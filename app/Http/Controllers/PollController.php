@@ -288,41 +288,41 @@ class PollController extends Controller
 
       // Initialize the query builder for the total records count
       $totalRecordsQuery = Poll::where('soft_delete', 0);
-  
+      
       if ($search) {
-        $query->orWhere(function ($query) use ($search) {
+        $query->where(function ($query) use ($search) {
             $query->where('topic', 'LIKE', '%' . $search . '%')
                   ->orWhere('title', 'LIKE', '%' . $search . '%')
                   ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
                   ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
     
-        $totalRecordsQuery->orWhere(function ($query) use ($search) {
+        $totalRecordsQuery->where(function ($query) use ($search) {
             $query->where('topic', 'LIKE', '%' . $search . '%')
                   ->orWhere('title', 'LIKE', '%' . $search . '%')
                   ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
                   ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
-      }    
+      }  
   
       if ($idCategories) {
           $query->where('id_categories', $idCategories);
           $totalRecordsQuery->where('id_categories', $idCategories);
       }    
-  
+
       // Conditionally add the 'draft' where clause if draft is not 100
       if ($draft != 100) {
           $query->where('draft', $draft);
           $totalRecordsQuery->where('draft', $draft);
       }
-  
+    
       // Execute the query to retrieve data
       $data = $query->get();
-  
+
       // Execute the query to get the total records count
       $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
-  
+
       return ResultHelpers::success([
         'data' => $data,
         'total_pages' => $totalPages,
