@@ -274,13 +274,13 @@ class PollController extends Controller
           ->withCount('PollListChoice'); // Load the total poll list choices count 
 
       if($sort === 1){
-        $query->orderBy('created_at', 'DESC');
+        $query->orderBy('id_poll', 'DESC');
       }else if($sort === 2 ){
-        $query->orderBy('created_at', 'ASC');
+        $query->orderBy('id_poll', 'ASC');
       }else if($sort === 3 ){
         $query->orderBy('title', 'ASC');
       }else{ 
-        $query->orderBy('created_at', 'DESC');
+        $query->orderBy('id_poll', 'DESC');
       }
 
       $query->skip($offset)

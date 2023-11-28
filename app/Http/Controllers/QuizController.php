@@ -269,13 +269,13 @@ class QuizController extends Controller
           ->withCount('quizQuestions'); // Load the total quiz questions count
 
       if($sort === 1){
-        $query->orderBy('created_at', 'DESC');
+        $query->orderBy('id_quiz', 'DESC');
       }else if($sort === 2 ){
-        $query->orderBy('created_at', 'ASC');
+        $query->orderBy('id_quiz', 'ASC');
       }else if($sort === 3 ){
         $query->orderBy('title', 'ASC');
       }else{ 
-        $query->orderBy('created_at', 'DESC');
+        $query->orderBy('id_quiz', 'DESC');
       }
 
       $query->skip($offset)
