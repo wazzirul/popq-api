@@ -392,18 +392,23 @@ class QuizController extends Controller
 
       $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
       ->where('quiz.soft_delete', 0);
+      $totalRecordsQuery = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0);
 
       if ($idCategories !== null) {
         // Add a filter for id_categories if idCategories is not null
         $query->where('quiz.id_categories', $idCategories);
+        $totalRecordsQuery->where('quiz.id_categories', $idCategories);
       }
       
       if ($slugCategories !==null) {
         $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
       }
       
       if ($draft !== 2){
         $query->where('quiz.draft', $draft);
+        $totalRecordsQuery->where('quiz.draft', $draft);
       }
 
       // Check if the user already exists in the table
@@ -427,7 +432,7 @@ class QuizController extends Controller
           'quiz.soft_delete',
         ]);
 
-      $totalRecords = $query->count();
+      $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
 
       return ResultHelpers::success([

@@ -200,12 +200,6 @@ class AdministratorsController extends Controller
 
       $data = Administrators::where('email', $email)
           ->orWhere('username', $email)
-          ->select([
-              'id_administrator',
-              'username',
-              'email',
-              'password',
-          ])
           ->first();
 
       if (!$data) return ResultHelpers::errors('Data administrator not found.', 400, false);
@@ -264,12 +258,6 @@ class AdministratorsController extends Controller
   {
       $data = Administrators::where('soft_delete', 0)
           ->orderBy('id_administrator', 'DESC')
-          ->select([
-              'id_administrator',
-              'email',
-              'username',
-              'created_at',
-          ])
           ->get();
 
       return ResultHelpers::success($data, 200, true);

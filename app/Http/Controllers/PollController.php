@@ -397,19 +397,24 @@ class PollController extends Controller
       }
         
       $query = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
+      ->where('poll.soft_delete', 0);        
+      $totalRecordsQuery = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
       ->where('poll.soft_delete', 0);
 
       if ($idCategories !== null) {
         // Add a filter for id_categories if idCategories is not null
         $query->where('poll.id_categories', $idCategories);
+        $totalRecordsQuery->where('poll.id_categories', $idCategories);
       }
       
       if ($slugCategories !== null) {
         $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
       }
       
       if ($draft !== 2){
         $query->where('poll.draft', $draft);
+        $totalRecordsQuery->where('poll.draft', $draft);
       }
       
 
@@ -434,7 +439,7 @@ class PollController extends Controller
           'poll.soft_delete',
         ]);
 
-      $totalRecords = $query->count();
+      $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
   
       return ResultHelpers::success([

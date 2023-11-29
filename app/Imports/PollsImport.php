@@ -121,7 +121,9 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         $poll->save();
         
         if (!empty($row[5])) {
-          $existingChoice = PollListChoice::where('poll_choice', $row[5])->first();
+          $existingChoice = PollListChoice::where('poll_choice', $row[5])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
       
           if (!$existingChoice) {
               PollListChoice::create([
@@ -132,7 +134,9 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         }
         
         if (!empty($row[6])) {
-          $existingChoice = PollListChoice::where('poll_choice', $row[6])->first();
+          $existingChoice = PollListChoice::where('poll_choice', $row[6])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
       
           if (!$existingChoice) {
               PollListChoice::create([
@@ -143,7 +147,9 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         }
         
         if (!empty($row[7])) {
-          $existingChoice = PollListChoice::where('poll_choice', $row[7])->first();
+          $existingChoice = PollListChoice::where('poll_choice', $row[7])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
       
           if (!$existingChoice) {
               PollListChoice::create([
@@ -154,7 +160,9 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
         }
         
         if (!empty($row[8])) {
-          $existingChoice = PollListChoice::where('poll_choice', $row[8])->first();
+          $existingChoice = PollListChoice::where('poll_choice', $row[8])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
       
           if (!$existingChoice) {
               PollListChoice::create([

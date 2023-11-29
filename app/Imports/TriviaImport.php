@@ -128,7 +128,10 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
       
       
       if (!empty($row[4])) {
-          $quizQuestions = QuizQuestions::where('question', $questionQuiz)->first();
+          $quizQuestions = QuizQuestions::where('question', $questionQuiz)
+          ->where('id_quiz', $quiz->id_quiz)
+          ->first();
+          
           if(!$quizQuestions){
             $quizQuestions = new QuizQuestions;
           }
