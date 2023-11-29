@@ -75,7 +75,7 @@ Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScor
 Route::group(['middleware' => 'jwt.authentication'], function () {
     // Administrator
     Route::post('/administrators/store', [AdministratorsController::class, 'store'])->name('administrators--store');
-    Route::get('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
+    Route::post('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
 
     // User
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');

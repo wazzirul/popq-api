@@ -7,6 +7,7 @@ use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\File;
 
 use App\Imports\PollsImport;
 
@@ -214,6 +215,8 @@ class PollController extends Controller
      *      description="Returns Poll data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - search as search for poll with references of topic, title, subtitle, description (default null)
+            <br> - id_categories as id_categories that the poll assigned to (default null)
             <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -828,6 +831,13 @@ class PollController extends Controller
       ]);
 
       $filePoll = $requestData['file_poll'] ?? null;
+
+      // Read the file content and remove double quotes
+      $fileContent = File::get($filePoll);
+      $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+  
+      // Save the modified content back to the file
+      File::put($filePoll, $fileContentWithoutQuotes);
 
       Excel::import(new PollsImport, $filePoll);
 

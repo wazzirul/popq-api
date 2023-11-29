@@ -7,6 +7,7 @@ use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\File;
 
 use App\Imports\TriviaImport;
 
@@ -209,6 +210,8 @@ class QuizController extends Controller
      *      description="Returns Quiz data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
+            <br> - id_categories as id_categories that the quiz assigned to (default null)
             <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -806,13 +809,21 @@ class QuizController extends Controller
 
       $fileQuiz = $requestData['file_quiz'] ?? null;
 
+      // Read the file content and remove double quotes
+      $fileContent = File::get($fileQuiz);
+      $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+  
+      // Save the modified content back to the file
+      File::put($fileQuiz, $fileContentWithoutQuotes);
+  
+      // Now, you can proceed with the import
       Excel::import(new TriviaImport, $fileQuiz);
-      
+  
       $latestQuiz = Quiz::latest()->first();
       if ($latestQuiz) {
-        $latestQuiz->today_status = 1;
-        $latestQuiz->save();
-      }    
+          $latestQuiz->today_status = 1;
+          $latestQuiz->save();
+      }
 
       return ResultHelpers::success("Success Importing Data", 200, true);
     }

@@ -230,12 +230,28 @@ class AdministratorsController extends Controller
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /**
-   * @OA\Get(
+   * @OA\Post(
    *      path="/administrators/show",
    *      operationId="showAdministrators",
    *      tags={"Administrators"},
    *      summary="Show administrator",
    *      description="Returns administrator data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+          <br> - search as search for administrators username, email
+          <br> - limit as limit show data (default 10)
+          <br> - page as page show data (default 1)
+          <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+   *          required=true,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example=null),
+   *              @OA\Property(property="id_administrator", type="int", example=null),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="sort", type="int", example="1"),
+   *          )
+   *      ),
    *      @OA\Response(
    *          response=200,
    *          description="Successful Operation",
@@ -256,10 +272,69 @@ class AdministratorsController extends Controller
    */
   public function show(Request $request)
   {
-      $data = Administrators::where('soft_delete', 0)
-          ->orderBy('id_administrator', 'DESC')
-          ->get();
+    $requestData = $request->only([
+      'search',
+      'id_administrator',
+      'limit',
+      'page',
+      'sort',
+    ]);
 
-      return ResultHelpers::success($data, 200, true);
+    $search = $requestData['search'] ?? null;
+    $idAdministrator = $requestData['id_administrator'] ?? null;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $page = $requestData['page'] ?? 1;
+    $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    // Calculate the offset based on the page and limit
+    $offset = ($page - 1) * $limit;
+
+    // Initialize the query builder for the main data retrieval
+    $query = Administrators::where('soft_delete', 0); 
+
+    if($sort === 1){
+      $query->orderBy('id_administrator', 'DESC');
+    }else if($sort === 2 ){
+      $query->orderBy('id_administrator', 'ASC');
+    }else if($sort === 3 ){
+      $query->orderBy('username', 'ASC');
+    }else{ 
+      $query->orderBy('id_administrator', 'DESC');
+    }
+
+    $query->skip($offset)
+    ->take($limit);
+
+    // Initialize the query builder for the total records count
+    $totalRecordsQuery = Administrators::where('soft_delete', 0);
+    
+    if ($search) {
+      $query->where(function ($query) use ($search) {
+          $query->where('email', 'LIKE', '%' . $search . '%')
+                ->orWhere('username', 'LIKE', '%' . $search . '%');
+      });
+  
+      $totalRecordsQuery->where(function ($query) use ($search) {
+        $query->where('email', 'LIKE', '%' . $search . '%')
+              ->orWhere('username', 'LIKE', '%' . $search . '%');
+      });
+    }  
+
+    if ($idAdministrator) {
+        $query->where('id_administrator', $idAdministrator);
+        $totalRecordsQuery->where('id_administrator', $idAdministrator);
+    }    
+  
+    // Execute the query to retrieve data
+    $data = $query->get();
+
+    // Execute the query to get the total records count
+    $totalRecords = $totalRecordsQuery->count();
+    $totalPages = ceil($totalRecords / $limit);
+
+    return ResultHelpers::success([
+      'data' => $data,
+      'total_pages' => $totalPages,
+    ], 200, true);
   }
 }

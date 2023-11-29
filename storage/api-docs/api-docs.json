@@ -122,13 +122,46 @@
             }
         },
         "/administrators/show": {
-            "get": {
+            "post": {
                 "tags": [
                     "Administrators"
                 ],
                 "summary": "Show administrator",
                 "description": "Returns administrator data",
                 "operationId": "showAdministrators",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n          <br> - search as search for administrators username, email\n          <br> - limit as limit show data (default 10)\n          <br> - page as page show data (default 1)\n          <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "search": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "id_administrator": {
+                                        "type": "integer",
+                                        "example": null
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "sort": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful Operation"
@@ -461,7 +494,7 @@
                 "description": "Returns Poll data",
                 "operationId": "showPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for poll with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the poll assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1140,7 +1173,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the quiz assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
