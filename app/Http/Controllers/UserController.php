@@ -234,13 +234,18 @@ class UserController extends Controller
      *      description="Returns Users data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - search as search for administrators username, email
             <br> - limit as limit show data (default 10)
-            <br> - page as page show data (default 1)",
+            <br> - page as page show data (default 1)
+            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
+     *              @OA\Property(property="search", type="string", example=null),
+     *              @OA\Property(property="id_user", type="int", example=null),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
+     *              @OA\Property(property="sort", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -264,30 +269,61 @@ class UserController extends Controller
     public function show(Request $request)
     {
         $requestData = $request->only([
-          'limit',
-          'page',
+            'search',
+            'id_user',
+            'limit',
+            'page',
+            'sort',
         ]);
-  
+
+        $search = $requestData['search'] ?? null;
+        $idUser = $requestData['id_user'] ?? null;
         $limit = $requestData['limit'] ?? 10; // Default limit is 10
         $page = $requestData['page'] ?? 1;
-  
+        $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+    
         // Calculate the offset based on the page and limit
         $offset = ($page - 1) * $limit;
 
-        $data = Users::where('soft_delete', 0)
-            ->orderBy('id_user', 'DESC')
-            ->select([
-                'id_user',
-                'username',
-                'fb_ids',
-                'go_ids',
-                'status',
-            ])
-            ->skip($offset)
-            ->take($limit)
-            ->get();
-
-        $totalRecords = Users::where('soft_delete', 0)->count();
+        // Initialize the query builder for the main data retrieval
+        $query = Users::where('soft_delete', 0); 
+    
+        if($sort === 1){
+          $query->orderBy('id_user', 'DESC');
+        }else if($sort === 2 ){
+          $query->orderBy('id_user', 'ASC');
+        }else if($sort === 3 ){
+          $query->orderBy('username', 'ASC');
+        }else{ 
+          $query->orderBy('id_user', 'DESC');
+        }
+    
+        $query->skip($offset)
+        ->take($limit);
+    
+        // Initialize the query builder for the total records count
+        $totalRecordsQuery = Users::where('soft_delete', 0);
+    
+        if ($search) {
+          $query->where(function ($query) use ($search) {
+              $query->where('username', 'LIKE', '%' . $search . '%');
+          });
+      
+          $totalRecordsQuery->where(function ($query) use ($search) {
+            $query->where('username', 'LIKE', '%' . $search . '%');
+          });
+        }  
+    
+        if ($idUser) {
+            $query->where('id_user', $idUser);
+            $totalRecordsQuery->where('id_user', $idUser);
+        }    
+      
+        // Execute the query to retrieve data
+        $data = $query->get();
+    
+        // Execute the query to get the total records count
+        $totalRecords = $totalRecordsQuery->count();
         $totalPages = ceil($totalRecords / $limit);
     
         return ResultHelpers::success([
