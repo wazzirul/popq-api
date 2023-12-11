@@ -312,50 +312,6 @@
                 }
             }
         },
-        "/import/importTriviaPoll": {
-            "post": {
-                "tags": [
-                    "Import"
-                ],
-                "summary": "import Trivia & Poll Data",
-                "description": "route / url for import trivia & poll data",
-                "operationId": "importTriviaPoll",
-                "requestBody": {
-                    "description": "<b>Note:</b>\n                 <br><b>file_import</b> : file excel of trivia & poll data that will be imported",
-                    "required": true,
-                    "content": {
-                        "multipart/form-data": {
-                            "schema": {
-                                "required": [
-                                    "file_import"
-                                ],
-                                "properties": {
-                                    "file_import": {
-                                        "type": "string",
-                                        "format": "binary"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful Operation"
-                    },
-                    "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "500": {
-                        "description": "Server Error"
-                    }
-                }
-            }
-        },
         "/import/importImages": {
             "post": {
                 "tags": [
@@ -494,7 +450,7 @@
                 "description": "Returns Poll data",
                 "operationId": "showPoll",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for poll with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the poll assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for poll with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the poll assigned to (default null)\n            <br> - slug_categories as slug_categories that the poll assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -506,6 +462,10 @@
                                     },
                                     "id_categories": {
                                         "type": "integer",
+                                        "example": null
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
                                         "example": null
                                     },
                                     "draft": {
@@ -1173,7 +1133,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the quiz assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the quiz assigned to (default null)\n            <br> - slug_categories as slug_categories that the quiz assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1185,6 +1145,10 @@
                                     },
                                     "id_categories": {
                                         "type": "integer",
+                                        "example": null
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
                                         "example": null
                                     },
                                     "draft": {

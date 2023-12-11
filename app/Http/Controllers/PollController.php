@@ -217,6 +217,7 @@ class PollController extends Controller
      *          description="<b>Note:</b>
             <br> - search as search for poll with references of topic, title, subtitle, description (default null)
             <br> - id_categories as id_categories that the poll assigned to (default null)
+            <br> - slug_categories as slug_categories that the poll assigned to (default null)
             <br> - draft as draft show data (default 0 / published) (1 = drafted poll) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -226,6 +227,7 @@ class PollController extends Controller
      *              type="object",
      *              @OA\Property(property="search", type="string", example=null),
      *              @OA\Property(property="id_categories", type="int", example=null),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
@@ -255,6 +257,7 @@ class PollController extends Controller
       $requestData = $request->only([
         'search',
         'id_categories',
+        'slug_categories',
         'draft',
         'limit',
         'page',
@@ -263,6 +266,7 @@ class PollController extends Controller
 
       $search = $requestData['search'] ?? null;
       $idCategories = $requestData['id_categories'] ?? null;
+      $slugCategories = $requestData['slug_categories'] ?? null;
       $draft = $requestData['draft'] ?? 0;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
@@ -272,7 +276,8 @@ class PollController extends Controller
       $offset = ($page - 1) * $limit;
 
       // Initialize the query builder for the main data retrieval
-      $query = Poll::where('soft_delete', 0)
+      $query = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
+          ->where('poll.soft_delete', 0)
           ->with('Categories')
           ->withCount('PollListChoice'); // Load the total poll list choices count 
 
@@ -290,7 +295,7 @@ class PollController extends Controller
           ->take($limit);
 
       // Initialize the query builder for the total records count
-      $totalRecordsQuery = Poll::where('soft_delete', 0);
+      $totalRecordsQuery = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')->where('poll.soft_delete', 0);
       
       if ($search) {
         $query->where(function ($query) use ($search) {
@@ -311,7 +316,12 @@ class PollController extends Controller
       if ($idCategories) {
           $query->where('id_categories', $idCategories);
           $totalRecordsQuery->where('id_categories', $idCategories);
-      }    
+      }   
+      
+      if ($slugCategories) {
+        $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
+      }   
 
       // Conditionally add the 'draft' where clause if draft is not 100
       if ($draft != 100) {

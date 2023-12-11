@@ -212,6 +212,7 @@ class QuizController extends Controller
      *          description="<b>Note:</b>
             <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
             <br> - id_categories as id_categories that the quiz assigned to (default null)
+            <br> - slug_categories as slug_categories that the quiz assigned to (default null)
             <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -221,6 +222,7 @@ class QuizController extends Controller
      *              type="object",
      *              @OA\Property(property="search", type="string", example=null),
      *              @OA\Property(property="id_categories", type="int", example=null),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
@@ -250,6 +252,7 @@ class QuizController extends Controller
       $requestData = $request->only([
         'search',
         'id_categories',
+        'slug_categories',
         'draft',
         'limit',
         'page',
@@ -258,6 +261,7 @@ class QuizController extends Controller
 
       $search = $requestData['search'] ?? null;
       $idCategories = $requestData['id_categories'] ?? null;
+      $slugCategories = $requestData['slug_categories'] ?? null;
       $draft = $requestData['draft'] ?? 0;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
@@ -267,7 +271,8 @@ class QuizController extends Controller
       $offset = ($page - 1) * $limit;
 
       // Initialize the query builder for the main data retrieval
-      $query = Quiz::where('soft_delete', 0)
+      $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+          ->where('quiz.soft_delete', 0)
           ->with('Categories')
           ->withCount('quizQuestions'); // Load the total quiz questions count
 
@@ -285,7 +290,7 @@ class QuizController extends Controller
           ->take($limit);
   
       // Initialize the query builder for the total records count
-      $totalRecordsQuery = Quiz::where('soft_delete', 0);
+      $totalRecordsQuery = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')->where('quiz.soft_delete', 0);
       
       if ($search) {
         $query->where(function ($query) use ($search) {
@@ -306,7 +311,12 @@ class QuizController extends Controller
       if ($idCategories) {
           $query->where('id_categories', $idCategories);
           $totalRecordsQuery->where('id_categories', $idCategories);
-      }    
+      }  
+      
+      if ($slugCategories) {
+        $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
+      }  
   
       // Conditionally add the 'draft' where clause if draft is not 100
       if ($draft != 100) {
