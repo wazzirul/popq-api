@@ -724,11 +724,11 @@ class QuizController extends Controller
       $user = Users::where('id_user', $idUser)->first();
 
       if (!$user) {
-        return ResultHelpers::error('User not found', 404);
+        return ResultHelpers::errors('User not found', 400, false);
       }else if($user->soft_delete == 1){
-        return ResultHelpers::error('User has been deleted', 404);
+        return ResultHelpers::errors('User has been deleted', 400, false);
       }else if($user->status == 1){
-        return ResultHelpers::error('User has been blocked', 404);
+        return ResultHelpers::errors('User has been blocked', 400, false);
       }
 
       // Calculate the offset based on the page and limit
@@ -809,33 +809,43 @@ class QuizController extends Controller
     * )
     */
     public function importQuiz(Request $request){
-      $requestData = $request->only([
-        'file_quiz',
-      ]);
-
-      $this->validate($request, [
-        'file_quiz' => 'required|mimes:xlsx,txt,csv',
-      ]);
-
-      $fileQuiz = $requestData['file_quiz'] ?? null;
-
-      // Read the file content and remove double quotes
-      $fileContent = File::get($fileQuiz);
-      $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+      try {
+        $requestData = $request->only([
+          'file_quiz',
+        ]);
   
-      // Save the modified content back to the file
-      File::put($fileQuiz, $fileContentWithoutQuotes);
+        $this->validate($request, [
+          'file_quiz' => 'required|mimes:xlsx,txt,csv',
+        ]);
   
-      // Now, you can proceed with the import
-      Excel::import(new TriviaImport, $fileQuiz);
+        $fileQuiz = $requestData['file_quiz'] ?? null;
+
+        if($fileQuiz == null){
+          return ResultHelpers::errors('File not found', 400, false);
+        }
   
-      $latestQuiz = Quiz::latest()->first();
-      if ($latestQuiz) {
-          $latestQuiz->today_status = 1;
-          $latestQuiz->save();
+        // Read the file content and remove double quotes
+        $fileContent = File::get($fileQuiz);
+        $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+    
+        // Save the modified content back to the file
+        File::put($fileQuiz, $fileContentWithoutQuotes);
+    
+        // Now, you can proceed with the import
+        Excel::import(new TriviaImport, $fileQuiz);
+    
+        $latestQuiz = Quiz::latest()->first();
+        if ($latestQuiz) {
+            $latestQuiz->today_status = 1;
+            $latestQuiz->save();
+        }
+  
+        return ResultHelpers::success("Success Importing Data", 200, true);
+      } catch (ValidationException $e) {
+          return ResultHelpers::errors($e->validator->errors()->first(), 400, false);
+      } catch (\Exception $e) {
+          return ResultHelpers::errors($e->getMessage(), 500, false);
       }
-
-      return ResultHelpers::success("Success Importing Data", 200, true);
     }
 
 

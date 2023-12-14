@@ -743,11 +743,11 @@ class PollController extends Controller
       $user = Users::where('id_user', $idUser)->first();
 
       if (!$user) {
-        return ResultHelpers::error('User not found', 404);
+        return ResultHelpers::errors('User not found', 404, false);
       }else if($user->soft_delete == 1){
-        return ResultHelpers::error('User has been deleted', 404);
+        return ResultHelpers::errors('User has been deleted', 404, false);
       }else if($user->status == 1){
-        return ResultHelpers::error('User has been blocked', 404);
+        return ResultHelpers::errors('User has been blocked', 404, false);
       }
 
       // Calculate the offset based on the page and limit
@@ -832,32 +832,42 @@ class PollController extends Controller
     * )
     */
     public function importPoll(Request $request){
-      $requestData = $request->only([
-        'file_poll',
-      ]);
-
-      $this->validate($request, [
-        'file_poll' => 'required|mimes:xlsx,txt,csv',
-      ]);
-
-      $filePoll = $requestData['file_poll'] ?? null;
-
-      // Read the file content and remove double quotes
-      $fileContent = File::get($filePoll);
-      $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+      try {
+        $requestData = $request->only([
+          'file_poll',
+        ]);
   
-      // Save the modified content back to the file
-      File::put($filePoll, $fileContentWithoutQuotes);
+        $this->validate($request, [
+          'file_poll' => 'required|mimes:xlsx,txt,csv',
+        ]);
+  
+        $filePoll = $requestData['file_poll'] ?? null;
 
-      Excel::import(new PollsImport, $filePoll);
-
-      $latestPoll = Poll::latest()->first();
-      if ($latestPoll) {
-        $latestPoll->today_status = 1;
-        $latestPoll->save();
-      }    
-
-      return ResultHelpers::success("Success Importing Data", 200, true);
+        if($filePoll === null){
+          return ResultHelpers::errors('File not found', 404, false);
+        }
+  
+        // Read the file content and remove double quotes
+        $fileContent = File::get($filePoll);
+        $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+    
+        // Save the modified content back to the file
+        File::put($filePoll, $fileContentWithoutQuotes);
+  
+        Excel::import(new PollsImport, $filePoll);
+  
+        $latestPoll = Poll::latest()->first();
+        if ($latestPoll) {
+          $latestPoll->today_status = 1;
+          $latestPoll->save();
+        }    
+  
+        return ResultHelpers::success("Success Importing Data", 200, true);
+      } catch (ValidationException $e) {
+          return ResultHelpers::errors($e->validator->errors()->first(), 400, false);
+      } catch (\Exception $e) {
+          return ResultHelpers::errors($e->getMessage(), 500, false);
+      }
     }
 
 
