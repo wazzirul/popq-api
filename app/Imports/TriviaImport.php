@@ -68,6 +68,7 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
     }
     
     $thumbnailQuiz = $row[9] ?? null;
+    $QuizID = $row[9] ?? null; // from csv file
     $thumbnailUrl = null;
     $imagesIdQuiz = null;
     if ($thumbnailQuiz) {
@@ -97,7 +98,7 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
       $idCategories = $categories->id_categories;
-      $slugQuiz = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[0]));
+      $slugQuiz = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[0])).'_'.preg_replace('/[^a-zA-Z0-9]+/', '',$QuizID);
       $titleQuiz = $row[0];
       $topicQuiz = $row[0];
       $subtitleQuiz = $row[2];
@@ -108,7 +109,7 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
       $incorrectAnswerTwo = $row[7];
       $incorrectAnswerThree = $row[8];
       
-      $quiz = Quiz::where('title', $titleQuiz)->orWhere('slug', $slugQuiz)->first();
+      $quiz = Quiz::where('slug', $slugQuiz)->first();
       if(!$quiz){
         $quiz = new Quiz;
       }

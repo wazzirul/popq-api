@@ -856,11 +856,20 @@ class PollController extends Controller
   
         Excel::import(new PollsImport, $filePoll);
   
+        // Update all records with today_status = 1 to today_status = 0
+        Poll::where('today_status', 1)->update(['today_status' => 0]);
+
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(2);
+
+        // Fetch the latest poll
         $latestPoll = Poll::latest()->first();
+
+        // If there's a latest poll, update its today_status to 1
         if ($latestPoll) {
-          $latestPoll->today_status = 1;
-          $latestPoll->save();
-        }    
+            $latestPoll->today_status = 1;
+            $latestPoll->save();
+        }
   
         return ResultHelpers::success("Success Importing Data", 200, true);
       } catch (ValidationException $e) {

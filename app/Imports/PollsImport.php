@@ -69,6 +69,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
     }
     
     $thumbnailPoll = $row[9] ?? null;
+    $PollID = $row[9] ?? null;
     $thumbnailUrl = null;
     $imagesIdPoll = null;
     if ($thumbnailPoll) {
@@ -97,12 +98,12 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
     }
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
-        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4]));
+        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4])).'_'.$PollID;
         $titlePoll = $row[4];
         $topicPoll = $row[0];
         $subtitlePoll = $row[2];
         $descriptionPoll = $row[1];
-        $poll = Poll::Where('title', $titlePoll)->orWhere('slug', $slugPoll)->first();
+        $poll = Poll::where('slug', $slugPoll)->first();
         if(!$poll){
         $poll = new Poll;
         }

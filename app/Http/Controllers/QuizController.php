@@ -833,8 +833,17 @@ class QuizController extends Controller
     
         // Now, you can proceed with the import
         Excel::import(new TriviaImport, $fileQuiz);
-    
+
+        // Update all records with today_status = 1 to today_status = 0
+        Quiz::where('today_status', 1)->update(['today_status' => 0]);
+        
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(2);
+        
+        // Fetch the latest quiz
         $latestQuiz = Quiz::latest()->first();
+        
+        // If there's a latest quiz, update its today_status to 1
         if ($latestQuiz) {
             $latestQuiz->today_status = 1;
             $latestQuiz->save();
