@@ -98,7 +98,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
     }
     
     if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
-        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4])).'_'.$PollID;
+        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4])).'_'.preg_replace('/[^a-zA-Z0-9]+/', '',$PollID);
         $titlePoll = $row[4];
         $topicPoll = $row[0];
         $subtitlePoll = $row[2];
