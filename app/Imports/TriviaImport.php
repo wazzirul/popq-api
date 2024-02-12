@@ -52,19 +52,39 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
 
   public function model(array $row)
   {
-    if(!empty($row[3])){
-      $categories = Categories::where('name_category', 'like', '%' . $row[3] . '%')->first();
+    if (!empty($row[3])) {
+      // Check if the category name contains the word "games" or is related to video games
+      if (stripos($row[3], 'games') !== false) {
+          // If it does, find or create the "Games" category
+          $gamesCategory = Categories::where('name_category', 'like', '%Games%')->first();
   
-      if (!$categories) {
-          $categories = new Categories;
-          $categories->name_category = $row[3]; // Set the name_category from the Excel data
-          $categories->slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[3]));
-          $categories->color = "Transparent";
-          $categories->color_hex = "#00000000";
-          $categories->save();
+          if (!$gamesCategory) {
+              $gamesCategory = new Categories;
+              $gamesCategory->name_category = 'Games';
+              $gamesCategory->slug = 'games';
+              $gamesCategory->color = "cyan"; // Set the desired color for Games category
+              $gamesCategory->color_hex = "#88E2CE"; // Set the desired color code for Games category
+              $gamesCategory->save();
+          }
+  
+          // Assign the "Games" category ID
+          $idCategories = $gamesCategory->id_categories;
+  
+      } else {
+          // If it doesn't contain "games", proceed with the original logic
+          $categories = Categories::where('name_category', 'like', '%' . $row[3] . '%')->first();
+  
+          if (!$categories) {
+              $categories = new Categories;
+              $categories->name_category = $row[3];
+              $categories->slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[3]));
+              $categories->color = "Transparent";
+              $categories->color_hex = "#00000000";
+              $categories->save();
+          }
+  
+          $idCategories = $categories->id_categories;
       }
-      
-      $idCategories = $categories->id_categories;
     }
     
     $thumbnailQuiz = $row[9] ?? null;
@@ -120,7 +140,6 @@ class TriviaImport implements ToModel, WithStartRow, WithCustomCsvSettings
       $quiz->slug = $slugQuiz;
       $quiz->subtitle = $subtitleQuiz;
       $imagesIdQuiz && $quiz->images_id = $imagesIdQuiz;
-      $thumbnailUrl && $quiz->thumbnail = $thumbnailUrl;
       $quiz->description = $descriptionQuiz;
       $quiz->today_status = 0;
       $quiz->draft = 0;
