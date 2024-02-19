@@ -55,7 +55,7 @@ class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
   {
     if (!empty($row[3])) {
       // Check if the category name contains the word "games" or is related to video games
-      if (stripos($row[3], 'games') !== false) {
+      if (stripos($row[3], 'Game') !== false || stripos($row[3], 'Games') !== false || stripos($row[3], 'game') !== false || stripos($row[3], 'games') !== false) {
           // If it does, find or create the "Games" category
           $gamesCategory = Categories::where('name_category', 'like', '%Games%')->first();
   

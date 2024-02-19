@@ -20,6 +20,38 @@ use App\Models\UserPoll;
 class PollController extends Controller
 {
     /**
+     * Compress image using pure PHP.
+     *
+     * @param string $imageData Binary image data
+     * @param string $extension Image file extension
+     * @param int $quality Compression quality (0 to 100)
+     * @return string Compressed image data
+     */
+    private function compressImage($imageData, $extension, $quality)
+    {
+        $image = imagecreatefromstring($imageData);
+
+        ob_start();
+        switch ($extension) {
+            case 'jpg':
+            case 'jpeg':
+                imagejpeg($image, null, $quality);
+                break;
+            case 'png':
+                imagepng($image, null, (int)($quality / 10));
+                break;
+            case 'gif':
+                imagegif($image);
+                break;
+        }
+        $compressedImage = ob_get_clean();
+
+        imagedestroy($image);
+
+        return $compressedImage;
+    }
+
+    /**
      * Convert base64 icon to file and upload it to public folder.
      *
      * @param string $base64Icon
@@ -953,8 +985,13 @@ class PollController extends Controller
 
           if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
               $path = "images/{$imageId}.{$extension}";
-              // Move the image to your desired storage directory
-              Storage::disk('public')->put($path, $zip->getFromIndex($i));
+              $imageData = $zip->getFromIndex($i);
+
+              // Compress the image before storing
+              $compressedImage = $this->compressImage($imageData, $extension, 70);
+
+              // Move the compressed image to your desired storage directory
+              Storage::disk('public')->put($path, $compressedImage);
               // Generate the URL of the uploaded file
               $imageUrl = Storage::disk('public')->url($path);
 
