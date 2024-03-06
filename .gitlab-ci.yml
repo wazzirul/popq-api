@@ -12,8 +12,8 @@ packndeploy_laravel:
   tags:
     - cicd
     - devops
-    - illiyin
     - popq
+    - runner
   stage: packndeploy
   before_script:
     - source .${CI_COMMIT_REF_NAME}.env
