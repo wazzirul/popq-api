@@ -94,7 +94,7 @@ class PollController extends Controller
      *          description="<b>Note:</b>
                <br><b>id_poll</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
-               <br><b>topic</b> : topic quiz
+               <br><b>topic</b> : topic poll
                <br><b>title</b> : title poll
                <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle poll
@@ -220,7 +220,7 @@ class PollController extends Controller
       $slugPoll && $data->slug = $slugPoll;
       $subtitlePoll && $data->subtitle = $subtitlePoll;
       $imagesIdPoll && $data->images_id = $imagesIdPoll;
-      $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+      $thumbnailUrl != null && $data->thumbnail = $thumbnailUrl;
       $descriptionPoll && $data->description = $descriptionPoll;
       if ($todayStatusPoll !== null) {
         $data->today_status = $todayStatusPoll;
@@ -236,6 +236,73 @@ class PollController extends Controller
       return ResultHelpers::success($data, 200, true);
     }
     
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/poll/set-featured",
+     *      operationId="setFeaturedPoll",
+     *      tags={"Poll"},
+     *      summary="Set Featured Poll Data",
+     *      description="Returns Poll Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_poll</b> : id poll (1)
+               <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_poll", type="int", example="1"),
+     *              @OA\Property(property="slug", type="string", example="slug-poll"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function setFeatured(Request $request)
+    {
+        $requestData = $request->only([
+            'id_poll', 
+            'slug',
+        ]);
+
+        $idPoll = $requestData['id_poll'] ?? null;
+        $slugPoll = $requestData['slug'] ?? null;
+
+        // Check if the user already exists in the table
+        $data = Poll::where('id_poll', $idPoll)->orWhere('slug', $slugPoll)->first();
+        if (!$data) {
+          return ResultHelpers::errors('Poll Data Not Found from id_poll or slug inputed', 400, false);
+        }
+
+        // Update all records with today_status = 1 to today_status = 0
+        Poll::where('today_status', 1)->update(['today_status' => 0]);
+        
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(1);
+        
+        $data = Poll::where('id_poll', $idPoll)->orWhere('slug', $slugPoll)->first();
+        $data->today_status = 1;
+        $data->save();
+
+        return ResultHelpers::success($data, 200, true);
+    }    
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -464,7 +531,7 @@ class PollController extends Controller
       
 
       // Check if the user already exists in the table
-      // Return Created / Updated Quiz Data with its Relation.
+      // Return Created / Updated Poll Data with its Relation.
       $data = $query->with('Categories')
         ->orderBy('poll.id_poll', 'DESC')
         ->skip($offset)
@@ -624,7 +691,7 @@ class PollController extends Controller
             'today_status', // Facebook ID
         ]);
 
-        $todayStatusPoll = $requestData['today_status'] ?? null;
+        $todayStatusPoll = $requestData['today_status'] ?? 1;
 
         if (!$todayStatusPoll) {
             return ResultHelpers::errors('today_status must be provided.', 400, false);
@@ -632,6 +699,10 @@ class PollController extends Controller
         
         // Get a random poll where today_status = 1
         $data = Poll::where('today_status', $todayStatusPoll)->where('soft_delete', 0)->inRandomOrder()->with('Categories', 'PollListChoice')->first();
+
+        if (!$data) {
+          $data = Poll::where('soft_delete', 0)->latest()->with('Categories', 'PollListChoice')->first();
+        }
 
         return ResultHelpers::success($data, 200, true);
     } 

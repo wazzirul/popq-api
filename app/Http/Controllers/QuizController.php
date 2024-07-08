@@ -222,11 +222,78 @@ class QuizController extends Controller
         $slugQuiz && $data->slug = $slugQuiz;
         $subtitleQuiz && $data->subtitle = $subtitleQuiz;
         $imagesIdQuiz && $data->images_id = $imagesIdQuiz;
-        $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+        $thumbnailUrl != null && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;
         $todayStatusQuiz != null && $data->today_status = $todayStatusQuiz;
         $draftQuiz != null && $data->draft = $draftQuiz;
         $softDeleteQuiz != null && $data->soft_delete = $softDeleteQuiz;
+        $data->save();
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/set-featured",
+     *      operationId="setFeatured",
+     *      tags={"Quiz"},
+     *      summary="Set Featured Quiz Data",
+     *      description="Returns Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_quiz</b> : id quiz (1)
+               <br><b>slug</b> : slug quiz (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_quiz", type="int", example="1"),
+     *              @OA\Property(property="slug", type="string", example="slug-quiz"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function setFeatured(Request $request)
+    {
+        $requestData = $request->only([
+            'id_quiz', 
+            'slug',
+        ]);
+
+        $idQuiz = $requestData['id_quiz'] ?? null;
+        $slugQuiz = $requestData['slug'] ?? null;
+
+        // Check if the user already exists in the table
+        $data = Quiz::where('id_quiz', $idQuiz)->orWhere('slug', $slugQuiz)->first();
+        if (!$data) {
+          return ResultHelpers::errors('Quiz Data Not Found from id_quiz or slug inputed', 400, false);
+        }
+
+        // Update all records with today_status = 1 to today_status = 0
+        Quiz::where('today_status', 1)->update(['today_status' => 0]);
+        
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(1);
+        
+        $data = Quiz::where('id_quiz', $idQuiz)->orWhere('slug', $slugQuiz)->first();
+        $data->today_status = 1;
         $data->save();
 
         return ResultHelpers::success($data, 200, true);
@@ -606,7 +673,7 @@ class QuizController extends Controller
             'today_status', // Facebook ID
         ]);
 
-        $todayStatusQuiz = $requestData['today_status'] ?? null;
+        $todayStatusQuiz = $requestData['today_status'] ?? 1;
 
         if (!$todayStatusQuiz) {
             return ResultHelpers::errors('today_status must be provided.', 400, false);
@@ -614,6 +681,10 @@ class QuizController extends Controller
 
         // Get a random quiz where today_status = 1
         $data = Quiz::where('today_status', $todayStatusQuiz)->where('soft_delete', 0)->inRandomOrder()->with('Categories','QuizQuestions.QuizListChoice')->first();
+
+        if (!$data) {
+          $data = Quiz::where('soft_delete', 0)->latest()->with('Categories', 'QuizQuestions.QuizListChoice')->first();
+        }
 
         return ResultHelpers::success($data, 200, true);
     } 

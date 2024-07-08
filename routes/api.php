@@ -96,6 +96,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/quiz/importQuiz', [QuizController::class, 'importQuiz'])->name('quiz--importQuiz');
     Route::post('/quiz/importImagesQuiz', [QuizController::class, 'importImagesQuiz'])->name('quiz--importImagesQuiz');
     Route::post('/quiz/showUserLoginQuiz', [QuizController::class, 'showUserLoginQuiz'])->name('quiz--showUserLoginQuiz');
+    Route::post('/quiz/set-featured', [QuizController::class, 'setFeatured'])->name('quiz--setFeatured');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
@@ -110,6 +111,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/poll/importPoll', [PollController::class, 'importPoll'])->name('poll--importPoll');
     Route::post('/poll/importImagesPoll', [PollController::class, 'importImagesPoll'])->name('poll--importImagesPoll');
     Route::post('/poll/showUserLoginPoll', [PollController::class, 'showUserLoginPoll'])->name('poll--showUserLoginPoll');
+    Route::post('/poll/set-featured', [PollController::class, 'setFeatured'])->name('poll--setFeatured');
 
     // Imports
     Route::post('/import/importTriviaPoll', [ImportController::class, 'importTriviaPoll'])->name('import--importTriviaPoll');
