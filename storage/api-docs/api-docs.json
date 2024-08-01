@@ -2394,5 +2394,51 @@
                 }
             }
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "Administrators",
+            "description": "Administrators"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories"
+        },
+        {
+            "name": "Poll",
+            "description": "Poll"
+        },
+        {
+            "name": "Poll List Choice",
+            "description": "Poll List Choice"
+        },
+        {
+            "name": "Quiz",
+            "description": "Quiz"
+        },
+        {
+            "name": "Quiz List Choice",
+            "description": "Quiz List Choice"
+        },
+        {
+            "name": "Quiz Question",
+            "description": "Quiz Question"
+        },
+        {
+            "name": "Statistics",
+            "description": "Statistics"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        },
+        {
+            "name": "User Poll",
+            "description": "User Poll"
+        },
+        {
+            "name": "User Quiz",
+            "description": "User Quiz"
+        }
+    ]
 }

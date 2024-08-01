@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Carbon\Carbon;
 
-use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\PollListChoice;
 use App\Models\UserPoll;

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 
 use App\Models\Quiz;
-use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 
 class QuizQuestionsController extends Controller

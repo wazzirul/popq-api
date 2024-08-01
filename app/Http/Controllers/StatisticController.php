@@ -9,14 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Categories;
 use App\Models\Poll;
-use App\Models\PollListChoice;
 use App\Models\UserPoll;
 use App\Models\Users;
 use App\Models\Quiz;
-use App\Models\QuizListChoice;
-use App\Models\QuizQuestions;
 use App\Models\UserQuiz;
-use App\Models\UserQuizAnswer;
 
 class StatisticController extends Controller
 {
