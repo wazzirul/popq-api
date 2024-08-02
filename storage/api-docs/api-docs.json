@@ -1872,6 +1872,47 @@
                 }
             }
         },
+        "/v2/statistics/showScoresUser": {
+            "post": {
+                "tags": [
+                    "Statistics V2"
+                ],
+                "summary": "Show Score User Statistics Data",
+                "description": "Returns User score total quiz submit, correct answer with percentage, and correct answer percentage from each category",
+                "operationId": "statisticsshowscoresuserv2",
+                "requestBody": {
+                    "description": "<b>Note:</b><br> - <b>id_user</b> as a reference to the user data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "string",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "tags": [
@@ -2427,6 +2468,10 @@
         {
             "name": "Statistics",
             "description": "Statistics"
+        },
+        {
+            "name": "Statistics V2",
+            "description": "Statistics V2"
         },
         {
             "name": "Users",

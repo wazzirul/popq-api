@@ -14,6 +14,7 @@ use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
 use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
+use App\Http\Controllers\StatisticV2Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,17 @@ Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'sh
 Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
 Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScoresUser'])->name('statistics--showScoresUser');
 
+
+////////
+// V2 //
+////////
+Route::prefix('v2')->group(function () {
+    // Statistics
+    Route::post('/statistics/showScoresUser', [StatisticV2Controller::class, 'showScoresUser'])->name('v2-statistics--showScoresUser');
+});
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // GROUP OF JWT TOKEN
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -114,6 +126,13 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
     Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
     Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
+
+    ////////
+    // V2 //
+    ////////
+    Route::prefix('v2')->group(function () {
+        // Route for V2 with JWT
+    });
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN
