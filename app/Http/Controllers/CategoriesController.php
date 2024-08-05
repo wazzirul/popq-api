@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
 
 use App\Models\Categories;
 

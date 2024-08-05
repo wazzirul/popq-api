@@ -5,19 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\File;
-
-use App\Imports\TriviaImport;
 
 use App\Models\Categories;
 use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 use App\Models\Users;
-use App\Models\UserQuiz;
-use App\Models\UserQuizAnswer;
 
 class QuizController extends Controller
 {
