@@ -30,7 +30,7 @@ class StatisticV2Controller extends Controller
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
-     *              @OA\Property(property="id_user", type="string", example="1"),
+     *              @OA\Property(property="id_user", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -60,9 +60,7 @@ class StatisticV2Controller extends Controller
         $idUser = $requestData['id_user'];
 
         $user = Users::where('id_user', $idUser)->first();
-        if (!$user) {
-            return ResultHelpers::error('User not found', 404);
-        }
+        if (!$user) return ResultHelpers::error('User not found', 404);
 
         // Calculate the correct answer with percentage for the user's quizzes
         $totalQuizSubmitted = UserQuiz::where('id_user', $idUser)->count();
@@ -117,6 +115,134 @@ class StatisticV2Controller extends Controller
             'correct_answer_percentage' => $correctAnswerPercentage,
             'categories' => $categories,
         ];
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/v2/statistics/showCompletedQuiz",
+     *      operationId="statisticsshowCompletedQuizv2",
+     *      tags={"Statistics V2"},
+     *      summary="Show Score User Statistics Data",
+     *      description="Returns User completed quiz",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b><br> - <b>id_user</b> as a reference to the user data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_user", type="int", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showCompletedQuiz(Request $request)
+    {
+        $requestData = $request->only([
+            'id_user',
+            'limit',
+            'page',
+        ]);
+
+        $idUser = $requestData['id_user'];
+        $limit = $requestData['limit'] ?? 10; // Default limit is 10
+        $page = $requestData['page'] ?? 1;
+
+        $user = Users::where('id_user', $idUser)->first();
+        if (!$user) return ResultHelpers::error('User not found', 404);
+
+        $offset = ($page - 1) * $limit;
+        $data = UserQuiz::where('soft_delete', 0)
+            ->where('id_user', $idUser)
+            ->with('Quiz.Categories')
+            ->orderBy('updated_at', 'DESC')
+            ->skip($offset)
+            ->take($limit)
+            ->get();
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/v2/statistics/showCompletedPoll",
+     *      operationId="statisticsshowCompletedPollv2",
+     *      tags={"Statistics V2"},
+     *      summary="Show Score User Statistics Data",
+     *      description="Returns User completed poll",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b><br> - <b>id_user</b> as a reference to the user data that will be returned",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_user", type="int", example="1"),
+     *              @OA\Property(property="limit", type="int", example="10"),
+     *              @OA\Property(property="page", type="int", example="1"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function showCompletedPoll(Request $request)
+    {
+        $requestData = $request->only([
+            'id_user',
+            'limit',
+            'page',
+        ]);
+
+        $idUser = $requestData['id_user'];
+        $limit = $requestData['limit'] ?? 10; // Default limit is 10
+        $page = $requestData['page'] ?? 1;
+
+        $user = Users::where('id_user', $idUser)->first();
+        if (!$user) return ResultHelpers::error('User not found', 404);
+
+        $offset = ($page - 1) * $limit;
+        $data = UserPoll::where('soft_delete', 0)
+            ->where('id_user', $idUser)
+            ->with('Poll.Categories')
+            ->orderBy('updated_at', 'DESC')
+            ->skip($offset)
+            ->take($limit)
+            ->get();
 
         return ResultHelpers::success($data, 200, true);
     }

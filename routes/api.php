@@ -75,6 +75,8 @@ Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScor
 Route::prefix('v2')->group(function () {
     // Statistics
     Route::post('/statistics/showScoresUser', [StatisticV2Controller::class, 'showScoresUser'])->name('v2-statistics--showScoresUser');
+    Route::post('/statistics/showCompletedQuiz', [StatisticV2Controller::class, 'showCompletedQuiz'])->name('v2-statistics--showCompletedQuiz');
+    Route::post('/statistics/showCompletedPoll', [StatisticV2Controller::class, 'showCompletedPoll'])->name('v2-statistics--showCompletedPoll');
 });
 
 
