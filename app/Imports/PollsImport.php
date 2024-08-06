@@ -4,14 +4,18 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithStartRow;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+
+use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\PollListChoice;
-use App\Models\Categories;
+use App\Models\Quiz;
+use App\Models\QuizListChoice;
+use App\Models\QuizQuestions;
 use Illuminate\Support\Facades\Storage;
 
 
-class PollsImport implements ToModel, WithStartRow
+class PollsImport implements ToModel, WithStartRow, WithCustomCsvSettings
 {
   /**
   * @param array $row
@@ -22,7 +26,7 @@ class PollsImport implements ToModel, WithStartRow
   {
       return 2;
   }
-  
+
   private function uploadImageFromBase64($base64Icon)
   {
       // Extract the MIME type and base64 data from the input
@@ -38,7 +42,7 @@ class PollsImport implements ToModel, WithStartRow
 
       // Convert base64 to binary data and save it to a file
       $decodedData = base64_decode($base64Data);
-      $path = 'poll_thumbnail/' . $filename; // Set the desired directory within the public storage folder
+      $path = 'images/' . $filename; // Set the desired directory within the public storage folder
 
       // Save the file to the storage disk
       Storage::disk('public')->put($path, $decodedData);
@@ -49,20 +53,45 @@ class PollsImport implements ToModel, WithStartRow
 
   public function model(array $row)
   {
-    $categories = Categories::where('name_category', $row[3])->first();
-
-    if (!$categories) {
-        $categories = new Categories;
-        $categories->name_category = $row[3];
-        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
-        $categories->slug = strtolower(str_replace(' ', '-', $row[3]));
-        $categories->color = "Transparent";
-        $categories->color_hex = "#00000000";
-        $categories->save();
-    }
+    if (!empty($row[3])) {
+      // Check if the category name contains the word "games" or is related to video games
+      if (stripos($row[3], 'Game') !== false || stripos($row[3], 'Games') !== false || stripos($row[3], 'game') !== false || stripos($row[3], 'games') !== false) {
+          // If it does, find or create the "Games" category
+          $gamesCategory = Categories::where('name_category', 'like', '%Games%')->first();
+  
+          if (!$gamesCategory) {
+              $gamesCategory = new Categories;
+              $gamesCategory->name_category = 'Games';
+              $gamesCategory->slug = 'games';
+              $gamesCategory->color = "cyan"; // Set the desired color for Games category
+              $gamesCategory->color_hex = "#88E2CE"; // Set the desired color code for Games category
+              $gamesCategory->save();
+          }
+  
+          // Assign the "Games" category ID
+          $idCategories = $gamesCategory->id_categories;
+  
+      } else {
+          // If it doesn't contain "games", proceed with the original logic
+          $categories = Categories::where('name_category', 'like', '%' . $row[3] . '%')->first();
+  
+          if (!$categories) {
+              $categories = new Categories;
+              $categories->name_category = $row[3];
+              $categories->slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[3]));
+              $categories->color = "Transparent";
+              $categories->color_hex = "#00000000";
+              $categories->save();
+          }
+  
+          $idCategories = $categories->id_categories;
+      }
+    }  
     
-    $thumbnailPoll = $row[5] ?? null;
+    $thumbnailPoll = $row[9] ?? null;
+    $PollID = $row[9] ?? null;
     $thumbnailUrl = null;
+    $imagesIdPoll = null;
     if ($thumbnailPoll) {
       if (filter_var($thumbnailPoll, FILTER_VALIDATE_URL)) {
         // Thumbnail is a URL
@@ -81,61 +110,94 @@ class PollsImport implements ToModel, WithStartRow
             // Handle unsupported file format
             return ResultHelpers::errors('Unsupported file format for thumbnail', 400, false);
         }
-      }    
+      }else{
+        $imagesIdPoll = rtrim($row[9], ';');
+      } 
     } else {
         $thumbnailPath = null;
     }
-
-    $idCategories = $categories->id_categories;
-    $slugPoll = strtolower(str_replace(' ', '-', $row[4]));
-    $titlePoll = $row[4];
-    $subtitlePoll = $row[2];
-    $descriptionPoll = $row[1];
     
-    $poll = Poll::where('slug', $slugPoll)->orWhere('title', $titlePoll)->first();
-    if(!$poll){
-      $poll = new Poll;
-    }
+    if (!empty($row[4]) && !empty($row[3]) && !empty($row[0]) && !empty($row[2]) && !empty($row[1])) {
+        $slugPoll = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $row[4])).'_'.preg_replace('/[^a-zA-Z0-9]+/', '',$PollID);
+        $titlePoll = $row[4];
+        $topicPoll = $row[0];
+        $subtitlePoll = $row[2];
+        $descriptionPoll = $row[1];
+        $poll = Poll::where('slug', $slugPoll)->first();
+        if(!$poll){
+        $poll = new Poll;
+        }
+
+        $poll->id_categories = $idCategories;
+        $poll->topic = $topicPoll;
+        $poll->title = $titlePoll;
+        $poll->slug = $slugPoll;
+        $poll->subtitle = $subtitlePoll;
+        $imagesIdPoll && $poll->images_id = $imagesIdPoll;
+        $poll->description = $descriptionPoll;
+        $poll->today_status = 0;
+        $poll->draft = 0;
+        $poll->soft_delete = 0;
+        $poll->save();
+        
+        if (!empty($row[5])) {
+          $existingChoice = PollListChoice::where('poll_choice', $row[5])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
       
-    $poll->id_categories = $idCategories;
-    $poll->title = $titlePoll;
-    $poll->slug = $slugPoll;
-    $poll->subtitle = $subtitlePoll;
-    $poll->thumbnail = $thumbnailUrl;
-    $poll->description = $descriptionPoll;
-    $poll->today_status = 0;
-    $poll->draft = 0;
-    $poll->soft_delete = 0;
-    $poll->save();
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[5],
+              ]);
+          }
+        }
+        
+        if (!empty($row[6])) {
+          $existingChoice = PollListChoice::where('poll_choice', $row[6])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[6],
+              ]);
+          }
+        }
+        
+        if (!empty($row[7])) {
+          $existingChoice = PollListChoice::where('poll_choice', $row[7])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[7],
+              ]);
+          }
+        }
+        
+        if (!empty($row[8])) {
+          $existingChoice = PollListChoice::where('poll_choice', $row[8])
+          ->where('id_poll', $poll->id_poll)
+          ->first();
+      
+          if (!$existingChoice) {
+              PollListChoice::create([
+                  'id_poll' => $poll->id_poll,
+                  'poll_choice' => $row[8],
+              ]);
+          }
+        }
+    }
+  }
     
-    if (!empty($row[6])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[6],
-      ]);
-    }
-
-    if (!empty($row[7])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[7],
-      ]);
-    }
-
-    if (!empty($row[8])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[8],
-      ]);
-    }
-
-    if (!empty($row[9])) {
-      PollListChoice::create([
-        'id_poll' => $poll->id_poll,
-        'poll_choice' => $row[9],
-      ]);
-    }
-
-    return $poll;
+  public function getCsvSettings(): array
+  {
+    return [
+      'delimiter' => "|"
+    ];
   }
 }

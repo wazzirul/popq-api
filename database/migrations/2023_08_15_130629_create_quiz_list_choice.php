@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('id_quiz')->references('id_quiz')->on('quiz')->onDelete('cascade');
             $table->unsignedInteger('id_quiz_questions');
             $table->foreign('id_quiz_questions')->references('id_quiz_questions')->on('quiz_questions')->onDelete('cascade');
-            $table->string('answer');
+            $table->string('answer',2000);
             $table->boolean('correct')->default(false);
 
             $table->smallInteger('soft_delete')->default(0);

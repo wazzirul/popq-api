@@ -15,7 +15,7 @@ return new class extends Migration
             $table->increments('id_poll_list_choice');
             $table->unsignedInteger('id_poll');
             $table->foreign('id_poll')->references('id_poll')->on('poll')->onDelete('cascade');
-            $table->string('poll_choice');
+            $table->string('poll_choice', 2000);
 
             $table->smallInteger('soft_delete')->default(0);
             $table->timestamps();

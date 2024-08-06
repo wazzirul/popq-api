@@ -32,6 +32,7 @@ Route::post('/user/login', [UserController::class, 'login'])->name('users--Login
 
 // Categories
 Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
+Route::post('/categories/showByID', [CategoriesController::class, 'showByID'])->name('categories--showByID');
 
 // Quiz
 Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
@@ -87,7 +88,7 @@ Route::prefix('v2')->group(function () {
 Route::group(['middleware' => 'jwt.authentication'], function () {
     // Administrator
     Route::post('/administrators/store', [AdministratorsController::class, 'store'])->name('administrators--store');
-    Route::get('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
+    Route::post('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
 
     // User
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');
@@ -105,7 +106,10 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
 
     // Quiz
     Route::post('/quiz/create-edit', [QuizController::class, 'createEdit'])->name('quiz--createEdit');
+    Route::post('/quiz/importQuiz', [QuizController::class, 'importQuiz'])->name('quiz--importQuiz');
+    Route::post('/quiz/importImagesQuiz', [QuizController::class, 'importImagesQuiz'])->name('quiz--importImagesQuiz');
     Route::post('/quiz/showUserLoginQuiz', [QuizController::class, 'showUserLoginQuiz'])->name('quiz--showUserLoginQuiz');
+    Route::post('/quiz/set-featured', [QuizController::class, 'setFeatured'])->name('quiz--setFeatured');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
@@ -118,7 +122,13 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Poll
     Route::post('/poll/create-edit', [PollController::class, 'createEdit'])->name('poll--createEdit');
     Route::post('/poll/importPoll', [PollController::class, 'importPoll'])->name('poll--importPoll');
+    Route::post('/poll/importImagesPoll', [PollController::class, 'importImagesPoll'])->name('poll--importImagesPoll');
     Route::post('/poll/showUserLoginPoll', [PollController::class, 'showUserLoginPoll'])->name('poll--showUserLoginPoll');
+    Route::post('/poll/set-featured', [PollController::class, 'setFeatured'])->name('poll--setFeatured');
+
+    // Imports
+    Route::post('/import/importTriviaPoll', [ImportController::class, 'importTriviaPoll'])->name('import--importTriviaPoll');
+    Route::post('/import/importImages', [ImportController::class, 'importImages'])->name('import--importImages');
 
     // Poll List Choice
     Route::post('/poll-list-choice/create-edit', [PollListChoiceController::class, 'createEdit'])->name('poll-question--createEdit');

@@ -43,13 +43,23 @@ class JwtAuthentication
         }
 
         if($retrieve_token->expired < $now){
-            $res['status_code'] = 401;
-            $res['success'] = false;
-            $res['error'] = "tokenExpired";
-            $res['detail'] = "Token is Expired";
+            // Token is expired, so refresh it
+            $tomorrow = $now->copy()->addDay(); // Add one day to the current date
+            $retrieve_token->expired = $tomorrow;
+            $retrieve_token->save();
+            
+            $res['status_code'] = 200;
+            $res['success'] = true;
+            $res['message'] = "Token has been refreshed";
 
-            return response($res, 401);
+            // $res['status_code'] = 401;
+            // $res['success'] = false;
+            // $res['error'] = "tokenExpired";
+            // $res['detail'] = "Token is Expired";
+            // return response($res, 401);
         }
+
+
 
         return $next($request);
     }

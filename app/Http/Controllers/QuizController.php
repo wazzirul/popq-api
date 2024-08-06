@@ -15,6 +15,38 @@ use App\Models\Users;
 class QuizController extends Controller
 {
     /**
+     * Compress image using pure PHP.
+     *
+     * @param string $imageData Binary image data
+     * @param string $extension Image file extension
+     * @param int $quality Compression quality (0 to 100)
+     * @return string Compressed image data
+     */
+    private function compressImage($imageData, $extension, $quality)
+    {
+        $image = imagecreatefromstring($imageData);
+
+        ob_start();
+        switch ($extension) {
+            case 'jpg':
+            case 'jpeg':
+                imagejpeg($image, null, $quality);
+                break;
+            case 'png':
+                imagepng($image, null, (int)($quality / 10));
+                break;
+            case 'gif':
+                imagegif($image);
+                break;
+        }
+        $compressedImage = ob_get_clean();
+
+        imagedestroy($image);
+
+        return $compressedImage;
+    }
+
+    /**
      * Convert base64 icon to file and upload it to public folder.
      *
      * @param string $base64Icon
@@ -57,9 +89,11 @@ class QuizController extends Controller
      *          description="<b>Note:</b>
                <br><b>id_quiz</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>id_categories</b> : id of categories
+               <br><b>topic</b> : topic quiz
                <br><b>title</b> : title quiz
-               <br><b>slug</b> : slug poll (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
+               <br><b>slug</b> : slug quiz (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>subtitle</b> : subtitle quiz
+               <br><b>images_id</b> : images_id for importing process (nullable)
                <br><b>thumbnail</b> : must be base64 string
                <br><b>description</b> : description quiz
                <br><b>today_status</b> : today_status quiz for todays trivia (default 0 = false, 1 = true)
@@ -73,9 +107,11 @@ class QuizController extends Controller
      *              type="object",
      *              @OA\Property(property="id_quiz", type="int", example="1"),
      *              @OA\Property(property="id_categories", type="int", example="1"),
-     *              @OA\Property(property="title", type="string", example="Which scene in The Empire Strikes Back best showcases Luke's growth as a character?"),
+     *              @OA\Property(property="topic", type="string", example="Obi-wan Kenobi"),
+     *              @OA\Property(property="title", type="string", example="Obi-wan Kenobi"),
      *              @OA\Property(property="slug", type="string", example="slug-quiz"),
      *              @OA\Property(property="subtitle", type="string", example="Star Wars"),
+     *              @OA\Property(property="images_id", type="string", example=null),
      *              @OA\Property(property="thumbnail", type="string", example="base_64string"),
      *              @OA\Property(property="description", type="string", example="The Last Jedi"),
      *              @OA\Property(property="today_status", type="int", example="0"),
@@ -106,9 +142,11 @@ class QuizController extends Controller
         $requestData = $request->only([
             'id_quiz', 
             'id_categories', 
+            'topic',
             'title', 
             'slug',
             'subtitle',
+            'images_id',
             'thumbnail',
             'description',
             'today_status',
@@ -118,9 +156,11 @@ class QuizController extends Controller
 
         $idQuiz = $requestData['id_quiz'] ?? null;
         $idCategories = $requestData['id_categories'] ?? null;
+        $topicQuiz = $requestData['topic'] ?? null;
         $titleQuiz = $requestData['title'] ?? null;
         $slugQuiz = $requestData['slug'] ?? null;
         $subtitleQuiz = $requestData['subtitle'] ?? null;
+        $imagesIdQuiz = $requestData['images_id'] ?? null;
         $thumbnailQuiz = $requestData['thumbnail'] ?? null;
         $descriptionQuiz = $requestData['description'] ?? 0;
         $todayStatusQuiz = $requestData['today_status'] ?? 0;
@@ -170,20 +210,83 @@ class QuizController extends Controller
         }
             
         $idCategories && $data->id_categories = $idCategories;
+        $topicQuiz && $data->topic = $topicQuiz;
         $titleQuiz && $data->title = $titleQuiz;
         $slugQuiz && $data->slug = $slugQuiz;
         $subtitleQuiz && $data->subtitle = $subtitleQuiz;
-        $thumbnailUrl && $data->thumbnail = $thumbnailUrl;
+        $imagesIdQuiz && $data->images_id = $imagesIdQuiz;
+        $thumbnailUrl != null && $data->thumbnail = $thumbnailUrl;
         $descriptionQuiz && $data->description = $descriptionQuiz;
-        if ($todayStatusQuiz !== null) {
-          $data->today_status = $todayStatusQuiz;
+        $todayStatusQuiz != null && $data->today_status = $todayStatusQuiz;
+        $draftQuiz != null && $data->draft = $draftQuiz;
+        $softDeleteQuiz != null && $data->soft_delete = $softDeleteQuiz;
+        $data->save();
+
+        return ResultHelpers::success($data, 200, true);
+    }
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/set-featured",
+     *      operationId="setFeatured",
+     *      tags={"Quiz"},
+     *      summary="Set Featured Quiz Data",
+     *      description="Returns Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+               <br><b>id_quiz</b> : id quiz (1)
+               <br><b>slug</b> : slug quiz (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)",
+     *          required=true,
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="id_quiz", type="int", example="1"),
+     *              @OA\Property(property="slug", type="string", example="slug-quiz"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function setFeatured(Request $request)
+    {
+        $requestData = $request->only([
+            'id_quiz', 
+            'slug',
+        ]);
+
+        $idQuiz = $requestData['id_quiz'] ?? null;
+        $slugQuiz = $requestData['slug'] ?? null;
+
+        // Check if the user already exists in the table
+        $data = Quiz::where('id_quiz', $idQuiz)->orWhere('slug', $slugQuiz)->first();
+        if (!$data) {
+          return ResultHelpers::errors('Quiz Data Not Found from id_quiz or slug inputed', 400, false);
         }
-        if ($draftQuiz !== null) {
-          $data->draft = $draftQuiz;
-        }
-        if ($softDeleteQuiz !== null) {
-          $data->soft_delete = $softDeleteQuiz;
-        }
+
+        // Update all records with today_status = 1 to today_status = 0
+        Quiz::where('today_status', 1)->update(['today_status' => 0]);
+        
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(1);
+        
+        $data = Quiz::where('id_quiz', $idQuiz)->orWhere('slug', $slugQuiz)->first();
+        $data->today_status = 1;
         $data->save();
 
         return ResultHelpers::success($data, 200, true);
@@ -199,15 +302,23 @@ class QuizController extends Controller
      *      description="Returns Quiz data",
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
+            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
+            <br> - id_categories as id_categories that the quiz assigned to (default null)
+            <br> - slug_categories as slug_categories that the quiz assigned to (default null)
             <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
-            <br> - page as page show data (default 1)",
+            <br> - page as page show data (default 1)
+            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
+     *              @OA\Property(property="search", type="string", example=null),
+     *              @OA\Property(property="id_categories", type="int", example=null),
+     *              @OA\Property(property="slug_categories", type="string", example=null),
      *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
+     *              @OA\Property(property="sort", type="int", example="1"),
      *          )
      *      ),
      *      @OA\Response(
@@ -231,28 +342,73 @@ class QuizController extends Controller
     public function show(Request $request)
     {
       $requestData = $request->only([
+        'search',
+        'id_categories',
+        'slug_categories',
         'draft',
         'limit',
         'page',
+        'sort',
       ]);
 
+      $search = $requestData['search'] ?? null;
+      $idCategories = $requestData['id_categories'] ?? null;
+      $slugCategories = $requestData['slug_categories'] ?? null;
       $draft = $requestData['draft'] ?? 0;
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
+      $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
 
       // Calculate the offset based on the page and limit
       $offset = ($page - 1) * $limit;
 
       // Initialize the query builder for the main data retrieval
-      $query = Quiz::where('soft_delete', 0)
-          ->orderBy('id_quiz', 'DESC')
+      $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+          ->where('quiz.soft_delete', 0)
           ->with('Categories')
-          ->withCount('quizQuestions') // Load the total quiz questions count
-          ->skip($offset)
+          ->withCount('quizQuestions'); // Load the total quiz questions count
+
+      if($sort === 1){
+        $query->orderBy('id_quiz', 'DESC');
+      }else if($sort === 2 ){
+        $query->orderBy('id_quiz', 'ASC');
+      }else if($sort === 3 ){
+        $query->orderBy('title', 'ASC');
+      }else{ 
+        $query->orderBy('id_quiz', 'DESC');
+      }
+
+      $query->skip($offset)
           ->take($limit);
   
       // Initialize the query builder for the total records count
-      $totalRecordsQuery = Quiz::where('soft_delete', 0);
+      $totalRecordsQuery = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')->where('quiz.soft_delete', 0);
+      
+      if ($search) {
+        $query->where(function ($query) use ($search) {
+            $query->where('topic', 'LIKE', '%' . $search . '%')
+                  ->orWhere('title', 'LIKE', '%' . $search . '%')
+                  ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
+                  ->orWhere('description', 'LIKE', '%' . $search . '%');
+        });
+    
+        $totalRecordsQuery->where(function ($query) use ($search) {
+            $query->where('topic', 'LIKE', '%' . $search . '%')
+                  ->orWhere('title', 'LIKE', '%' . $search . '%')
+                  ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
+                  ->orWhere('description', 'LIKE', '%' . $search . '%');
+        });
+      } 
+      
+      if ($idCategories) {
+          $query->where('id_categories', $idCategories);
+          $totalRecordsQuery->where('id_categories', $idCategories);
+      }  
+      
+      if ($slugCategories) {
+        $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
+      }  
   
       // Conditionally add the 'draft' where clause if draft is not 100
       if ($draft != 100) {
@@ -284,12 +440,16 @@ class QuizController extends Controller
      *      @OA\RequestBody(
      *          description="<b>Note:</b>
                 <br> - id_categories as a reference to the categories quiz data that will be returned
-                <br> - slug_categories as a reference to the categories quiz data that will be returned",
+                <br> - slug_categories as a reference to the categories quiz data that will be returned
+                <br> - draft as a reference to the categories quiz data that will be returned, use (2) for all published and draft, default (0) for published quiz
+                <br> - limit as limit show data (default 10)
+                <br> - page as page show data (default 1)",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
      *              @OA\Property(property="id_categories", type="string", example="1"),
      *              @OA\Property(property="slug_categories", type="string", example=null),
+     *              @OA\Property(property="draft", type="int", example="0"),
      *              @OA\Property(property="limit", type="int", example="10"),
      *              @OA\Property(property="page", type="int", example="1"),
      *          )
@@ -317,12 +477,14 @@ class QuizController extends Controller
       $requestData = $request->only([
         'id_categories',
         'slug_categories',
+        'draft',
         'limit',
         'page',
         ]);
 
       $idCategories = $requestData['id_categories'] ?? null;
       $slugCategories = $requestData['slug_categories'] ?? null;
+      $draft = $requestData['draft'] ?? 0; // Default draft is 0 / published
       $limit = $requestData['limit'] ?? 10; // Default limit is 10
       $page = $requestData['page'] ?? 1;
 
@@ -335,25 +497,39 @@ class QuizController extends Controller
 
       $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
       ->where('quiz.soft_delete', 0);
+      $totalRecordsQuery = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0);
 
       if ($idCategories !== null) {
         // Add a filter for id_categories if idCategories is not null
         $query->where('quiz.id_categories', $idCategories);
-      }elseif ($slugCategories !==null) {
+        $totalRecordsQuery->where('quiz.id_categories', $idCategories);
+      }
+      
+      if ($slugCategories !==null) {
         $query->where('categories.slug', $slugCategories);
+        $totalRecordsQuery->where('categories.slug', $slugCategories);
+      }
+      
+      if ($draft !== 2){
+        $query->where('quiz.draft', $draft);
+        $totalRecordsQuery->where('quiz.draft', $draft);
       }
 
       // Check if the user already exists in the table
       // Return Created / Updated Quiz Data with its Relation.
       $data = $query->with('Categories')
+      ->orderBy('quiz.id_quiz', 'DESC')
         ->skip($offset)
         ->take($limit)
         ->get([
           'quiz.id_quiz',
           'quiz.id_categories',
+          'quiz.topic',
           'quiz.title',
           'quiz.slug',
           'quiz.subtitle',
+          'quiz.images_id',
           'quiz.thumbnail',
           'quiz.description',
           'quiz.today_status',
@@ -361,7 +537,7 @@ class QuizController extends Controller
           'quiz.soft_delete',
         ]);
 
-      $totalRecords = $query->count();
+      $totalRecords = $totalRecordsQuery->count();
       $totalPages = ceil($totalRecords / $limit);
 
       return ResultHelpers::success([
@@ -490,15 +666,18 @@ class QuizController extends Controller
             'today_status', // Facebook ID
         ]);
 
-        $todayStatusQuiz = $requestData['today_status'] ?? null;
+        $todayStatusQuiz = $requestData['today_status'] ?? 1;
 
         if (!$todayStatusQuiz) {
             return ResultHelpers::errors('today_status must be provided.', 400, false);
         }
 
-        // Check if the user already exists in the table
-        // Return Created / Updated Quiz Data with its Relation.
-        $data = Quiz::where('today_status', $todayStatusQuiz)->with('Categories','QuizQuestions.QuizListChoice')->first();
+        // Get a random quiz where today_status = 1
+        $data = Quiz::where('today_status', $todayStatusQuiz)->where('soft_delete', 0)->inRandomOrder()->with('Categories','QuizQuestions.QuizListChoice')->first();
+
+        if (!$data) {
+          $data = Quiz::where('soft_delete', 0)->latest()->with('Categories', 'QuizQuestions.QuizListChoice')->first();
+        }
 
         return ResultHelpers::success($data, 200, true);
     } 
@@ -641,11 +820,11 @@ class QuizController extends Controller
       $user = Users::where('id_user', $idUser)->first();
 
       if (!$user) {
-        return ResultHelpers::error('User not found', 404);
+        return ResultHelpers::errors('User not found', 400, false);
       }else if($user->soft_delete == 1){
-        return ResultHelpers::error('User has been deleted', 404);
+        return ResultHelpers::errors('User has been deleted', 400, false);
       }else if($user->status == 1){
-        return ResultHelpers::error('User has been blocked', 404);
+        return ResultHelpers::errors('User has been blocked', 400, false);
       }
 
       // Calculate the offset based on the page and limit
@@ -681,4 +860,212 @@ class QuizController extends Controller
         'total_pages' => $totalPages,
       ], 200, true);
     }    
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/importQuiz",
+     *      operationId="importQuiz",
+     *      tags={"Quiz"},
+     *      summary="Import Quiz Data",
+     *      description="Returns Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                 <br><b>file_quiz</b> : file excel of quiz data that will be imported",
+    *          required=true,
+    *          @OA\MediaType(
+    *              mediaType="multipart/form-data",
+    *              @OA\Schema(
+    *                  required={"file_quiz"},
+    *                  @OA\Property(
+    *                      property="file_quiz",
+    *                      type="string",
+    *                      format="binary",
+    *                  ),
+    *              )
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *       ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function importQuiz(Request $request){
+      try {
+        $requestData = $request->only([
+          'file_quiz',
+        ]);
+  
+        $this->validate($request, [
+          'file_quiz' => 'required|mimes:xlsx,txt,csv',
+        ]);
+  
+        $fileQuiz = $requestData['file_quiz'] ?? null;
+
+        if($fileQuiz == null){
+          return ResultHelpers::errors('File not found', 400, false);
+        }
+  
+        // Read the file content and remove double quotes
+        $fileContent = File::get($fileQuiz);
+        $fileContentWithoutQuotes = str_replace('"', '', $fileContent);
+    
+        // Save the modified content back to the file
+        File::put($fileQuiz, $fileContentWithoutQuotes);
+    
+        // Now, you can proceed with the import
+        Excel::import(new TriviaImport, $fileQuiz);
+
+        // Update all records with today_status = 1 to today_status = 0
+        Quiz::where('today_status', 1)->update(['today_status' => 0]);
+        
+        // Introduce a delay of 1 second (sleep for 1 second)
+        sleep(2);
+        
+        // Fetch the latest quiz
+        $latestQuiz = Quiz::latest()->first();
+        
+        // If there's a latest quiz, update its today_status to 1
+        if ($latestQuiz) {
+            $latestQuiz->today_status = 1;
+            $latestQuiz->save();
+        }
+  
+        return ResultHelpers::success("Success Importing Data", 200, true);
+      } catch (ValidationException $e) {
+          return ResultHelpers::errors($e->validator->errors()->first(), 400, false);
+      } catch (\Exception $e) {
+          return ResultHelpers::errors($e->getMessage(), 500, false);
+      }
+    }
+
+
+    
+
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Post(
+     *      path="/quiz/importImagesQuiz",
+     *      operationId="importImagesQuiz",
+     *      tags={"Quiz"},
+     *      summary="Import Images Quiz Data",
+     *      description="Returns Images Quiz Data",
+     *      @OA\RequestBody(
+     *          description="<b>Note:</b>
+                 <br><b>zip_file</b> : file zip of images with names of images_id references for images quiz that will be imported",
+    *          required=true,
+    *          @OA\MediaType(
+    *              mediaType="multipart/form-data",
+    *              @OA\Schema(
+    *                  required={"zip_file"},
+    *                  @OA\Property(
+    *                      property="zip_file",
+    *                      type="string",
+    *                      format="binary",
+    *                  ),
+    *              )
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful Operation",
+    *       ),
+    *      @OA\Response(
+    *          response=400,
+    *          description="Bad Request"
+    *      ),
+    *      @OA\Response(
+    *          response=401,
+    *          description="Unauthorized",
+    *      ),
+    *      @OA\Response(
+    *          response=500,
+    *          description="Server Error"
+    *      )
+    * )
+    */
+    public function importImagesQuiz(Request $request){
+      $requestData = $request->only([
+        'zip_file',
+      ]);
+
+      $this->validate($request, [
+        'zip_file' => 'required|mimes:zip,rar',
+      ]);
+
+      $zipFile = $request->file('zip_file');
+      $extractPath = storage_path('app/temp_zip_extract');
+
+      $zipFile->move($extractPath, $zipFile->getClientOriginalName());
+
+      // Extract images from the zip file
+      $zip = new \ZipArchive();
+      $zip->open($extractPath . '/' . $zipFile->getClientOriginalName());
+      $images = [];
+
+      $errors = [];
+
+      for ($i = 0; $i < $zip->numFiles; $i++) {
+          $filename = $zip->getNameIndex($i);
+          $imageId = pathinfo($filename, PATHINFO_FILENAME);
+          $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+          if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif'])) {
+              $path = "images/{$imageId}.{$extension}";
+              $imageData = $zip->getFromIndex($i);
+
+              // Compress the image before storing
+              $compressedImage = $this->compressImage($imageData, $extension, 70);
+
+              // Move the compressed image to your desired storage directory
+              Storage::disk('public')->put($path, $compressedImage);
+              // Generate the URL of the uploaded file
+              $imageUrl = Storage::disk('public')->url($path);
+
+              $data = Quiz::where('quiz.images_id', $imageId)->first();
+              if ($data) {
+                  $data->thumbnail = $imageUrl;
+                  $data->save();
+              }
+              
+              $images[] = [
+                'image_id' => $imageId,
+                'file_path' => $filename,
+                'extension' => $extension,
+                'image_url' => $imageUrl,
+                'data' => $data,
+            ];
+          } else {
+              $errors[] = "File {$filename} is not an image";
+          }
+      }
+
+      $zip->close();
+
+      // Clean up the extracted files
+      unlink($extractPath . '/' . $zipFile->getClientOriginalName());
+
+      $results = [
+          'message' => "Complete Importing Images Data",
+          'images' => $images,
+          'errors' => $errors,
+      ];
+
+      return ResultHelpers::success($results , 200, true);
+    }
 }
