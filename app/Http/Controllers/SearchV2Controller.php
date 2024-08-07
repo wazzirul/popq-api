@@ -1,0 +1,484 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Helpers\ResultHelpers;
+
+use App\Models\Categories;
+use App\Models\Poll;
+use App\Models\Quiz;
+use App\Models\QuizListChoice;
+use App\Models\QuizQuestions;
+use App\Models\Users;
+use Illuminate\Support\Facades\DB;
+
+class SearchV2Controller extends Controller
+{
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Get(
+   *      path="/v2/search/showFilter",
+   *      operationId="showfiltersearchv2",
+   *      tags={"Search V2"},
+   *      summary="Show filter search data",
+   *      description="Returns filter search data",
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function showFilter()
+  {
+    $quizFilter = Quiz::select('subtitle', 'soft_delete');
+    $pollFilter = Poll::select('subtitle', 'soft_delete');
+    $allFilter = $quizFilter->unionAll($pollFilter);
+
+    $data = DB::table(DB::raw("({$allFilter->toSql()}) AS filter"))
+      ->where('soft_delete', 0)
+      ->select([
+        'subtitle',
+        DB::raw('count(*) as total')
+      ])
+      ->groupBy('subtitle')
+      ->orderBy('total', 'DESC')
+      ->get();
+
+    return ResultHelpers::success($data, 200, true);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/v2/search",
+   *      operationId="searchv2",
+   *      tags={"Search V2"},
+   *      summary="Show search for global data",
+   *      description="Returns search for global data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+            <br> - search as search with references of topic, title, description (default null)
+            <br> - filter can multiple (default null)
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)
+            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+   *          required=false,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example="department"),
+   *              @OA\Property(
+   *                  property="filter",
+   *                  type="array",
+   *                  example={"Star Wars", "Batman", "Game of Thrones"},
+   *                  @OA\Items(type="string"),
+   *              ),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="sort", type="int", example="1"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function search(Request $request)
+  {
+    $requestData = $request->only([
+      'search',
+      'filter',
+      'limit',
+      'page',
+      'sort',
+    ]);
+
+    $search = $requestData['search'] ?? null;
+    $filter = $requestData['filter'] ?? null;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $page = $requestData['page'] ?? 1;
+    $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    // Calculate the offset based on the page and limit
+    $offset = ($page - 1) * $limit;
+
+    // Initialize the query builder for the main data retrieval
+    $quiz = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0)
+      ->with('Categories')
+      ->withCount('quizQuestions'); // Load the total quiz questions count
+
+    $poll = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
+      ->where('poll.soft_delete', 0)
+      ->with('Categories')
+      ->withCount('PollListChoice'); // Load the total poll list choices count 
+
+    if ($search) {
+      $quiz->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', "%$search%")
+          ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('description', 'LIKE', "%$search%");
+      });
+
+      $poll->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', "%$search%")
+          ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('description', 'LIKE', "%$search%");
+      });
+    }
+
+    if ($filter) {
+      $quiz->where(function ($query) use ($filter) {
+        $query->whereIn('subtitle', $filter);
+      });
+
+      $poll->where(function ($query) use ($filter) {
+        $query->whereIn('subtitle', $filter);
+      });
+    }
+
+    if ($sort === 1) {
+      $quiz->orderBy('id_quiz', 'DESC');
+      $poll->orderBy('id_poll', 'DESC');
+    } else if ($sort === 2) {
+      $quiz->orderBy('id_quiz', 'ASC');
+      $poll->orderBy('id_poll', 'ASC');
+    } else if ($sort === 3) {
+      $quiz->orderBy('title', 'ASC');
+      $poll->orderBy('title', 'ASC');
+    } else {
+      $quiz->orderBy('id_quiz', 'DESC');
+      $poll->orderBy('id_poll', 'DESC');
+    }
+
+    $quiz->skip($offset)
+      ->take($limit);
+    $poll->skip($offset)
+      ->take($limit);
+
+    $dataQuizTotal = $quiz->count();
+    $dataQuiz = $quiz->get();
+    $dataPollTotal = $poll->count();
+    $dataPoll = $poll->get();
+
+    // Execute the query to get the total records count
+    $quizTotalPages = ceil($dataQuizTotal / $limit);
+    $pollTotalPages = ceil($dataPollTotal / $limit);
+
+    $data['quiz_total_pages'] = $quizTotalPages;
+    $data['poll_total_pages'] = $pollTotalPages;
+    $data['data_quiz'] = $dataQuiz;
+    $data['data_poll'] = $dataPoll;
+
+    return ResultHelpers::success($data, 200, true);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/v2/search/quiz",
+   *      operationId="quizsearchv2",
+   *      tags={"Search V2"},
+   *      summary="Show search for quiz data",
+   *      description="Returns search for quiz data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+            <br> - search as search for quiz with references of topic, title, description (default null)
+            <br> - filter can multiple (default null)
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)
+            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+   *          required=false,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example="department"),
+   *              @OA\Property(
+   *                  property="filter",
+   *                  type="array",
+   *                  example={"Star Wars", "Batman", "Game of Thrones"},
+   *                  @OA\Items(type="string"),
+   *              ),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="sort", type="int", example="1"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function quiz(Request $request)
+  {
+    $requestData = $request->only([
+      'search',
+      'filter',
+      'limit',
+      'page',
+      'sort',
+    ]);
+
+    $search = $requestData['search'] ?? null;
+    $filter = $requestData['filter'] ?? null;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $page = $requestData['page'] ?? 1;
+    $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    // Calculate the offset based on the page and limit
+    $offset = ($page - 1) * $limit;
+
+    // Initialize the query builder for the main data retrieval
+    $quiz = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0)
+      ->with('Categories')
+      ->withCount('quizQuestions'); // Load the total quiz questions count
+
+    if ($search) {
+      $quiz->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', "%$search%")
+          ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('description', 'LIKE', "%$search%");
+      });
+    }
+
+    if ($filter) {
+      $quiz->where(function ($query) use ($filter) {
+        $query->whereIn('subtitle', $filter);
+      });
+    }
+
+    if ($sort === 1) {
+      $quiz->orderBy('id_quiz', 'DESC');
+    } else if ($sort === 2) {
+      $quiz->orderBy('id_quiz', 'ASC');
+    } else if ($sort === 3) {
+      $quiz->orderBy('title', 'ASC');
+    } else {
+      $quiz->orderBy('id_quiz', 'DESC');
+    }
+
+    $quiz->skip($offset)
+      ->take($limit);
+
+    $dataQuizTotal = $quiz->count();
+    $dataQuiz = $quiz->get();
+
+    // Execute the query to get the total records count
+    $quizTotalPages = ceil($dataQuizTotal / $limit);
+
+    $data['total_pages'] = $quizTotalPages;
+    $data['data'] = $dataQuiz;
+
+    return ResultHelpers::success($data, 200, true);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/v2/search/poll",
+   *      operationId="pollsearchv2",
+   *      tags={"Search V2"},
+   *      summary="Show search for poll data",
+   *      description="Returns search for poll data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+            <br> - search as search for poll with references of topic, title, description (default null)
+            <br> - filter can multiple (default null)
+            <br> - limit as limit show data (default 10)
+            <br> - page as page show data (default 1)
+            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+   *          required=false,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example="department"),
+   *              @OA\Property(
+   *                  property="filter",
+   *                  type="array",
+   *                  example={"Star Wars", "Batman", "Game of Thrones"},
+   *                  @OA\Items(type="string"),
+   *              ),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="sort", type="int", example="1"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function poll(Request $request)
+  {
+    $requestData = $request->only([
+      'search',
+      'filter',
+      'limit',
+      'page',
+      'sort',
+    ]);
+
+    $search = $requestData['search'] ?? null;
+    $filter = $requestData['filter'] ?? null;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $page = $requestData['page'] ?? 1;
+    $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    // Calculate the offset based on the page and limit
+    $offset = ($page - 1) * $limit;
+
+    // Initialize the query builder for the main data retrieval
+    $poll = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
+      ->where('poll.soft_delete', 0)
+      ->with('Categories')
+      ->withCount('PollListChoice'); // Load the total poll list choices count 
+
+    if ($search) {
+      $poll->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', "%$search%")
+          ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('description', 'LIKE', "%$search%");
+      });
+    }
+
+    if ($filter) {
+      $poll->where(function ($query) use ($filter) {
+        $query->whereIn('subtitle', $filter);
+      });
+    }
+
+    if ($sort === 1) {
+      $poll->orderBy('id_poll', 'DESC');
+    } else if ($sort === 2) {
+      $poll->orderBy('id_poll', 'ASC');
+    } else if ($sort === 3) {
+      $poll->orderBy('title', 'ASC');
+    } else {
+      $poll->orderBy('id_poll', 'DESC');
+    }
+
+    $poll->skip($offset)
+      ->take($limit);
+
+    $dataPollTotal = $poll->count();
+    $dataPoll = $poll->get();
+
+    // Execute the query to get the total records count
+    $pollTotalPages = ceil($dataPollTotal / $limit);
+
+    $data['total_pages'] = $pollTotalPages;
+    $data['data'] = $dataPoll;
+
+    return ResultHelpers::success($data, 200, true);
+  }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/v2/search/category",
+   *      operationId="categorysearchv2",
+   *      tags={"Search V2"},
+   *      summary="Show search for category data",
+   *      description="Returns search for category data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+            <br> - search as search for category with references of name_category, slug (default null)",
+   *          required=false,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example="movie"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function category(Request $request)
+  {
+    $requestData = $request->only([
+      'search',
+    ]);
+
+    $search = $requestData['search'] ?? null;
+
+    // Initialize the query builder for the main data retrieval
+    $data = Categories::where('soft_delete', 0);
+    if ($search) {
+      $data->where(function ($query) use ($search) {
+        $query->where('name_category', 'LIKE', "%$search%")
+          ->orWhere('slug', 'LIKE', "%$search%");
+      });
+    }
+    $data = $data->get();
+
+    return ResultHelpers::success($data, 200, true);
+  }
+}
