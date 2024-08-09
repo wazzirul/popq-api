@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
-use Illuminate\Support\Facades\Storage;
 
-use App\Models\Categories;
 use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;

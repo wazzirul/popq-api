@@ -4,16 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\File;
 
-use App\Imports\PollsImport;
-
-use App\Models\Categories;
 use App\Models\Poll;
-use App\Models\PollListChoice;
 use App\Models\Users;
 use App\Models\UserPoll;
 
