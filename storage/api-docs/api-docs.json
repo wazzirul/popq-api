@@ -1084,6 +1084,59 @@
                 }
             }
         },
+        "/v2/poll/showById": {
+            "post": {
+                "tags": [
+                    "Poll V2"
+                ],
+                "summary": "Show BY Id Poll with related poll Data",
+                "description": "Returns Poll with related poll Data based on id_poll",
+                "operationId": "showbyidpollv2",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_user (optional) as a reference to the user data that will be returned with prioritize on recent\n                <br> - id_poll as a reference to the poll data that will be returned\n                <br> - slug as a reference to the poll data that will be returned\n                <br> - id_user as a reference to the poll data that will be returned (if the user already logged in)\n                <br> - subtitle: subtitle poll (Media in new feature)\n                <br> - description: description poll (Franchise in new feature)\n                <br> - limit_related as limit show data related (default 10)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "5"
+                                    },
+                                    "id_poll": {
+                                        "type": "string",
+                                        "example": "1"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "limit_related": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/quiz/create-edit": {
             "post": {
                 "tags": [
@@ -2065,6 +2118,59 @@
                                     "id_quiz_questions": {
                                         "type": "string",
                                         "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/v2/quiz/showById": {
+            "post": {
+                "tags": [
+                    "Quiz V2"
+                ],
+                "summary": "Show BY Id Quiz with related quiz Data",
+                "description": "Returns Quiz with related quiz Data based on id_user, id_quiz / slug",
+                "operationId": "showbyidquizv2",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_user (optional) as a reference to the user data that will be returned with prioritize on recent\n                <br> - id_quiz as a reference to the quiz data that will be returned\n                <br> - slug as a reference to the quiz data that will be returned\n                <br> - limit_related as limit show data related (default 10)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "5"
+                                    },
+                                    "id_quiz": {
+                                        "type": "integer",
+                                        "example": "825"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "limit_related": {
+                                        "type": "integer",
+                                        "example": "10"
                                     }
                                 },
                                 "type": "object"
@@ -3233,6 +3339,10 @@
             "description": "Poll List Choice"
         },
         {
+            "name": "Poll V2",
+            "description": "Poll V2"
+        },
+        {
             "name": "Quiz",
             "description": "Quiz"
         },
@@ -3243,6 +3353,10 @@
         {
             "name": "Quiz Question",
             "description": "Quiz Question"
+        },
+        {
+            "name": "Quiz V2",
+            "description": "Quiz V2"
         },
         {
             "name": "Search V2",

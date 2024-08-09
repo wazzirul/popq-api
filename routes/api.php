@@ -12,6 +12,8 @@ use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\QuizListChoiceController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
+use App\Http\Controllers\PollV2Controller;
+use App\Http\Controllers\QuizV2Controller;
 use App\Http\Controllers\SearchV2Controller;
 use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
@@ -86,6 +88,12 @@ Route::prefix('v2')->group(function () {
     Route::post('/search/quiz', [SearchV2Controller::class, 'quiz'])->name('v2-search--quiz');
     Route::post('/search/poll', [SearchV2Controller::class, 'poll'])->name('v2-search--poll');
     Route::post('/search/category', [SearchV2Controller::class, 'category'])->name('v2-search--category');
+
+    // Quiz
+    Route::post('/quiz/showById', [QuizV2Controller::class, 'showById'])->name('v2-quiz--showById');
+
+    // Poll
+    Route::post('/poll/showById', [PollV2Controller::class, 'showById'])->name('v2-poll--showById');
 });
 
 
