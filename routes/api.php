@@ -12,6 +12,9 @@ use App\Http\Controllers\QuizQuestionsController;
 use App\Http\Controllers\QuizListChoiceController;
 use App\Http\Controllers\PollController;
 use App\Http\Controllers\PollListChoiceController;
+use App\Http\Controllers\PollV2Controller;
+use App\Http\Controllers\QuizV2Controller;
+use App\Http\Controllers\SearchV2Controller;
 use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\ImportController;
@@ -69,6 +72,32 @@ Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'sh
 Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
 Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScoresUser'])->name('statistics--showScoresUser');
 
+
+////////
+// V2 //
+////////
+Route::prefix('v2')->group(function () {
+    // Statistics
+    Route::post('/statistics/showScoresUser', [StatisticV2Controller::class, 'showScoresUser'])->name('v2-statistics--showScoresUser');
+    Route::post('/statistics/showCompletedQuiz', [StatisticV2Controller::class, 'showCompletedQuiz'])->name('v2-statistics--showCompletedQuiz');
+    Route::post('/statistics/showCompletedPoll', [StatisticV2Controller::class, 'showCompletedPoll'])->name('v2-statistics--showCompletedPoll');
+
+    // Search
+    Route::get('/search/showFilter', [SearchV2Controller::class, 'showFilter'])->name('v2-search--showFilter');
+    Route::post('/search', [SearchV2Controller::class, 'search'])->name('v2-search');
+    Route::post('/search/quiz', [SearchV2Controller::class, 'quiz'])->name('v2-search--quiz');
+    Route::post('/search/poll', [SearchV2Controller::class, 'poll'])->name('v2-search--poll');
+    Route::post('/search/category', [SearchV2Controller::class, 'category'])->name('v2-search--category');
+
+    // Quiz
+    Route::post('/quiz/showById', [QuizV2Controller::class, 'showById'])->name('v2-quiz--showById');
+
+    // Poll
+    Route::post('/poll/showById', [PollV2Controller::class, 'showById'])->name('v2-poll--showById');
+});
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 // GROUP OF JWT TOKEN
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -125,6 +154,13 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
     Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
     Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
+
+    ////////
+    // V2 //
+    ////////
+    Route::prefix('v2')->group(function () {
+        // Route for V2 with JWT
+    });
 });
 ///////////////////////////////////////////////////////////////////////////////////////////
 // END GROUP OF JTW TOKEN

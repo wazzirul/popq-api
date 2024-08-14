@@ -36,4 +36,5 @@ packndeploy_laravel:
     - ssh -o StrictHostKeyChecking=no $POPQ_API_INSTANCE_USER@$POPQ_API_INSTANCE_HOST 'rm -f '"$ZIP_FILE"
     - rm -f $ZIP_FILE
   only:
+    - staging
     - production
