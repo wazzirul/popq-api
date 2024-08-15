@@ -17,6 +17,7 @@ use App\Http\Controllers\QuizV2Controller;
 use App\Http\Controllers\SearchV2Controller;
 use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
+use App\Http\Controllers\StatisticV2Controller;
 use App\Http\Controllers\ImportController;
 
 /*
