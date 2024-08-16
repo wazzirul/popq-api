@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
-
+use App\Models\Categories;
 use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 use App\Models\UserQuiz;
+use App\Models\UserQuizAnswer;
 use App\Models\Users;
 
 class QuizV2Controller extends Controller
@@ -99,6 +100,20 @@ class QuizV2Controller extends Controller
         ->limit($limitRelated)
         ->get();
 
+      foreach ($relatedQuizUser as $key => $value) {
+        $userQuizAnswer = UserQuizAnswer::where('soft_delete', 0)
+          ->where('id_user_quiz', $value->id_user_quiz);
+
+        $totalQuestions = $userQuizAnswer->count();
+        $correctAnswers = $userQuizAnswer->where('correct', 1)->count();
+
+        $categories = Categories::find($value->id_categories);
+
+        $value['total_questions'] = $totalQuestions;
+        $value['correct_answers'] = $correctAnswers;
+        $value['categories'] = $categories;
+      }
+
       $newLimit = $limitRelated - $relatedQuizUser->count();
       if ($newLimit > 0) {
         $relatedQuiz = Quiz::where('soft_delete', 0)
@@ -110,6 +125,7 @@ class QuizV2Controller extends Controller
           ->orderBy('created_at', 'DESC')
           ->where('id_quiz', '!=', $idQuiz)
           ->whereNotIn('id_quiz', $relatedQuizUser->pluck('id_quiz'))
+          ->with('Categories')
           ->limit($newLimit)
           ->get();
 
@@ -122,7 +138,9 @@ class QuizV2Controller extends Controller
           $q->orwhere('title', 'LIKE', "%$data->title%");
           $q->orwhere('subtitle', 'LIKE', "%$data->subtitle%");
         })
+        ->where('user_quiz.id_quiz', '!=', $idQuiz)
         ->orderBy('created_at', 'DESC')
+        ->with('Categories')
         ->limit($limitRelated)
         ->get();
     }
