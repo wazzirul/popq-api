@@ -138,7 +138,7 @@ class QuizV2Controller extends Controller
           $q->orwhere('title', 'LIKE', "%$data->title%");
           $q->orwhere('subtitle', 'LIKE', "%$data->subtitle%");
         })
-        ->where('user_quiz.id_quiz', '!=', $idQuiz)
+        ->where('quiz.id_quiz', '!=', $idQuiz)
         ->orderBy('created_at', 'DESC')
         ->with('Categories')
         ->limit($limitRelated)
