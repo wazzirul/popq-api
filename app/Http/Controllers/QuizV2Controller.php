@@ -95,7 +95,7 @@ class QuizV2Controller extends Controller
           $q->orwhere('quiz.title', 'LIKE', "%$data->title%");
           $q->orwhere('quiz.subtitle', 'LIKE', "%$data->subtitle%");
         })
-        ->where('user_quiz.id_quiz', '!=', $idQuiz)
+        ->where('user_quiz.id_quiz', '!=', $data->id_quiz)
         ->orderBy('user_quiz.updated_at', 'DESC')
         ->limit($limitRelated)
         ->get();
@@ -123,7 +123,7 @@ class QuizV2Controller extends Controller
             $q->orwhere('subtitle', 'LIKE', "%$data->subtitle%");
           })
           ->orderBy('created_at', 'DESC')
-          ->where('id_quiz', '!=', $idQuiz)
+          ->where('id_quiz', '!=', $data->id_quiz)
           ->whereNotIn('id_quiz', $relatedQuizUser->pluck('id_quiz'))
           ->with('Categories')
           ->limit($newLimit)
@@ -138,7 +138,7 @@ class QuizV2Controller extends Controller
           $q->orwhere('title', 'LIKE', "%$data->title%");
           $q->orwhere('subtitle', 'LIKE', "%$data->subtitle%");
         })
-        ->where('quiz.id_quiz', '!=', $idQuiz)
+        ->where('quiz.id_quiz', '!=', $data->id_quiz)
         ->orderBy('created_at', 'DESC')
         ->with('Categories')
         ->limit($limitRelated)
