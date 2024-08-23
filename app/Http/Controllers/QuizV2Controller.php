@@ -82,6 +82,7 @@ class QuizV2Controller extends Controller
       // Check by slugQuiz if provided
       $data = Quiz::where('slug', $slugQuiz)->with('Categories')->first();
     }
+    if (!$data) return ResultHelpers::errors('Data quiz not found.', 400, false);
 
     if ($idUser) {
       $user = Users::find($idUser);
