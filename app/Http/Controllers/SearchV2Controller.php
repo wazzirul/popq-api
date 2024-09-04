@@ -10,6 +10,7 @@ use App\Models\Poll;
 use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
+use App\Models\UserQuizAnswer;
 use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 
@@ -73,14 +74,16 @@ class SearchV2Controller extends Controller
    *          description="<b>Note:</b>
             <br> - search as search with references of topic, title, subtitle, description (default null)
             <br> - id_categories: id of categories
+            <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
    *              type="object",
-   *              @OA\Property(property="search", type="string", example="Star Wars"),
+   *              @OA\Property(property="search", type="string", example="Jimmy Conway"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="id_user", type="int", example="5"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -109,6 +112,7 @@ class SearchV2Controller extends Controller
     $requestData = $request->only([
       'search',
       'id_categories',
+      'id_user',
       'limit',
       'page',
       'sort',
@@ -116,9 +120,15 @@ class SearchV2Controller extends Controller
 
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
+    $id_user = $requestData['id_user'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    if ($id_user) {
+      $user = Users::where('id_user', $id_user)->first();
+      if (!$user) return ResultHelpers::errors('User not found', 400, false);
+    }
 
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
@@ -126,11 +136,13 @@ class SearchV2Controller extends Controller
     // Initialize the query builder for the main data retrieval
     $quiz = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
       ->where('quiz.soft_delete', 0)
+      ->where('quiz.draft', 0)
       ->with('Categories')
       ->withCount('quizQuestions'); // Load the total quiz questions count
 
     $poll = Poll::leftJoin('categories', 'categories.id_categories', '=', 'poll.id_categories')
       ->where('poll.soft_delete', 0)
+      ->where('poll.draft', 0)
       ->with('Categories')
       ->withCount('PollListChoice'); // Load the total poll list choices count 
 
@@ -159,17 +171,24 @@ class SearchV2Controller extends Controller
     }
 
     if ($sort === 1) {
-      $quiz->orderBy('id_quiz', 'DESC');
-      $poll->orderBy('id_poll', 'DESC');
+      $quiz->orderBy('quiz.id_quiz', 'DESC');
+      $poll->orderBy('poll.id_poll', 'DESC');
     } else if ($sort === 2) {
-      $quiz->orderBy('id_quiz', 'ASC');
-      $poll->orderBy('id_poll', 'ASC');
+      $quiz->orderBy('quiz.id_quiz', 'ASC');
+      $poll->orderBy('poll.id_poll', 'ASC');
     } else if ($sort === 3) {
-      $quiz->orderBy('title', 'ASC');
-      $poll->orderBy('title', 'ASC');
+      $quiz->orderBy('quiz.title', 'ASC');
+      $poll->orderBy('poll.title', 'ASC');
     } else {
-      $quiz->orderBy('id_quiz', 'DESC');
-      $poll->orderBy('id_poll', 'DESC');
+      $quiz->orderBy('quiz.id_quiz', 'DESC');
+      $poll->orderBy('poll.id_poll', 'DESC');
+    }
+
+    if ($id_user) {
+      $quiz->leftJoin('user_quiz', function ($join) use ($id_user) {
+        $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
+          ->where('user_quiz.id_user', '=', $id_user);
+      });
     }
 
     $quiz->skip($offset)
@@ -178,9 +197,27 @@ class SearchV2Controller extends Controller
       ->take($limit);
 
     $dataQuizTotal = $quiz->count();
-    $dataQuiz = $quiz->get();
+    $dataQuiz = $quiz->select([
+      'quiz.*',
+      'user_quiz.id_user_quiz',
+      'user_quiz.answered',
+      'user_quiz.result',
+    ])->get();
     $dataPollTotal = $poll->count();
     $dataPoll = $poll->get();
+
+    foreach ($dataQuiz as $key => $value) {
+      if (isset($value->id_user_quiz)) {
+        $userQuizAnswer = UserQuizAnswer::where('soft_delete', 0)
+          ->where('id_user_quiz', $value->id_user_quiz);
+
+        $totalQuestions = $userQuizAnswer->count();
+        $correctAnswers = $userQuizAnswer->where('correct', 1)->count();
+
+        $value['total_questions'] = $totalQuestions;
+        $value['correct_answers'] = $correctAnswers;
+      }
+    }
 
     // Execute the query to get the total records count
     $quizTotalPages = ceil($dataQuizTotal / $limit);
@@ -207,14 +244,16 @@ class SearchV2Controller extends Controller
    *          description="<b>Note:</b>
             <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
             <br> - id_categories: id of categories
+            <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
    *              type="object",
-   *              @OA\Property(property="search", type="string", example="Star Wars"),
+   *              @OA\Property(property="search", type="string", example="Jimmy Conway"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="id_user", type="int", example="5"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -243,6 +282,7 @@ class SearchV2Controller extends Controller
     $requestData = $request->only([
       'search',
       'id_categories',
+      'id_user',
       'limit',
       'page',
       'sort',
@@ -250,9 +290,15 @@ class SearchV2Controller extends Controller
 
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
+    $id_user = $requestData['id_user'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    if ($id_user) {
+      $user = Users::where('id_user', $id_user)->first();
+      if (!$user) return ResultHelpers::errors('User not found', 400, false);
+    }
 
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
@@ -260,6 +306,7 @@ class SearchV2Controller extends Controller
     // Initialize the query builder for the main data retrieval
     $quiz = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
       ->where('quiz.soft_delete', 0)
+      ->where('quiz.draft', 0)
       ->with('Categories')
       ->withCount('quizQuestions'); // Load the total quiz questions count
 
@@ -289,11 +336,36 @@ class SearchV2Controller extends Controller
       $quiz->orderBy('id_quiz', 'DESC');
     }
 
+    if ($id_user) {
+      $quiz->leftJoin('user_quiz', function ($join) use ($id_user) {
+        $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
+          ->where('user_quiz.id_user', '=', $id_user);
+      });
+    }
+
     $quiz->skip($offset)
       ->take($limit);
 
     $dataQuizTotal = $quiz->count();
-    $dataQuiz = $quiz->get();
+    $dataQuiz = $quiz->select([
+      'quiz.*',
+      'user_quiz.id_user_quiz',
+      'user_quiz.answered',
+      'user_quiz.result',
+    ])->get();
+
+    foreach ($dataQuiz as $key => $value) {
+      if (isset($value->id_user_quiz)) {
+        $userQuizAnswer = UserQuizAnswer::where('soft_delete', 0)
+          ->where('id_user_quiz', $value->id_user_quiz);
+
+        $totalQuestions = $userQuizAnswer->count();
+        $correctAnswers = $userQuizAnswer->where('correct', 1)->count();
+
+        $value['total_questions'] = $totalQuestions;
+        $value['correct_answers'] = $correctAnswers;
+      }
+    }
 
     // Execute the query to get the total records count
     $quizTotalPages = ceil($dataQuizTotal / $limit);
