@@ -71,21 +71,16 @@ class SearchV2Controller extends Controller
    *      description="Returns search for global data",
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
-            <br> - search as search with references of topic, title, description (default null)
-            <br> - filter can multiple (default null)
+            <br> - search as search with references of topic, title, subtitle, description (default null)
+            <br> - id_categories: id of categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
    *              type="object",
-   *              @OA\Property(property="search", type="string", example="department"),
-   *              @OA\Property(
-   *                  property="filter",
-   *                  type="array",
-   *                  example={"Star Wars", "Batman", "Game of Thrones"},
-   *                  @OA\Items(type="string"),
-   *              ),
+   *              @OA\Property(property="search", type="string", example="Star Wars"),
+   *              @OA\Property(property="id_categories", type="int", example="1"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -113,14 +108,14 @@ class SearchV2Controller extends Controller
   {
     $requestData = $request->only([
       'search',
-      'filter',
+      'id_categories',
       'limit',
       'page',
       'sort',
     ]);
 
     $search = $requestData['search'] ?? null;
-    $filter = $requestData['filter'] ?? null;
+    $id_categories = $requestData['id_categories'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
@@ -139,27 +134,27 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('PollListChoice'); // Load the total poll list choices count 
 
+    if ($id_categories) {
+      $category = Categories::find($id_categories);
+      if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
+
+      $quiz->where('quiz.id_categories', $id_categories);
+      $poll->where('poll.id_categories', $id_categories);
+    }
+
     if ($search) {
       $quiz->where(function ($query) use ($search) {
-        $query->where('topic', 'LIKE', "%$search%")
-          ->orWhere('title', 'LIKE', "%$search%")
-          ->orWhere('description', 'LIKE', "%$search%");
+        $query->where('quiz.topic', 'LIKE', "%$search%")
+          ->orWhere('quiz.title', 'LIKE', "%$search%")
+          ->orWhere('quiz.subtitle', 'LIKE', "%$search%")
+          ->orWhere('quiz.description', 'LIKE', "%$search%");
       });
 
       $poll->where(function ($query) use ($search) {
-        $query->where('topic', 'LIKE', "%$search%")
-          ->orWhere('title', 'LIKE', "%$search%")
-          ->orWhere('description', 'LIKE', "%$search%");
-      });
-    }
-
-    if ($filter) {
-      $quiz->where(function ($query) use ($filter) {
-        $query->whereIn('subtitle', $filter);
-      });
-
-      $poll->where(function ($query) use ($filter) {
-        $query->whereIn('subtitle', $filter);
+        $query->where('poll.topic', 'LIKE', "%$search%")
+          ->orWhere('poll.title', 'LIKE', "%$search%")
+          ->orWhere('poll.subtitle', 'LIKE', "%$search%")
+          ->orWhere('poll.description', 'LIKE', "%$search%");
       });
     }
 
@@ -210,21 +205,16 @@ class SearchV2Controller extends Controller
    *      description="Returns search for quiz data",
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
-            <br> - search as search for quiz with references of topic, title, description (default null)
-            <br> - filter can multiple (default null)
+            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
+            <br> - id_categories: id of categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
    *              type="object",
-   *              @OA\Property(property="search", type="string", example="department"),
-   *              @OA\Property(
-   *                  property="filter",
-   *                  type="array",
-   *                  example={"Star Wars", "Batman", "Game of Thrones"},
-   *                  @OA\Items(type="string"),
-   *              ),
+   *              @OA\Property(property="search", type="string", example="Star Wars"),
+   *              @OA\Property(property="id_categories", type="int", example="1"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -252,14 +242,14 @@ class SearchV2Controller extends Controller
   {
     $requestData = $request->only([
       'search',
-      'filter',
+      'id_categories',
       'limit',
       'page',
       'sort',
     ]);
 
     $search = $requestData['search'] ?? null;
-    $filter = $requestData['filter'] ?? null;
+    $id_categories = $requestData['id_categories'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
@@ -273,17 +263,19 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('quizQuestions'); // Load the total quiz questions count
 
+    if ($id_categories) {
+      $category = Categories::find($id_categories);
+      if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
+
+      $quiz->where('quiz.id_categories', $id_categories);
+    }
+
     if ($search) {
       $quiz->where(function ($query) use ($search) {
         $query->where('topic', 'LIKE', "%$search%")
           ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('subtitle', 'LIKE', "%$search%")
           ->orWhere('description', 'LIKE', "%$search%");
-      });
-    }
-
-    if ($filter) {
-      $quiz->where(function ($query) use ($filter) {
-        $query->whereIn('subtitle', $filter);
       });
     }
 
@@ -323,21 +315,16 @@ class SearchV2Controller extends Controller
    *      description="Returns search for poll data",
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
-            <br> - search as search for poll with references of topic, title, description (default null)
-            <br> - filter can multiple (default null)
+            <br> - search as search for poll with references of topic, title, subtitle, description (default null)
+            <br> - id_categories: id of categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
    *              type="object",
-   *              @OA\Property(property="search", type="string", example="department"),
-   *              @OA\Property(
-   *                  property="filter",
-   *                  type="array",
-   *                  example={"Star Wars", "Batman", "Game of Thrones"},
-   *                  @OA\Items(type="string"),
-   *              ),
+   *              @OA\Property(property="search", type="string", example="Star Wars"),
+   *              @OA\Property(property="id_categories", type="int", example="1"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -365,14 +352,14 @@ class SearchV2Controller extends Controller
   {
     $requestData = $request->only([
       'search',
-      'filter',
+      'id_categories',
       'limit',
       'page',
       'sort',
     ]);
 
     $search = $requestData['search'] ?? null;
-    $filter = $requestData['filter'] ?? null;
+    $id_categories = $requestData['id_categories'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
@@ -386,17 +373,19 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('PollListChoice'); // Load the total poll list choices count 
 
+    if ($id_categories) {
+      $category = Categories::find($id_categories);
+      if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
+
+      $poll->where('poll.id_categories', $id_categories);
+    }
+
     if ($search) {
       $poll->where(function ($query) use ($search) {
         $query->where('topic', 'LIKE', "%$search%")
           ->orWhere('title', 'LIKE', "%$search%")
+          ->orWhere('subtitle', 'LIKE', "%$search%")
           ->orWhere('description', 'LIKE', "%$search%");
-      });
-    }
-
-    if ($filter) {
-      $poll->where(function ($query) use ($filter) {
-        $query->whereIn('subtitle', $filter);
       });
     }
 
