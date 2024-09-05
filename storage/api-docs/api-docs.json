@@ -2227,7 +2227,7 @@
                 "description": "Returns search for global data",
                 "operationId": "searchv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": false,
                     "content": {
                         "application/json": {
@@ -2240,6 +2240,10 @@
                                     "id_categories": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "id_user": {
                                         "type": "integer",
@@ -2288,7 +2292,7 @@
                 "description": "Returns search for quiz data",
                 "operationId": "quizsearchv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": false,
                     "content": {
                         "application/json": {
@@ -2301,6 +2305,10 @@
                                     "id_categories": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "id_user": {
                                         "type": "integer",
@@ -2349,7 +2357,7 @@
                 "description": "Returns search for poll data",
                 "operationId": "pollsearchv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for poll with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for poll with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": false,
                     "content": {
                         "application/json": {
@@ -2362,6 +2370,10 @@
                                     "id_categories": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
                                     },
                                     "limit": {
                                         "type": "integer",

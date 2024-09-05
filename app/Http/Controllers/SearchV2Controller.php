@@ -74,6 +74,7 @@ class SearchV2Controller extends Controller
    *          description="<b>Note:</b>
             <br> - search as search with references of topic, title, subtitle, description (default null)
             <br> - id_categories: id of categories
+            <br> - slug_categories: slug of categories
             <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -83,6 +84,7 @@ class SearchV2Controller extends Controller
    *              type="object",
    *              @OA\Property(property="search", type="string", example="Jimmy Conway"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="slug_categories", type="string", example=null),
    *              @OA\Property(property="id_user", type="int", example="5"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
@@ -112,6 +114,7 @@ class SearchV2Controller extends Controller
     $requestData = $request->only([
       'search',
       'id_categories',
+      'slug_categories',
       'id_user',
       'limit',
       'page',
@@ -120,6 +123,7 @@ class SearchV2Controller extends Controller
 
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
+    $slug_categories = $requestData['slug_categories'] ?? null;
     $id_user = $requestData['id_user'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
@@ -146,12 +150,13 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('PollListChoice'); // Load the total poll list choices count 
 
-    if ($id_categories) {
-      $category = Categories::find($id_categories);
+    if ($id_categories || $slug_categories) {
+      $id_categories && $category = Categories::find($id_categories);
+      $slug_categories && $category = Categories::where('slug', $slug_categories)->first();
       if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
 
-      $quiz->where('quiz.id_categories', $id_categories);
-      $poll->where('poll.id_categories', $id_categories);
+      $quiz->where('quiz.id_categories', $category->id_categories);
+      $poll->where('poll.id_categories', $category->id_categories);
     }
 
     if ($search) {
@@ -184,25 +189,28 @@ class SearchV2Controller extends Controller
       $poll->orderBy('poll.id_poll', 'DESC');
     }
 
-    if ($id_user) {
-      $quiz->leftJoin('user_quiz', function ($join) use ($id_user) {
-        $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
-          ->where('user_quiz.id_user', '=', $id_user);
-      });
-    }
-
     $quiz->skip($offset)
       ->take($limit);
     $poll->skip($offset)
       ->take($limit);
 
     $dataQuizTotal = $quiz->count();
-    $dataQuiz = $quiz->select([
-      'quiz.*',
-      'user_quiz.id_user_quiz',
-      'user_quiz.answered',
-      'user_quiz.result',
-    ])->get();
+    if ($id_user) {
+      $quiz->leftJoin('user_quiz', function ($join) use ($id_user) {
+        $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
+          ->where('user_quiz.id_user', '=', $id_user);
+      });
+
+      $dataQuiz = $quiz->select([
+        'quiz.*',
+        'user_quiz.id_user_quiz',
+        'user_quiz.answered',
+        'user_quiz.result',
+      ])->get();
+    } else {
+      $dataQuiz = $quiz->get();
+    }
+
     $dataPollTotal = $poll->count();
     $dataPoll = $poll->get();
 
@@ -244,6 +252,7 @@ class SearchV2Controller extends Controller
    *          description="<b>Note:</b>
             <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
             <br> - id_categories: id of categories
+            <br> - slug_categories: slug of categories
             <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
@@ -253,6 +262,7 @@ class SearchV2Controller extends Controller
    *              type="object",
    *              @OA\Property(property="search", type="string", example="Jimmy Conway"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="slug_categories", type="string", example=null),
    *              @OA\Property(property="id_user", type="int", example="5"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
@@ -282,6 +292,7 @@ class SearchV2Controller extends Controller
     $requestData = $request->only([
       'search',
       'id_categories',
+      'slug_categories',
       'id_user',
       'limit',
       'page',
@@ -290,6 +301,7 @@ class SearchV2Controller extends Controller
 
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
+    $slug_categories = $requestData['slug_categories'] ?? null;
     $id_user = $requestData['id_user'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
@@ -310,11 +322,12 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('quizQuestions'); // Load the total quiz questions count
 
-    if ($id_categories) {
-      $category = Categories::find($id_categories);
+    if ($id_categories || $slug_categories) {
+      $id_categories && $category = Categories::find($id_categories);
+      $slug_categories && $category = Categories::where('slug', $slug_categories)->first();
       if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
 
-      $quiz->where('quiz.id_categories', $id_categories);
+      $quiz->where('quiz.id_categories', $category->id_categories);
     }
 
     if ($search) {
@@ -347,12 +360,16 @@ class SearchV2Controller extends Controller
       ->take($limit);
 
     $dataQuizTotal = $quiz->count();
-    $dataQuiz = $quiz->select([
-      'quiz.*',
-      'user_quiz.id_user_quiz',
-      'user_quiz.answered',
-      'user_quiz.result',
-    ])->get();
+    if ($id_user) {
+      $dataQuiz = $quiz->select([
+        'quiz.*',
+        'user_quiz.id_user_quiz',
+        'user_quiz.answered',
+        'user_quiz.result',
+      ])->get();
+    } else {
+      $dataQuiz = $quiz->get();
+    }
 
     foreach ($dataQuiz as $key => $value) {
       if (isset($value->id_user_quiz)) {
@@ -389,6 +406,7 @@ class SearchV2Controller extends Controller
    *          description="<b>Note:</b>
             <br> - search as search for poll with references of topic, title, subtitle, description (default null)
             <br> - id_categories: id of categories
+            <br> - slug_categories: slug of categories
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
@@ -397,6 +415,7 @@ class SearchV2Controller extends Controller
    *              type="object",
    *              @OA\Property(property="search", type="string", example="Star Wars"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="slug_categories", type="string", example=null),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -425,6 +444,7 @@ class SearchV2Controller extends Controller
     $requestData = $request->only([
       'search',
       'id_categories',
+      'slug_categories',
       'limit',
       'page',
       'sort',
@@ -432,6 +452,7 @@ class SearchV2Controller extends Controller
 
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
+    $slug_categories = $requestData['slug_categories'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
@@ -445,11 +466,12 @@ class SearchV2Controller extends Controller
       ->with('Categories')
       ->withCount('PollListChoice'); // Load the total poll list choices count 
 
-    if ($id_categories) {
-      $category = Categories::find($id_categories);
+    if ($id_categories || $slug_categories) {
+      $id_categories && $category = Categories::find($id_categories);
+      $slug_categories && $category = Categories::where('slug', $slug_categories)->first();
       if (!$category) return ResultHelpers::error('Category for that ID not found.', 404);
 
-      $poll->where('poll.id_categories', $id_categories);
+      $poll->where('poll.id_categories', $category->id_categories);
     }
 
     if ($search) {
