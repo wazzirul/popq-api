@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdministratorsController;
+use App\Http\Controllers\AdministratorsDashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserQuizController;
 use App\Http\Controllers\CategoriesController;
@@ -106,6 +107,9 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Administrator
     Route::post('/administrators/store', [AdministratorsController::class, 'store'])->name('administrators--store');
     Route::post('/administrators/show', [AdministratorsController::class, 'show'])->name('administrators--show');
+
+    // Administrator Dashboard
+    Route::get('/administrators-dashboard/user', [AdministratorsDashboardController::class, 'user'])->name('administrators-dashboard--user');
 
     // User
     Route::post('/user/edit-user', [UserController::class, 'editUser'])->name('users--editUser');

@@ -178,6 +178,30 @@
                 }
             }
         },
+        "/administrators-dashboard/user": {
+            "get": {
+                "tags": [
+                    "Administrators Dashboard"
+                ],
+                "summary": "Show user administrators dashboard data",
+                "description": "Returns user administrators dashboard",
+                "operationId": "useradministratorsdashboard",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/categories/create-edit": {
             "post": {
                 "tags": [
@@ -3320,6 +3344,10 @@
         {
             "name": "Administrators",
             "description": "Administrators"
+        },
+        {
+            "name": "Administrators Dashboard",
+            "description": "Administrators Dashboard"
         },
         {
             "name": "Categories",
