@@ -189,12 +189,17 @@ class SearchV2Controller extends Controller
       $poll->orderBy('poll.id_poll', 'DESC');
     }
 
+    // Execute the query to get the total records count
+    $dataQuizTotal = $quiz->count();
+    $dataPollTotal = $poll->count();
+    $quizTotalPages = ceil($dataQuizTotal / $limit);
+    $pollTotalPages = ceil($dataPollTotal / $limit);
+
     $quiz->skip($offset)
       ->take($limit);
     $poll->skip($offset)
       ->take($limit);
 
-    $dataQuizTotal = $quiz->count();
     if ($id_user) {
       $quiz->leftJoin('user_quiz', function ($join) use ($id_user) {
         $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
@@ -207,12 +212,21 @@ class SearchV2Controller extends Controller
         'user_quiz.answered',
         'user_quiz.result',
       ])->get();
+
+      $poll->leftJoin('user_poll', function ($join) use ($id_user) {
+        $join->on('poll.id_poll', '=', 'user_poll.id_poll')
+          ->where('user_poll.id_user', '=', $id_user);
+      });
+
+      $dataPoll = $poll->select([
+        'poll.*',
+        'user_poll.id_user_poll',
+        'user_poll.id_poll_list_choice',
+      ])->get();
     } else {
       $dataQuiz = $quiz->get();
+      $dataPoll = $poll->get();
     }
-
-    $dataPollTotal = $poll->count();
-    $dataPoll = $poll->get();
 
     foreach ($dataQuiz as $key => $value) {
       if (isset($value->id_user_quiz)) {
@@ -226,10 +240,6 @@ class SearchV2Controller extends Controller
         $value['correct_answers'] = $correctAnswers;
       }
     }
-
-    // Execute the query to get the total records count
-    $quizTotalPages = ceil($dataQuizTotal / $limit);
-    $pollTotalPages = ceil($dataPollTotal / $limit);
 
     $data['quiz_total_pages'] = $quizTotalPages;
     $data['poll_total_pages'] = $pollTotalPages;
@@ -356,10 +366,13 @@ class SearchV2Controller extends Controller
       });
     }
 
+    // Execute the query to get the total records count
+    $dataQuizTotal = $quiz->count();
+    $quizTotalPages = ceil($dataQuizTotal / $limit);
+
     $quiz->skip($offset)
       ->take($limit);
 
-    $dataQuizTotal = $quiz->count();
     if ($id_user) {
       $dataQuiz = $quiz->select([
         'quiz.*',
@@ -383,9 +396,6 @@ class SearchV2Controller extends Controller
         $value['correct_answers'] = $correctAnswers;
       }
     }
-
-    // Execute the query to get the total records count
-    $quizTotalPages = ceil($dataQuizTotal / $limit);
 
     $data['total_pages'] = $quizTotalPages;
     $data['data'] = $dataQuiz;
@@ -416,6 +426,7 @@ class SearchV2Controller extends Controller
    *              @OA\Property(property="search", type="string", example="Star Wars"),
    *              @OA\Property(property="id_categories", type="int", example="1"),
    *              @OA\Property(property="slug_categories", type="string", example=null),
+   *              @OA\Property(property="id_user", type="int", example="5"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
@@ -445,6 +456,7 @@ class SearchV2Controller extends Controller
       'search',
       'id_categories',
       'slug_categories',
+      'id_user',
       'limit',
       'page',
       'sort',
@@ -453,9 +465,15 @@ class SearchV2Controller extends Controller
     $search = $requestData['search'] ?? null;
     $id_categories = $requestData['id_categories'] ?? null;
     $slug_categories = $requestData['slug_categories'] ?? null;
+    $id_user = $requestData['id_user'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+
+    if ($id_user) {
+      $user = Users::where('id_user', $id_user)->first();
+      if (!$user) return ResultHelpers::errors('User not found', 400, false);
+    }
 
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
@@ -493,14 +511,29 @@ class SearchV2Controller extends Controller
       $poll->orderBy('id_poll', 'DESC');
     }
 
+    if ($id_user) {
+      $poll->leftJoin('user_poll', function ($join) use ($id_user) {
+        $join->on('poll.id_poll', '=', 'user_poll.id_poll')
+          ->where('user_poll.id_user', '=', $id_user);
+      });
+    }
+
+    // Execute the query to get the total records count
+    $dataPollTotal = $poll->count();
+    $pollTotalPages = ceil($dataPollTotal / $limit);
+
     $poll->skip($offset)
       ->take($limit);
 
-    $dataPollTotal = $poll->count();
-    $dataPoll = $poll->get();
-
-    // Execute the query to get the total records count
-    $pollTotalPages = ceil($dataPollTotal / $limit);
+    if ($id_user) {
+      $dataPoll = $poll->select([
+        'poll.*',
+        'user_poll.id_user_poll',
+        'user_poll.id_poll_list_choice',
+      ])->get();
+    } else {
+      $dataPoll = $poll->get();
+    }
 
     $data['total_pages'] = $pollTotalPages;
     $data['data'] = $dataPoll;

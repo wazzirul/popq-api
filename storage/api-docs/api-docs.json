@@ -2399,6 +2399,10 @@
                                         "type": "string",
                                         "example": null
                                     },
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "5"
+                                    },
                                     "limit": {
                                         "type": "integer",
                                         "example": "10"
