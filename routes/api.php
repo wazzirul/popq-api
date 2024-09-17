@@ -20,6 +20,7 @@ use App\Http\Controllers\UserPollController;
 use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\StatisticV2Controller;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\OthersController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +74,10 @@ Route::post('/statistics/showQuiz', [StatisticController::class, 'showQuiz'])->n
 Route::post('/statistics/showQuizByCategories', [StatisticController::class, 'showQuizByCategories'])->name('statistics--showQuizByCategories');
 Route::get('/statistics/countTotalQuizzesAndPolls', [StatisticController::class, 'countTotalQuizzesAndPolls'])->name('statistics--countTotalQuizzesAndPolls');
 Route::post('/statistics/showScoresUser', [StatisticController::class, 'showScoresUser'])->name('statistics--showScoresUser');
+
+// Others
+Route::post('/others/sitemap-quiz', [OthersController::class, 'sitemapQuiz'])->name('others--sitemap-quiz');
+Route::post('/others/sitemap-poll', [OthersController::class, 'sitemapPoll'])->name('others--sitemap-poll');
 
 
 ////////

@@ -380,6 +380,88 @@
                 }
             }
         },
+        "/others/sitemap-quiz": {
+            "post": {
+                "tags": [
+                    "Others"
+                ],
+                "summary": "Show list of sitemap quiz",
+                "description": "Returns list of sitemap quiz",
+                "operationId": "othersitemapquiz",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - limit as limit show data (default 50000)",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "50000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/others/sitemap-poll": {
+            "post": {
+                "tags": [
+                    "Others"
+                ],
+                "summary": "Show list of sitemap poll",
+                "description": "Returns list of sitemap poll",
+                "operationId": "othersitemappoll",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - limit as limit show data (default 50000)",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "50000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/poll/create-edit": {
             "post": {
                 "tags": [
@@ -3360,6 +3442,10 @@
         {
             "name": "Import",
             "description": "Import"
+        },
+        {
+            "name": "Others",
+            "description": "Others"
         },
         {
             "name": "Poll",
