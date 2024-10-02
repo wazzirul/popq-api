@@ -9,20 +9,20 @@ class Quiz extends Model
 {
     protected $table = 'quiz';
     protected $primaryKey = 'id_quiz';
-    protected $fillable = ['id_quiz','id_categories','topic','title','slug','subtitle','images_id','thumbnail','description','today_status','draft','soft_delete'];
+    protected $fillable = ['id_quiz', 'id_user', 'id_categories', 'topic', 'title', 'slug', 'subtitle', 'images_id', 'thumbnail', 'description', 'today_status', 'draft', 'soft_delete'];
 
     public function Categories()
     {
-        return $this->hasOne('App\Models\Categories','id_categories','id_categories');
+        return $this->hasOne('App\Models\Categories', 'id_categories', 'id_categories');
     }
 
     public function QuizQuestions()
     {
-        return $this->hasMany('App\Models\QuizQuestions','id_quiz','id_quiz');
+        return $this->hasMany('App\Models\QuizQuestions', 'id_quiz', 'id_quiz');
     }
 
     public function QuizListChoice()
     {
-        return $this->hasMany('App\Models\QuizListChoice','id_quiz','id_quiz');
+        return $this->hasMany('App\Models\QuizListChoice', 'id_quiz', 'id_quiz');
     }
 }
