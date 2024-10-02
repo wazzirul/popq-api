@@ -21,6 +21,7 @@ use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\StatisticV2Controller;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\OthersController;
+use App\Http\Controllers\QwizardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -136,6 +137,10 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/quiz/importImagesQuiz', [QuizController::class, 'importImagesQuiz'])->name('quiz--importImagesQuiz');
     Route::post('/quiz/showUserLoginQuiz', [QuizController::class, 'showUserLoginQuiz'])->name('quiz--showUserLoginQuiz');
     Route::post('/quiz/set-featured', [QuizController::class, 'setFeatured'])->name('quiz--setFeatured');
+
+    // Quiz
+    Route::post('/qwizard/store', [QwizardController::class, 'store'])->name('qwizard--store');
+    Route::post('/qwizard/myQwizard', [QwizardController::class, 'myQwizard'])->name('qwizard--myQwizard');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
