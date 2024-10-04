@@ -27,6 +27,7 @@ class QuizV2Controller extends Controller
                 <br> - id_user (optional) as a reference to the user data that will be returned with prioritize on recent
                 <br> - id_quiz as a reference to the quiz data that will be returned
                 <br> - slug as a reference to the quiz data that will be returned
+                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
                 <br> - limit_related as limit show data related (default 10)",
    *          required=true,
    *          @OA\JsonContent(
@@ -35,6 +36,7 @@ class QuizV2Controller extends Controller
    *              @OA\Property(property="id_quiz", type="int", example="825"),
    *              @OA\Property(property="slug", type="string", example=null),
    *              @OA\Property(property="limit_related", type="int", example="10"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *          )
    *      ),
    *      @OA\Response(
@@ -62,12 +64,14 @@ class QuizV2Controller extends Controller
       'id_quiz',
       'slug',
       'limit_related',
+      'show_qwizard',
     ]);
 
     $idUser = $requestData['id_user'] ?? null;
     $idQuiz = $requestData['id_quiz'] ?? null;
     $slugQuiz = $requestData['slug'] ?? null;
     $limitRelated = $requestData['limit_related'] ?? 10;
+    $showQwizard = $requestData['show_qwizard'] ?? false;
 
     if (!$idQuiz && !$slugQuiz) {
       return ResultHelpers::errors('id_quiz or slug quiz must be provided.', 400, false);
@@ -126,6 +130,9 @@ class QuizV2Controller extends Controller
           ->orderBy('created_at', 'DESC')
           ->where('id_quiz', '!=', $data->id_quiz)
           ->whereNotIn('id_quiz', $relatedQuizUser->pluck('id_quiz'))
+          ->where(function ($q) use ($showQwizard) {
+            $showQwizard == false && $q->where('id_user', null);
+          })
           ->with('Categories')
           ->limit($newLimit)
           ->get();
@@ -141,6 +148,9 @@ class QuizV2Controller extends Controller
         })
         ->where('quiz.id_quiz', '!=', $data->id_quiz)
         ->orderBy('created_at', 'DESC')
+        ->where(function ($q) use ($showQwizard) {
+          $showQwizard == false && $q->where('id_user', null);
+        })
         ->with('Categories')
         ->limit($limitRelated)
         ->get();

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\File;
 
@@ -16,8 +15,6 @@ use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 use App\Models\Users;
-use App\Models\UserQuiz;
-use App\Models\UserQuizAnswer;
 
 class QuizController extends Controller
 {
@@ -315,6 +312,7 @@ class QuizController extends Controller
             <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
+            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=true,
    *          @OA\JsonContent(
@@ -325,6 +323,7 @@ class QuizController extends Controller
    *              @OA\Property(property="draft", type="int", example="0"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *              @OA\Property(property="sort", type="int", example="1"),
    *          )
    *      ),
@@ -355,6 +354,7 @@ class QuizController extends Controller
       'draft',
       'limit',
       'page',
+      'show_qwizard',
       'sort',
     ]);
 
@@ -364,6 +364,7 @@ class QuizController extends Controller
     $draft = $requestData['draft'] ?? 0;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
+    $showQwizard = $requestData['show_qwizard'] ?? false;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
 
     // Calculate the offset based on the page and limit
@@ -420,6 +421,11 @@ class QuizController extends Controller
       $totalRecordsQuery->where('draft', $draft);
     }
 
+    if ($showQwizard == false) {
+      $query->where('id_user', null);
+      $totalRecordsQuery->where('id_user', null);
+    }
+
     // Execute the query to get the total records count
     $totalRecords = $totalRecordsQuery->count();
     $totalPages = ceil($totalRecords / $limit);
@@ -450,6 +456,7 @@ class QuizController extends Controller
                 <br> - slug_categories as a reference to the categories quiz data that will be returned
                 <br> - draft as a reference to the categories quiz data that will be returned, use (2) for all published and draft, default (0) for published quiz
                 <br> - limit as limit show data (default 10)
+                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
                 <br> - page as page show data (default 1)",
    *          required=true,
    *          @OA\JsonContent(
@@ -458,6 +465,7 @@ class QuizController extends Controller
    *              @OA\Property(property="slug_categories", type="string", example=null),
    *              @OA\Property(property="draft", type="int", example="0"),
    *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *              @OA\Property(property="page", type="int", example="1"),
    *          )
    *      ),
@@ -486,6 +494,7 @@ class QuizController extends Controller
       'slug_categories',
       'draft',
       'limit',
+      'show_qwizard',
       'page',
     ]);
 
@@ -493,6 +502,7 @@ class QuizController extends Controller
     $slugCategories = $requestData['slug_categories'] ?? null;
     $draft = $requestData['draft'] ?? 0; // Default draft is 0 / published
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $showQwizard = $requestData['show_qwizard'] ?? false;
     $page = $requestData['page'] ?? 1;
 
     // Calculate the offset based on the page and limit
@@ -523,6 +533,11 @@ class QuizController extends Controller
       $totalRecordsQuery->where('quiz.draft', $draft);
     }
 
+    if ($showQwizard == false) {
+      $query->where('id_user', null);
+      $totalRecordsQuery->where('id_user', null);
+    }
+
     // Check if the user already exists in the table
     // Return Created / Updated Quiz Data with its Relation.
     $data = $query->with('Categories')
@@ -531,6 +546,7 @@ class QuizController extends Controller
       ->take($limit)
       ->get([
         'quiz.id_quiz',
+        'quiz.id_user',
         'quiz.id_categories',
         'quiz.topic',
         'quiz.title',
@@ -699,6 +715,7 @@ class QuizController extends Controller
    *      description="Returns Quiz Data based on draft status",
    *      @OA\RequestBody(
    *          description="<b>Note:</b>
+                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
                 <br> - draft as a reference to the quiz data that will be returned ( 1 = Drafted Quiz, 0 = Published Quiz )",
    *          required=true,
    *          @OA\JsonContent(
@@ -706,6 +723,7 @@ class QuizController extends Controller
    *              @OA\Property(property="draft", type="string", example="1"),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *          )
    *      ),
    *      @OA\Response(
@@ -732,11 +750,13 @@ class QuizController extends Controller
       'draft', // Facebook ID
       'limit',
       'page',
+      'show_qwizard',
     ]);
 
     $draftQuiz = $requestData['draft'] ?? null;
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
+    $showQwizard = $requestData['show_qwizard'] ?? false;
 
     // Calculate the offset based on the page and limit
     $offset = ($page - 1) * $limit;
@@ -750,12 +770,18 @@ class QuizController extends Controller
     $data = Quiz::where('draft', $draftQuiz)
       ->where('soft_delete', 0)
       ->with('Categories')
+      ->where(function ($q) use ($showQwizard) {
+        $showQwizard == false && $q->where('id_user', null);
+      })
       ->skip($offset)
       ->take($limit)
       ->get();
 
     $totalRecords = Quiz::where('draft', $draftQuiz)
       ->where('soft_delete', 0)
+      ->where(function ($q) use ($showQwizard) {
+        $showQwizard == false && $q->where('id_user', null);
+      })
       ->count();
     $totalPages = ceil($totalRecords / $limit);
 
@@ -779,6 +805,7 @@ class QuizController extends Controller
             <br> - id_categories as references quiz if you want to filter by categories
             <br> - slug_categories as references quiz if you want to filter by categories
             <br> - limit as limit show data (default 10)
+            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
             <br> - page as page show data (default 1)",
    *          required=true,
    *          @OA\JsonContent(
@@ -788,6 +815,7 @@ class QuizController extends Controller
    *              @OA\Property(property="slug_categories", type="string", example=null),
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *          )
    *      ),
    *      @OA\Response(
@@ -816,6 +844,7 @@ class QuizController extends Controller
       'slug_categories',
       'limit',
       'page',
+      'show_qwizard',
     ]);
 
     $idUser = $requestData['id_user'] ?? null; // Default limit is null
@@ -823,6 +852,7 @@ class QuizController extends Controller
     $slugCategories = $requestData['slug_categories'] ?? null; // Default limit is null
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
+    $showQwizard = $requestData['show_qwizard'] ?? false;
 
     $user = Users::where('id_user', $idUser)->first();
 
@@ -852,12 +882,16 @@ class QuizController extends Controller
       $query->where('categories.slug', $slugCategories);
     }
 
+    if ($showQwizard == false) {
+      $query->where('quiz.id_user', null);
+    }
+
     $totalRecords = $query->orderBy('quiz.id_quiz', 'DESC')->with('Categories')->select('quiz.*', 'user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')->count();
     $totalPages = ceil($totalRecords / $limit);
 
     $data = $query->orderBy('quiz.id_quiz', 'DESC')
       ->with('Categories')
-      ->select('quiz.*', 'user_quiz.id_user_quiz', 'user_quiz.id_user', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
+      ->select('quiz.*', 'user_quiz.id_user_quiz', 'user_quiz.answered', 'user_quiz.status', 'user_quiz.result')
       ->skip($offset)
       ->take($limit)
       ->get();

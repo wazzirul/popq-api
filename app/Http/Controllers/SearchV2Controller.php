@@ -8,8 +8,6 @@ use App\Helpers\ResultHelpers;
 use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\Quiz;
-use App\Models\QuizListChoice;
-use App\Models\QuizQuestions;
 use App\Models\UserQuizAnswer;
 use App\Models\Users;
 use Illuminate\Support\Facades\DB;
@@ -78,6 +76,7 @@ class SearchV2Controller extends Controller
             <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
+            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
@@ -89,6 +88,7 @@ class SearchV2Controller extends Controller
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *          )
    *      ),
    *      @OA\Response(
@@ -119,6 +119,7 @@ class SearchV2Controller extends Controller
       'limit',
       'page',
       'sort',
+      'show_qwizard',
     ]);
 
     $search = $requestData['search'] ?? null;
@@ -128,6 +129,7 @@ class SearchV2Controller extends Controller
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+    $showQwizard = $requestData['show_qwizard'] ?? false;
 
     if ($id_user) {
       $user = Users::where('id_user', $id_user)->first();
@@ -187,6 +189,10 @@ class SearchV2Controller extends Controller
     } else {
       $quiz->orderBy('quiz.id_quiz', 'DESC');
       $poll->orderBy('poll.id_poll', 'DESC');
+    }
+
+    if ($showQwizard == false) {
+      $quiz->where('quiz.id_user', null);
     }
 
     // Execute the query to get the total records count
@@ -266,6 +272,7 @@ class SearchV2Controller extends Controller
             <br> - id_user as references quiz already submitted or not
             <br> - limit as limit show data (default 10)
             <br> - page as page show data (default 1)
+            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)
             <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
    *          required=false,
    *          @OA\JsonContent(
@@ -277,6 +284,7 @@ class SearchV2Controller extends Controller
    *              @OA\Property(property="limit", type="int", example="10"),
    *              @OA\Property(property="page", type="int", example="1"),
    *              @OA\Property(property="sort", type="int", example="1"),
+   *              @OA\Property(property="show_qwizard", type="boolean", example=false),
    *          )
    *      ),
    *      @OA\Response(
@@ -307,6 +315,7 @@ class SearchV2Controller extends Controller
       'limit',
       'page',
       'sort',
+      'show_qwizard',
     ]);
 
     $search = $requestData['search'] ?? null;
@@ -316,6 +325,7 @@ class SearchV2Controller extends Controller
     $limit = $requestData['limit'] ?? 10; // Default limit is 10
     $page = $requestData['page'] ?? 1;
     $sort = $requestData['sort'] ?? 1; // Default sort is 1 (1 = most recent, 2 = least recent, 3 = alphabetical)
+    $showQwizard = $requestData['show_qwizard'] ?? false;
 
     if ($id_user) {
       $user = Users::where('id_user', $id_user)->first();
@@ -364,6 +374,10 @@ class SearchV2Controller extends Controller
         $join->on('quiz.id_quiz', '=', 'user_quiz.id_quiz')
           ->where('user_quiz.id_user', '=', $id_user);
       });
+    }
+
+    if ($showQwizard == false) {
+      $quiz->where('quiz.id_user', null);
     }
 
     // Execute the query to get the total records count

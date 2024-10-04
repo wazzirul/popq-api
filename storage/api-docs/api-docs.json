@@ -1382,7 +1382,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the quiz assigned to (default null)\n            <br> - slug_categories as slug_categories that the quiz assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories as id_categories that the quiz assigned to (default null)\n            <br> - slug_categories as slug_categories that the quiz assigned to (default null)\n            <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1411,6 +1411,10 @@
                                     "page": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     },
                                     "sort": {
                                         "type": "integer",
@@ -1447,7 +1451,7 @@
                 "description": "Returns Quiz Data based on id_categories and slug_categories",
                 "operationId": "showByCategoriesQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned\n                <br> - slug_categories as a reference to the categories quiz data that will be returned\n                <br> - draft as a reference to the categories quiz data that will be returned, use (2) for all published and draft, default (0) for published quiz\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n                <br> - id_categories as a reference to the categories quiz data that will be returned\n                <br> - slug_categories as a reference to the categories quiz data that will be returned\n                <br> - draft as a reference to the categories quiz data that will be returned, use (2) for all published and draft, default (0) for published quiz\n                <br> - limit as limit show data (default 10)\n                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n                <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1468,6 +1472,10 @@
                                     "limit": {
                                         "type": "integer",
                                         "example": "10"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     },
                                     "page": {
                                         "type": "integer",
@@ -1590,7 +1598,7 @@
                 "description": "Returns Quiz Data based on draft status",
                 "operationId": "showByDraftQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - draft as a reference to the quiz data that will be returned ( 1 = Drafted Quiz, 0 = Published Quiz )",
+                    "description": "<b>Note:</b>\n                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n                <br> - draft as a reference to the quiz data that will be returned ( 1 = Drafted Quiz, 0 = Published Quiz )",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1607,6 +1615,10 @@
                                     "page": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -1639,7 +1651,7 @@
                 "description": "Returns Quiz data",
                 "operationId": "showUserLoginQuiz",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - id_categories as references quiz if you want to filter by categories\n            <br> - slug_categories as references quiz if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)",
+                    "description": "<b>Note:</b>\n            <br> - id_user as references quiz already submitted or not (default 10)\n            <br> - id_categories as references quiz if you want to filter by categories\n            <br> - slug_categories as references quiz if you want to filter by categories\n            <br> - limit as limit show data (default 10)\n            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n            <br> - page as page show data (default 1)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -1664,6 +1676,10 @@
                                     "page": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -2256,7 +2272,7 @@
                 "description": "Returns Quiz with related quiz Data based on id_user, id_quiz / slug",
                 "operationId": "showbyidquizv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n                <br> - id_user (optional) as a reference to the user data that will be returned with prioritize on recent\n                <br> - id_quiz as a reference to the quiz data that will be returned\n                <br> - slug as a reference to the quiz data that will be returned\n                <br> - limit_related as limit show data related (default 10)",
+                    "description": "<b>Note:</b>\n                <br> - id_user (optional) as a reference to the user data that will be returned with prioritize on recent\n                <br> - id_quiz as a reference to the quiz data that will be returned\n                <br> - slug as a reference to the quiz data that will be returned\n                <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n                <br> - limit_related as limit show data related (default 10)",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -2277,6 +2293,10 @@
                                     "limit_related": {
                                         "type": "integer",
                                         "example": "10"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -2529,7 +2549,7 @@
                 "description": "Returns search for global data",
                 "operationId": "searchv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": false,
                     "content": {
                         "application/json": {
@@ -2562,6 +2582,10 @@
                                     "sort": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
@@ -2594,7 +2618,7 @@
                 "description": "Returns search for quiz data",
                 "operationId": "quizsearchv2",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "description": "<b>Note:</b>\n            <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - id_user as references quiz already submitted or not\n            <br> - limit as limit show data (default 10)\n            <br> - page as page show data (default 1)\n            <br> - show_qwizard as condition(boolean) to show qwizard (default: false)\n            <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
                     "required": false,
                     "content": {
                         "application/json": {
@@ -2627,6 +2651,10 @@
                                     "sort": {
                                         "type": "integer",
                                         "example": "1"
+                                    },
+                                    "show_qwizard": {
+                                        "type": "boolean",
+                                        "example": false
                                     }
                                 },
                                 "type": "object"
