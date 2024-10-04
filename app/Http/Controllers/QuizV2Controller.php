@@ -81,10 +81,20 @@ class QuizV2Controller extends Controller
 
     if ($idQuiz) {
       // Check by idQuiz if provided
-      $data = Quiz::where('id_quiz', $idQuiz)->with('Categories')->first();
+      $data = Quiz::where('id_quiz', $idQuiz)
+        ->where(function ($q) use ($showQwizard) {
+          $showQwizard == false && $q->where('id_user', null);
+        })
+        ->with('Categories')
+        ->first();
     } elseif ($slugQuiz) {
       // Check by slugQuiz if provided
-      $data = Quiz::where('slug', $slugQuiz)->with('Categories')->first();
+      $data = Quiz::where('slug', $slugQuiz)
+        ->where(function ($q) use ($showQwizard) {
+          $showQwizard == false && $q->where('id_user', null);
+        })
+        ->with('Categories')
+        ->first();
     }
     if (!$data) return ResultHelpers::errors('Data quiz not found.', 400, false);
 
