@@ -2516,6 +2516,71 @@
                 }
             }
         },
+        "/qwizard/show": {
+            "post": {
+                "tags": [
+                    "Qwizard"
+                ],
+                "summary": "Show Qwizard Data",
+                "description": "Returns Qwizard Data",
+                "operationId": "showqwizard",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - search as search for quiz with references of topic, title, subtitle, description (default null)\n                <br> - id_categories as id_categories that the quiz assigned to (default null)\n                <br> - slug_categories as slug_categories that the quiz assigned to (default null)\n                <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)\n                <br> - limit as limit show data (default 10)\n                <br> - page as page show data (default 1)\n                <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "search": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": null
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "draft": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    },
+                                    "page": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "sort": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/v2/search/showFilter": {
             "get": {
                 "tags": [

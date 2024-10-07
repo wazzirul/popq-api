@@ -396,4 +396,145 @@ class QwizardController extends Controller
 
     return ResultHelpers::success($data, 200, true);
   }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/qwizard/show",
+   *      operationId="showqwizard",
+   *      tags={"Qwizard"},
+   *      summary="Show Qwizard Data",
+   *      description="Returns Qwizard Data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+                <br> - search as search for quiz with references of topic, title, subtitle, description (default null)
+                <br> - id_categories as id_categories that the quiz assigned to (default null)
+                <br> - slug_categories as slug_categories that the quiz assigned to (default null)
+                <br> - draft as draft show data (default 0 / published) (1 = drafted quiz) (100 = all data published / drafted)
+                <br> - limit as limit show data (default 10)
+                <br> - page as page show data (default 1)
+                <br> - sort as sort show data (default 1, 1 = most recent, 2 = least recent, 3 = alphabetical)",
+   *          required=true,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="search", type="string", example=null),
+   *              @OA\Property(property="id_categories", type="int", example=null),
+   *              @OA\Property(property="slug_categories", type="string", example=null),
+   *              @OA\Property(property="draft", type="int", example="0"),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *              @OA\Property(property="page", type="int", example="1"),
+   *              @OA\Property(property="sort", type="int", example="1"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function show(Request $request)
+  {
+    $requestData = $request->only([
+      'search',
+      'id_categories',
+      'slug_categories',
+      'draft',
+      'limit',
+      'page',
+      'sort',
+    ]);
+
+    $search = $requestData['search'] ?? null;
+    $idCategories = $requestData['id_categories'] ?? null;
+    $slugCategories = $requestData['slug_categories'] ?? null;
+    $draft = $requestData['draft'] ?? 0;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+    $page = $requestData['page'] ?? 1;
+    $sort = $requestData['sort'] ?? 1;
+
+    // Calculate the offset based on the page and limit
+    $offset = ($page - 1) * $limit;
+
+    // Initialize the query builder for the main data retrieval
+    $query = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')
+      ->where('quiz.soft_delete', 0)
+      ->with('Categories')
+      ->withCount('quizQuestions'); // Load the total quiz questions count
+
+    if ($sort === 1) {
+      $query->orderBy('id_quiz', 'DESC');
+    } else if ($sort === 2) {
+      $query->orderBy('id_quiz', 'ASC');
+    } else if ($sort === 3) {
+      $query->orderBy('title', 'ASC');
+    } else {
+      $query->orderBy('id_quiz', 'DESC');
+    }
+
+    // Initialize the query builder for the total records count
+    $totalRecordsQuery = Quiz::leftJoin('categories', 'categories.id_categories', '=', 'quiz.id_categories')->where('quiz.soft_delete', 0);
+
+    if ($search) {
+      $query->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', '%' . $search . '%')
+          ->orWhere('title', 'LIKE', '%' . $search . '%')
+          ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
+          ->orWhere('description', 'LIKE', '%' . $search . '%');
+      });
+
+      $totalRecordsQuery->where(function ($query) use ($search) {
+        $query->where('topic', 'LIKE', '%' . $search . '%')
+          ->orWhere('title', 'LIKE', '%' . $search . '%')
+          ->orWhere('subtitle', 'LIKE', '%' . $search . '%')
+          ->orWhere('description', 'LIKE', '%' . $search . '%');
+      });
+    }
+
+    if ($idCategories) {
+      $query->where('id_categories', $idCategories);
+      $totalRecordsQuery->where('id_categories', $idCategories);
+    }
+
+    if ($slugCategories) {
+      $query->where('categories.slug', $slugCategories);
+      $totalRecordsQuery->where('categories.slug', $slugCategories);
+    }
+
+    // Conditionally add the 'draft' where clause if draft is not 100
+    if ($draft != 100) {
+      $query->where('draft', $draft);
+      $totalRecordsQuery->where('draft', $draft);
+    }
+
+    $query->where('id_user', '!=', null);
+    $totalRecordsQuery->where('id_user', '!=', null);
+
+    // Execute the query to get the total records count
+    $totalRecords = $totalRecordsQuery->count();
+    $totalPages = ceil($totalRecords / $limit);
+
+    $query->skip($offset)
+      ->take($limit);
+
+    // Execute the query to retrieve data
+    $data = $query->get();
+
+    return ResultHelpers::success([
+      'data' => $data,
+      'total_pages' => $totalPages,
+    ], 200, true);
+  }
 }

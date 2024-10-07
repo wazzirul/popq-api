@@ -141,6 +141,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Quiz
     Route::post('/qwizard/store', [QwizardController::class, 'store'])->name('qwizard--store');
     Route::post('/qwizard/myQwizard', [QwizardController::class, 'myQwizard'])->name('qwizard--myQwizard');
+    Route::post('/qwizard/show', [QwizardController::class, 'show'])->name('qwizard--show');
 
     // Quiz Questions
     Route::post('/quiz-question/create-edit', [QuizQuestionsController::class, 'createEdit'])->name('quiz-question--createEdit');
