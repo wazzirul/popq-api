@@ -91,7 +91,7 @@ Route::prefix('v2')->group(function () {
     Route::post('/statistics/showCompletedPoll', [StatisticV2Controller::class, 'showCompletedPoll'])->name('v2-statistics--showCompletedPoll');
 
     // Search
-    Route::get('/search/showFilter', [SearchV2Controller::class, 'showFilter'])->name('v2-search--showFilter');
+    Route::post('/search/showFilter', [SearchV2Controller::class, 'showFilter'])->name('v2-search--showFilter');
     Route::post('/search', [SearchV2Controller::class, 'search'])->name('v2-search');
     Route::post('/search/quiz', [SearchV2Controller::class, 'quiz'])->name('v2-search--quiz');
     Route::post('/search/poll', [SearchV2Controller::class, 'poll'])->name('v2-search--poll');

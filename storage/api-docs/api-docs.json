@@ -2582,13 +2582,38 @@
             }
         },
         "/v2/search/showFilter": {
-            "get": {
+            "post": {
                 "tags": [
                     "Search V2"
                 ],
                 "summary": "Show filter search data",
                 "description": "Returns filter search data",
                 "operationId": "showfiltersearchv2",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n            <br> - id_categories: id of categories\n            <br> - slug_categories: slug of categories\n            <br> - limit as limit show data (default 10) set to -1 for disable limitation.",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_categories": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "slug_categories": {
+                                        "type": "string",
+                                        "example": null
+                                    },
+                                    "limit": {
+                                        "type": "integer",
+                                        "example": "10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful Operation"

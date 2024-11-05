@@ -16,12 +16,25 @@ class SearchV2Controller extends Controller
 {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /**
-   * @OA\Get(
+   * @OA\Post(
    *      path="/v2/search/showFilter",
    *      operationId="showfiltersearchv2",
    *      tags={"Search V2"},
    *      summary="Show filter search data",
    *      description="Returns filter search data",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+            <br> - id_categories: id of categories
+            <br> - slug_categories: slug of categories
+            <br> - limit as limit show data (default 10) set to -1 for disable limitation.",
+   *          required=false,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="id_categories", type="int", example="1"),
+   *              @OA\Property(property="slug_categories", type="string", example=null),
+   *              @OA\Property(property="limit", type="int", example="10"),
+   *          )
+   *      ),
    *      @OA\Response(
    *          response=200,
    *          description="Successful Operation",
@@ -40,20 +53,53 @@ class SearchV2Controller extends Controller
    *      )
    * )
    */
-  public function showFilter()
+  public function showFilter(Request $request)
   {
-    $quizFilter = Quiz::select('subtitle', 'soft_delete');
-    $pollFilter = Poll::select('subtitle', 'soft_delete');
+    $requestData = $request->only([
+      'id_categories',
+      'slug_categories',
+      'limit',
+    ]);
+
+    $id_categories = $requestData['id_categories'] ?? null;
+    $slug_categories = $requestData['slug_categories'] ?? null;
+    $limit = $requestData['limit'] ?? 10; // Default limit is 10
+
+    if ($id_categories || $slug_categories) {
+      $category = Categories::where('soft_delete', 0)
+        ->where(function ($q) use ($id_categories, $slug_categories) {
+          $id_categories && $q->where('id_categories', $id_categories);
+          $slug_categories && $q->where('slug', $slug_categories);
+        })
+        ->select([
+          'id_categories',
+          'name_category',
+          'slug',
+        ])
+        ->first();
+    } else $category = null;
+
+    $quizFilter = Quiz::select('subtitle', 'soft_delete')
+      ->where(function ($r) use ($category) {
+        $category && $r->where('id_categories', $category->id_categories);
+      });
+    $pollFilter = Poll::select('subtitle', 'soft_delete')
+      ->where(function ($s) use ($category) {
+        $category && $s->where('id_categories', $category->id_categories);
+      });
+
     $allFilter = $quizFilter->unionAll($pollFilter);
 
-    $data = DB::table(DB::raw("({$allFilter->toSql()}) AS filter"))
-      ->where('soft_delete', 0)
+    $data = DB::table(DB::raw("({$allFilter->toSql()}) as combined"))
+      ->mergeBindings($allFilter->getQuery())
       ->select([
         'subtitle',
         DB::raw('count(*) as total')
       ])
       ->groupBy('subtitle')
+      ->having('total', '!=', 0)
       ->orderBy('total', 'DESC')
+      ->limit($limit)
       ->get();
 
     return ResultHelpers::success($data, 200, true);
