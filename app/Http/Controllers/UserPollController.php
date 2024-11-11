@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 use Carbon\Carbon;
 
-use App\Models\Categories;
 use App\Models\Poll;
 use App\Models\PollListChoice;
 use App\Models\UserPoll;
@@ -223,7 +222,7 @@ class UserPollController extends Controller
     $query = UserPoll::leftJoin('poll', 'poll.id_poll', '=', 'user_poll.id_poll')
         ->where('user_poll.id_user', $idUser)
         ->where('user_poll.soft_delete', 0)
-        ->with('Poll.PollListChoice');
+        ->with('Poll.PollListChoice', 'Poll.Categories');
 
     if($idPoll){
       $query->where('user_poll.id_poll', $idPoll);

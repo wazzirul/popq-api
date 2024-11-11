@@ -4,14 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 use App\Models\Categories;
-use App\Models\Poll;
 use App\Models\UserPoll;
 use App\Models\Users;
-use App\Models\Quiz;
 use App\Models\UserQuiz;
 use App\Models\UserQuizAnswer;
 

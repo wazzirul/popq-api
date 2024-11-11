@@ -5,21 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers; 
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
-use Maatwebsite\Excel\Facades\Excel;
 
-use App\Imports\QuizPollImport;
-
-use App\Models\Categories;
 use App\Models\Poll;
-use App\Models\PollListChoice;
-use App\Models\Users;
-use App\Models\UserPoll;
 use App\Models\Quiz;
-use App\Models\QuizListChoice;
-use App\Models\QuizQuestions;
-use App\Models\UserQuiz;
-use App\Models\UserQuizAnswer;
 
 class ImportController extends Controller
 {
