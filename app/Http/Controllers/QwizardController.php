@@ -11,6 +11,7 @@ use App\Models\Quiz;
 use App\Models\QuizListChoice;
 use App\Models\QuizQuestions;
 use App\Models\Users;
+use Carbon\Carbon;
 
 class QwizardController extends Controller
 {
@@ -76,7 +77,65 @@ class QwizardController extends Controller
     return $path;
   }
 
-  //
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/qwizard/check-limit",
+   *      operationId="checklimitqwizard",
+   *      tags={"Qwizard"},
+   *      summary="Check Limits of Qwizard Data",
+   *      description="Returns Limits of Qwizard Data based on id_user",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+                <br> - id_user as a reference to the quiz data that will be returned",
+   *          required=true,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="id_user", type="integer", example="32"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function checkLimit(Request $request)
+  {
+    $requestData = $request->only([
+      'id_user',
+    ]);
+
+    $idUser = $requestData['id_user'] ?? null;
+
+    $dataUsers = Users::find($idUser);
+    if (!$dataUsers) return ResultHelpers::errors('Users Data Not Found from id_user inputed.', 400, false);
+
+    $now = Carbon::now();
+    if (!$dataUsers->lu_limit || $dataUsers->lu_limit != $now->copy()->toDateString()) {
+      $dataUsers->lu_limit = $now->copy()->toDateString();
+      $dataUsers->limits = 5;
+      $dataUsers->save();
+    }
+    if ($dataUsers->limits <= 0) return ResultHelpers::errors('Your quiz generation limit has been reached. Please try again tomorrow.', 400, false);
+
+    $data['id_user'] = $dataUsers->id_user;
+    $data['limits'] = $dataUsers->limits;
+    return ResultHelpers::success($data, 200, true);
+  }
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /**
    * @OA\Post(
@@ -249,6 +308,7 @@ class QwizardController extends Controller
 
     $dataUsers = Users::find($idUser);
     if (!$dataUsers) return ResultHelpers::errors('Users Data Not Found from id_user inputed', 400, false);
+    if ($dataUsers->limits <= 0) return ResultHelpers::errors('Your quiz generation limit has been reached. Please try again tomorrow.', 400, false);
 
     // Generate the URL of the uploaded file
     $thumbnailUrl = null;
@@ -333,6 +393,10 @@ class QwizardController extends Controller
 
     // Assign the quiz questions to the quiz
     $data->QuizQuestions = $quizQuestions;
+
+    // Decrease limits of user qwizard
+    $dataUsers->limits -= 1;
+    $dataUsers->save();
 
     return ResultHelpers::success($data, 200, true);
   }

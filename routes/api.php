@@ -139,6 +139,7 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/quiz/set-featured', [QuizController::class, 'setFeatured'])->name('quiz--setFeatured');
 
     // Quiz
+    Route::post('/qwizard/check-limit', [QwizardController::class, 'checkLimit'])->name('qwizard--check-limit');
     Route::post('/qwizard/store', [QwizardController::class, 'store'])->name('qwizard--store');
     Route::post('/qwizard/myQwizard', [QwizardController::class, 'myQwizard'])->name('qwizard--myQwizard');
     Route::post('/qwizard/show', [QwizardController::class, 'show'])->name('qwizard--show');

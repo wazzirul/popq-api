@@ -2320,6 +2320,47 @@
                 }
             }
         },
+        "/qwizard/check-limit": {
+            "post": {
+                "tags": [
+                    "Qwizard"
+                ],
+                "summary": "Check Limits of Qwizard Data",
+                "description": "Returns Limits of Qwizard Data based on id_user",
+                "operationId": "checklimitqwizard",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - id_user as a reference to the quiz data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_user": {
+                                        "type": "integer",
+                                        "example": "32"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/qwizard/store": {
             "post": {
                 "tags": [
