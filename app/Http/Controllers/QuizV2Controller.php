@@ -184,4 +184,69 @@ class QuizV2Controller extends Controller
 
     return ResultHelpers::success($data, 200, true);
   }
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * @OA\Post(
+   *      path="/v2/quiz/preview",
+   *      operationId="previewquizv2",
+   *      tags={"Quiz V2"},
+   *      summary="Preview Quiz Data",
+   *      description="Returns Preview Quiz Data based on slug",
+   *      @OA\RequestBody(
+   *          description="<b>Note:</b>
+                <br> - slug as a reference to the quiz data that will be returned",
+   *          required=true,
+   *          @OA\JsonContent(
+   *              type="object",
+   *              @OA\Property(property="slug", type="string", example="bob-marley-band_Q00002689"),
+   *          )
+   *      ),
+   *      @OA\Response(
+   *          response=200,
+   *          description="Successful Operation",
+   *       ),
+   *      @OA\Response(
+   *          response=400,
+   *          description="Bad Request"
+   *      ),
+   *      @OA\Response(
+   *          response=401,
+   *          description="Unauthorized",
+   *      ),
+   *      @OA\Response(
+   *          response=500,
+   *          description="Server Error"
+   *      )
+   * )
+   */
+  public function preview(Request $request)
+  {
+    $requestData = $request->only([
+      'slug',
+    ]);
+
+    $slugQuiz = $requestData['slug'] ?? null;
+
+    if (!$slugQuiz) {
+      return ResultHelpers::errors('id_quiz or slug quiz must be provided.', 400, false);
+    }
+
+    $data = Quiz::where('slug', $slugQuiz)
+      ->select([
+        'id_quiz',
+        'id_user',
+        'topic',
+        'title',
+        'slug',
+        'subtitle',
+        'thumbnail',
+        'description',
+      ])
+      ->first();
+    if (!$data) return ResultHelpers::errors('Data quiz not found.', 400, false);
+
+    return ResultHelpers::success($data, 200, true);
+  }
 }

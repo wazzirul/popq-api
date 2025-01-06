@@ -2320,6 +2320,47 @@
                 }
             }
         },
+        "/v2/quiz/preview": {
+            "post": {
+                "tags": [
+                    "Quiz V2"
+                ],
+                "summary": "Preview Quiz Data",
+                "description": "Returns Preview Quiz Data based on slug",
+                "operationId": "previewquizv2",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n                <br> - slug as a reference to the quiz data that will be returned",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "bob-marley-band_Q00002689"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/qwizard/check-limit": {
             "post": {
                 "tags": [

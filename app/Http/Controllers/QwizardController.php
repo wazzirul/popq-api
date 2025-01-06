@@ -328,7 +328,7 @@ class QwizardController extends Controller
     }
 
     $data = new Quiz();
-    $slug = str_replace(" ", "-", strtolower($topicQuiz)) . "_Q";
+    $slug = str_replace(" ", "-", strtolower($topicQuiz)) . "_U";
     $slug_id = Quiz::count() + 1;
     for ($i = strlen($slug_id); $i < 8; $i++) {
       $slug .= "0";

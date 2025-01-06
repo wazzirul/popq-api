@@ -99,6 +99,7 @@ Route::prefix('v2')->group(function () {
 
     // Quiz
     Route::post('/quiz/showById', [QuizV2Controller::class, 'showById'])->name('v2-quiz--showById');
+    Route::post('/quiz/preview', [QuizV2Controller::class, 'preview'])->name('v2-quiz--preview');
 
     // Poll
     Route::post('/poll/showById', [PollV2Controller::class, 'showById'])->name('v2-poll--showById');
