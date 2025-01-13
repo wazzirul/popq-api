@@ -102,7 +102,7 @@ class StatisticController extends Controller
         return ResultHelpers::success($data, 200, true);
     }
 
-    
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -230,7 +230,7 @@ class StatisticController extends Controller
         return ResultHelpers::success($data, 200, true);
     }
 
-    
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -337,7 +337,7 @@ class StatisticController extends Controller
     }
 
 
-    
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Get(
@@ -367,9 +367,11 @@ class StatisticController extends Controller
     public function countTotalQuizzesAndPolls()
     {
         // total quizzes
-        $totalQuizzes = Quiz::where('soft_delete', 0)->count();
+        $totalQuizzes = Quiz::where('id_user', null)->where('soft_delete', 0)->count();
         // total polls
         $totalPolls = Poll::where('soft_delete', 0)->count();
+        // total qwizard
+        $totalQwizards = Quiz::where('id_user', '!=', null)->where('soft_delete', 0)->count();
 
         // categories total quiz and total poll
         $categories = Categories::where('soft_delete', 0)->get();
@@ -379,8 +381,9 @@ class StatisticController extends Controller
         foreach ($categories as $category) {
             $categoryName = $category->name_category;
 
-            $quizCount = Quiz::where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
+            $quizCount = Quiz::where('id_user', null)->where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
             $pollCount = Poll::where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
+            $qwizardCount = Quiz::where('id_user', '!=', null)->where('id_categories', $category->id_categories)->where('soft_delete', 0)->count();
 
             $categoryCounts[$categoryName] = [
                 'id_categories' => $category->id_categories,
@@ -390,49 +393,70 @@ class StatisticController extends Controller
                 'color_hex' => $category->color_hex,
                 'total_quizzes' => $quizCount,
                 'total_polls' => $pollCount,
+                'total_qwizards' => $qwizardCount,
             ];
         }
-        
+
 
         // total quizzes this week
         $startDate = now()->startOfWeek();
         $endDate = now()->endOfWeek();
 
-        $totalCompletedQuizzesThisWeek = UserQuiz::whereHas('Quiz', function ($query) use ($startDate, $endDate) {
-            $query->where('soft_delete', 0);
+        $totalCompletedQuizzesThisWeek = UserQuiz::whereHas('Quiz', function ($query) {
+            $query->where('quiz.id_user', null);
+            $query->where('quiz.soft_delete', 0);
         })->where('status', 1)
-        ->whereBetween('date_time', [$startDate, $endDate])
-        ->count();
+            ->whereBetween('date_time', [$startDate, $endDate])
+            ->count();
+
+        $totalCompletedQwizardsThisWeek = UserQuiz::whereHas('Quiz', function ($query) {
+            $query->where('quiz.id_user', '!=', null);
+            $query->where('quiz.soft_delete', 0);
+        })->where('status', 1)
+            ->whereBetween('date_time', [$startDate, $endDate])
+            ->count();
 
         // Count the number of polls polled this week for each id_poll
-        $pollCountsThisWeek = UserPoll::whereHas('Poll', function ($query) use ($startDate, $endDate) {
+        $pollCountsThisWeek = UserPoll::whereHas('Poll', function ($query) {
             $query->where('soft_delete', 0);
         })
-        ->whereBetween('date_time', [$startDate, $endDate])
-        ->groupBy('id_poll')
-        ->count();
+            ->whereBetween('date_time', [$startDate, $endDate])
+            ->groupBy('id_poll')
+            ->count();
+
 
         $categoryCountsThisWeek = [];
         foreach ($categories as $category) {
             $categoryName = $category->name_category;
-    
+
             $quizCountThisWeek = UserQuiz::leftJoin('quiz', 'user_quiz.id_quiz', '=', 'quiz.id_quiz')
-            ->where('quiz.id_categories', $category->id_categories)
-            ->where('quiz.soft_delete', 0)
-            ->where('user_quiz.soft_delete', 0)
-            ->where('user_quiz.status', 1)
-            ->whereBetween('user_quiz.date_time', [$startDate, $endDate])
-            ->groupBy('user_quiz.id_user_quiz')
-            ->count();
-            
+                ->where('quiz.id_user', null)
+                ->where('quiz.id_categories', $category->id_categories)
+                ->where('quiz.soft_delete', 0)
+                ->where('user_quiz.soft_delete', 0)
+                ->where('user_quiz.status', 1)
+                ->whereBetween('user_quiz.date_time', [$startDate, $endDate])
+                ->groupBy('user_quiz.id_user_quiz')
+                ->count();
+
+            $qwizardCountThisWeek = UserQuiz::leftJoin('quiz', 'user_quiz.id_quiz', '=', 'quiz.id_quiz')
+                ->where('quiz.id_user', '!=', null)
+                ->where('quiz.id_categories', $category->id_categories)
+                ->where('quiz.soft_delete', 0)
+                ->where('user_quiz.soft_delete', 0)
+                ->where('user_quiz.status', 1)
+                ->whereBetween('user_quiz.date_time', [$startDate, $endDate])
+                ->groupBy('user_quiz.id_user_quiz')
+                ->count();
+
             $pollCountThisWeek = UserPoll::leftJoin('poll', 'user_poll.id_poll', '=', 'poll.id_poll')
-            ->where('poll.id_categories', $category->id_categories)
-            ->where('poll.soft_delete', 0)
-            ->where('user_poll.soft_delete', 0)
-            ->whereBetween('date_time', [$startDate, $endDate])
-            ->groupBy('poll.id_poll')
-            ->count();
-    
+                ->where('poll.id_categories', $category->id_categories)
+                ->where('poll.soft_delete', 0)
+                ->where('user_poll.soft_delete', 0)
+                ->whereBetween('date_time', [$startDate, $endDate])
+                ->groupBy('poll.id_poll')
+                ->count();
+
             $categoryCountsThisWeek[$categoryName] = [
                 'id_categories' => $category->id_categories,
                 'name_category' => $category->name_category,
@@ -441,22 +465,37 @@ class StatisticController extends Controller
                 'color_hex' => $category->color_hex,
                 'total_quizzes_this_week' => $quizCountThisWeek,
                 'total_polls_this_week' => $pollCountThisWeek,
+                'total_qwizards_this_week' => $qwizardCountThisWeek,
             ];
         }
+
+        $popularQwizards = UserQuiz::whereHas('Quiz', function ($query) {
+            $query->where('quiz.id_user', '!=', null);
+            $query->where('quiz.soft_delete', 0);
+        })->where('status', 1)
+            ->selectRaw('id_quiz, COUNT(*) as total')
+            ->groupBy('id_quiz')
+            ->orderBy('total', 'DESC')
+            ->with('Quiz.User')
+            ->limit(1)
+            ->get();
 
         $data = [
             'category' => $categoryCounts,
             'category_submitted_this_week' => $categoryCountsThisWeek,
             'total_all_quizzes' => $totalQuizzes,
             'total_completed_quizzes_this_week' => $totalCompletedQuizzesThisWeek,
+            'total_all_qwizards' => $totalQwizards,
+            'total_completed_qwizards_this_week' => $totalCompletedQwizardsThisWeek,
             'total_all_polls' => $totalPolls,
             'total_polls_this_week' => $pollCountsThisWeek,
+            'popular_qwizards' => $popularQwizards,
         ];
 
         return ResultHelpers::success($data, 200, true);
     }
 
-    
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
@@ -526,7 +565,7 @@ class StatisticController extends Controller
                 ->where('categories.soft_delete', 0)
                 ->where('user_quiz.status', 1)
                 ->max('user_quiz.result') / 10, 0) . '/10';
-                
+
             $topScores[$category->name_category] = [
                 'id_categories' => $category->id_categories,
                 'name_category' => $category->name_category,
@@ -542,7 +581,7 @@ class StatisticController extends Controller
             'average_score' => $averageScore,
             'top_score' => $topScores,
         ];
-        
+
 
         return ResultHelpers::success($data, 200, true);
     }
