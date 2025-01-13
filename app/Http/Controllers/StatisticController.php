@@ -477,7 +477,7 @@ class StatisticController extends Controller
             ->groupBy('id_quiz')
             ->orderBy('total', 'DESC')
             ->with('Quiz.User')
-            ->limit(1)
+            ->limit(5)
             ->get();
 
         $data = [
