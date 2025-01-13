@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdministratorsController;
 use App\Http\Controllers\AdministratorsDashboardController;
+use App\Http\Controllers\AdsManagementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserQuizController;
 use App\Http\Controllers\CategoriesController;
@@ -40,6 +41,10 @@ Route::post('/user/login', [UserController::class, 'login'])->name('users--Login
 // Categories
 Route::get('/categories/show', [CategoriesController::class, 'show'])->name('categories--show');
 Route::post('/categories/showByID', [CategoriesController::class, 'showByID'])->name('categories--showByID');
+
+// Ads Management
+Route::get('/ads-management/show', [AdsManagementController::class, 'show'])->name('ads-management--show');
+Route::post('/ads-management/showByID', [AdsManagementController::class, 'showByID'])->name('ads-management--showByID');
 
 // Quiz
 Route::post('/quiz/show', [QuizController::class, 'show'])->name('quiz--show');
@@ -172,6 +177,10 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     Route::post('/user-poll/create-edit', [UserPollController::class, 'createEdit'])->name('user-poll--createEdit');
     Route::post('/user-poll/show', [UserPollController::class, 'show'])->name('user-poll--show');
     Route::post('/user-poll/showByIdPoll', [UserPollController::class, 'showByIdPoll'])->name('user-poll--showByIdPoll');
+
+    // Ads Management
+    Route::post('/ads-management/create-edit', [AdsManagementController::class, 'createEdit'])->name('ads-management--createEdit');
+    Route::post('/ads-management/delete', [AdsManagementController::class, 'delete'])->name('ads-management--delete');
 
     ////////
     // V2 //
