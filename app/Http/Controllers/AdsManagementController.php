@@ -23,7 +23,7 @@ class AdsManagementController extends Controller
                <br><b>page_location</b> : page location of ads management
                <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
                <br><b>status</b> : 0 = disabled, 1 = enabled
-               <br><b>soft_delete</b> : 0 = active, 1 = deleted
+               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
      *          required=true,
      *          @OA\JsonContent(
      *              type="object",
