@@ -185,4 +185,76 @@ class AdsManagementController extends Controller
 
         return ResultHelpers::success($data, 200, true);
     }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Get(
+     *      path="/ads-management/disable-all",
+     *      operationId="disablealladsmanagement",
+     *      tags={"Ads Management"},
+     *      summary="Disable all Ads Management Data",
+     *      description="Returns Ads Management Data",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function disableAll(Request $request)
+    {
+        AdsManagement::all()->update([
+            'status' => 0
+        ]);
+
+        return ResultHelpers::success('All ads management was disabled.', 200, true);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @OA\Get(
+     *      path="/ads-management/enable-all",
+     *      operationId="enablealladsmanagement",
+     *      tags={"Ads Management"},
+     *      summary="Enable all Ads Management Data",
+     *      description="Returns Ads Management Data",
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful Operation",
+     *       ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server Error"
+     *      )
+     * )
+     */
+    public function enableAll(Request $request)
+    {
+        AdsManagement::all()->update([
+            'status' => 1
+        ]);
+
+        return ResultHelpers::success('All ads management was enabled.', 200, true);
+    }
 }

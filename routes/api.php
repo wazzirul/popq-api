@@ -181,6 +181,8 @@ Route::group(['middleware' => 'jwt.authentication'], function () {
     // Ads Management
     Route::post('/ads-management/create-edit', [AdsManagementController::class, 'createEdit'])->name('ads-management--createEdit');
     Route::post('/ads-management/delete', [AdsManagementController::class, 'delete'])->name('ads-management--delete');
+    Route::post('/ads-management/disable-all', [AdsManagementController::class, 'disableAll'])->name('ads-management--disable-all');
+    Route::post('/ads-management/enable-all', [AdsManagementController::class, 'enableAll'])->name('ads-management--enable-all');
 
     ////////
     // V2 //
