@@ -73,7 +73,7 @@ class AdsManagementController extends Controller
             $data = new AdsManagement();
         } else {
             // Check if the user already exists in the table
-            $data = AdsManagement::where('idAdsManagement', $idAdsManagement)->first();
+            $data = AdsManagement::where('id_ads_management', $idAdsManagement)->first();
             if (!$data) {
                 return ResultHelpers::errors('Ads Management Data Not Found from id_ads_management inputed', 400, false);
             }
