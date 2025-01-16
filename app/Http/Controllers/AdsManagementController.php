@@ -215,7 +215,7 @@ class AdsManagementController extends Controller
      */
     public function disableAll(Request $request)
     {
-        AdsManagement::all()->update([
+        AdsManagement::query()->update([
             'status' => 0
         ]);
 
@@ -251,7 +251,7 @@ class AdsManagementController extends Controller
      */
     public function enableAll(Request $request)
     {
-        AdsManagement::all()->update([
+        AdsManagement::query()->update([
             'status' => 1
         ]);
 
