@@ -106,10 +106,10 @@ class AdsManagementController extends Controller
 
         $pageLocationAdsManagement && $data->page_location = $pageLocationAdsManagement;
         $slugAdsManagement && $data->slug = $slugAdsManagement;
-        $keywordsAdsManagement && $data->keywords = $keywordsAdsManagement;
         $totalAdsAdsManagement && $data->total_ads = $totalAdsAdsManagement;
         $statusAdsManagement != null && $data->status = $statusAdsManagement;
         $softDeleteAdsManagement != null && $data->soft_delete = $softDeleteAdsManagement;
+        $data->keywords = $keywordsAdsManagement;
         $data->save();
 
         return ResultHelpers::success($data, 200, true);
