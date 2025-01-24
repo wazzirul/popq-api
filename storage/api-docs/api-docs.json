@@ -202,6 +202,188 @@
                 }
             }
         },
+        "/ads-management/create-edit": {
+            "post": {
+                "tags": [
+                    "Ads Management"
+                ],
+                "summary": "Create / Edit Ads Management Data",
+                "description": "Returns Ads Management Data",
+                "operationId": "createeditadsmanagement",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_ads_management</b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>page_location</b> : page location of ads management\n               <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)\n               <br><b>keywords</b> : keywords is for filter search of ads links\n               <br><b>total_ads</b> : (optional) automatically updated from Backend\n               <br><b>status</b> : 0 = disabled, 1 = enabled\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_ads_management": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "page_location": {
+                                        "type": "string",
+                                        "example": "Homepage"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "homepage"
+                                    },
+                                    "keywords": {
+                                        "type": "integer",
+                                        "example": "game"
+                                    },
+                                    "total_ads": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "soft_delete": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/ads-management/show": {
+            "get": {
+                "tags": [
+                    "Ads Management"
+                ],
+                "summary": "Show ads management",
+                "description": "Returns ads management data",
+                "operationId": "showadsmanagement",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/ads-management/showByID": {
+            "post": {
+                "tags": [
+                    "Ads Management"
+                ],
+                "summary": "Show ads management by id or slug",
+                "description": "Returns ads management data",
+                "operationId": "showadsmanagementbyid",
+                "requestBody": {
+                    "description": "<b>Note:</b>\n               <br><b>id_ads_management</b> : id of ads management\n               <br><b>slug</b> : slug of ads management",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "id_ads_management": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": null
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/ads-management/disable-all": {
+            "get": {
+                "tags": [
+                    "Ads Management"
+                ],
+                "summary": "Disable all Ads Management Data",
+                "description": "Returns Ads Management Data",
+                "operationId": "disablealladsmanagement",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/ads-management/enable-all": {
+            "get": {
+                "tags": [
+                    "Ads Management"
+                ],
+                "summary": "Enable all Ads Management Data",
+                "description": "Returns Ads Management Data",
+                "operationId": "enablealladsmanagement",
+                "responses": {
+                    "200": {
+                        "description": "Successful Operation"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
         "/categories/create-edit": {
             "post": {
                 "tags": [
@@ -3830,6 +4012,10 @@
         {
             "name": "Administrators Dashboard",
             "description": "Administrators Dashboard"
+        },
+        {
+            "name": "Ads Management",
+            "description": "Ads Management"
         },
         {
             "name": "Categories",

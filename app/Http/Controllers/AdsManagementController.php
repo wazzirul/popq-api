@@ -6,9 +6,26 @@ use Illuminate\Http\Request;
 use App\Helpers\ResultHelpers;
 
 use App\Models\AdsManagement;
+use Illuminate\Support\Facades\Http;
+use SimpleXMLElement;
 
 class AdsManagementController extends Controller
 {
+    /**
+     * Convert XML string to JSON.
+     */
+    private function convertXmlToJson(string $xml): array
+    {
+        try {
+            $xmlObject = new SimpleXMLElement($xml);
+            $json = json_decode(json_encode($xmlObject), true);
+            return $json;
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to parse XML: ' . $e->getMessage());
+        }
+    }
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @OA\Post(
@@ -22,6 +39,8 @@ class AdsManagementController extends Controller
                <br><b>id_ads_management</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>page_location</b> : page location of ads management
                <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
+               <br><b>keywords</b> : keywords is for filter search of ads links
+               <br><b>total_ads</b> : (optional) automatically updated from Backend
                <br><b>status</b> : 0 = disabled, 1 = enabled
                <br><b>soft_delete</b> : 0 = active, 1 = deleted",
      *          required=true,
@@ -30,6 +49,8 @@ class AdsManagementController extends Controller
      *              @OA\Property(property="id_ads_management", type="int", example="1"),
      *              @OA\Property(property="page_location", type="string", example="Homepage"),
      *              @OA\Property(property="slug", type="string", example="homepage"),
+     *              @OA\Property(property="keywords", type="int", example="game"),
+     *              @OA\Property(property="total_ads", type="int", example="1"),
      *              @OA\Property(property="status", type="int", example="1"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
      *          )
@@ -59,6 +80,8 @@ class AdsManagementController extends Controller
             'page_location',
             'slug',
             'status',
+            'keywords',
+            'total_ads',
             'soft_delete',
         ]);
 
@@ -66,6 +89,8 @@ class AdsManagementController extends Controller
         $pageLocationAdsManagement = $requestData['page_location'] ?? null;
         $slugAdsManagement = $requestData['slug'] ?? null;
         $statusAdsManagement = $requestData['status'] ?? null;
+        $keywordsAdsManagement = $requestData['keywords'] ?? null;
+        $totalAdsAdsManagement = $requestData['total_ads'] ?? null;
         $softDeleteAdsManagement = $requestData['soft_delete'] ?? null;
 
         if ($idAdsManagement === null) {
@@ -81,6 +106,8 @@ class AdsManagementController extends Controller
 
         $pageLocationAdsManagement && $data->page_location = $pageLocationAdsManagement;
         $slugAdsManagement && $data->slug = $slugAdsManagement;
+        $keywordsAdsManagement && $data->keywords = $keywordsAdsManagement;
+        $totalAdsAdsManagement && $data->total_ads = $totalAdsAdsManagement;
         $statusAdsManagement != null && $data->status = $statusAdsManagement;
         $softDeleteAdsManagement != null && $data->soft_delete = $softDeleteAdsManagement;
         $data->save();
@@ -180,7 +207,48 @@ class AdsManagementController extends Controller
                 ->where('slug', $slugAdsManagement)
                 ->first();
         } else {
-            return ResultHelpers::errors('Ads Management Data Not Found from id_ads_management or slug inputed', 400, false);
+            return ResultHelpers::errors('id_ads_management or slug is required.', 400, false);
+        }
+        if (!$data) return ResultHelpers::errors('Ads Management Data Not Found from id_ads_management or slug inputed.', 400, false);
+
+        $token = env('CJ_ADS_PAT');
+        $url = 'https://link-search.api.cj.com/v2/link-search';
+        $params = [
+            'website-id' => env('CJ_ADS_WEBSITE_ID'),
+            'link-type' => 'Banner',
+            'advertiser-ids' => 'joined',
+            'page-number' => 1,
+            'records-per-page' => 1,
+        ];
+
+        if ($data->keywords !== null) $params['keywords'] = $data->keywords;
+        try {
+            // Send GET request with headers
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Content-Type' => 'application/json',
+            ])->get($url, $params);
+
+            // Check for a successful response
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Failed to fetch data',
+                    'details' => $response->body(),
+                ], $response->status());
+            }
+
+            // Parse the XML response
+            $xmlData = $response->body();
+            $jsonData = $this->convertXmlToJson($xmlData);
+            $total_ads = $jsonData['links']['@attributes']['total-matched'];
+
+            $data->total_ads = $total_ads;
+            $data->save();
+        } catch (\Exception $e) {
+            // return response()->json([
+            //     'error' => 'An error occurred while fetching data',
+            //     'message' => $e->getMessage(),
+            // ], 500);
         }
 
         return ResultHelpers::success($data, 200, true);
