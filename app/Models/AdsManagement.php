@@ -9,5 +9,13 @@ class AdsManagement extends Model
 {
     protected $table = 'ads_management';
     protected $primaryKey = 'id_ads_management';
-    protected $fillable = ['id_ads_management', 'page_location', 'slug', 'status', 'keywords', 'total_ads', 'soft_delete'];
+    protected $fillable = [
+        'id_ads_management',
+        'page_location',
+        'slug',
+        'type',
+        'script',
+        'status',
+        'soft_delete'
+    ];
 }
