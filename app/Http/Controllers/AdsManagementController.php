@@ -23,8 +23,7 @@ class AdsManagementController extends Controller
                <br><b>id_ads_management</b> : null / empty if want to create data, fill the id number if want to update data
                <br><b>page_location</b> : page location of ads management
                <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)
-               <br><b>type</b> : type is for change ad type [floating | vignette]
-               <br><b>script</b> : script is from monetag ad script tag [will convert to next-script if this payload filled by basic script tag]
+               <br><b>script</b> : script is from monetag[ads] script tag
                <br><b>status</b> : 0 = disabled, 1 = enabled
                <br><b>soft_delete</b> : 0 = active, 1 = deleted",
      *          required=true,
@@ -33,7 +32,6 @@ class AdsManagementController extends Controller
      *              @OA\Property(property="id_ads_management", type="int", example="1"),
      *              @OA\Property(property="page_location", type="string", example="Homepage"),
      *              @OA\Property(property="slug", type="string", example="homepage"),
-     *              @OA\Property(property="type", type="string", example="floating"),
      *              @OA\Property(property="script", type="string", example="<script></script>"),
      *              @OA\Property(property="status", type="int", example="1"),
      *              @OA\Property(property="soft_delete", type="int", example="0"),
@@ -64,7 +62,6 @@ class AdsManagementController extends Controller
             'page_location',
             'slug',
             'status',
-            'type',
             'script',
             'soft_delete',
         ]);
@@ -73,7 +70,6 @@ class AdsManagementController extends Controller
         $pageLocationAdsManagement = $requestData['page_location'] ?? null;
         $slugAdsManagement = $requestData['slug'] ?? null;
         $statusAdsManagement = $requestData['status'] ?? null;
-        $typeAdsManagement = $requestData['type'] ?? null;
         $scriptAdsManagement = $requestData['script'] ?? null;
         $softDeleteAdsManagement = $requestData['soft_delete'] ?? null;
 
@@ -90,7 +86,6 @@ class AdsManagementController extends Controller
 
         $pageLocationAdsManagement && $data->page_location = $pageLocationAdsManagement;
         $slugAdsManagement && $data->slug = $slugAdsManagement;
-        $typeAdsManagement && $data->type = $typeAdsManagement;
         $scriptAdsManagement && $data->script = $scriptAdsManagement;
         $statusAdsManagement != null && $data->status = $statusAdsManagement;
         $softDeleteAdsManagement != null && $data->soft_delete = $softDeleteAdsManagement;

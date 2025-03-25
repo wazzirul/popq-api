@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::table('ads_management', function (Blueprint $table) {
             $table->dropColumn('keywords');
             $table->dropColumn('total_ads');
-            $table->string('type')->nullable()->after('slug');
-            $table->longText('script')->nullable()->after('type');
+            $table->longText('script')->nullable()->after('slug');
         });
     }
 
@@ -27,7 +26,6 @@ return new class extends Migration
         Schema::table('ads_management', function (Blueprint $table) {
             $table->string('keywords')->nullable()->after('slug');
             $table->integer('total_ads')->default(1)->after('keywords');
-            $table->dropColumn('type');
             $table->dropColumn('script');
         });
     }

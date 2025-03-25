@@ -211,7 +211,7 @@
                 "description": "Returns Ads Management Data",
                 "operationId": "createeditadsmanagement",
                 "requestBody": {
-                    "description": "<b>Note:</b>\n               <br><b>id_ads_management</b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>page_location</b> : page location of ads management\n               <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)\n               <br><b>type</b> : type is for change ad type [floating | vignette]\n               <br><b>script</b> : script is from monetag ad script tag [will convert to next-script if this payload filled by basic script tag]\n               <br><b>status</b> : 0 = disabled, 1 = enabled\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
+                    "description": "<b>Note:</b>\n               <br><b>id_ads_management</b> : null / empty if want to create data, fill the id number if want to update data\n               <br><b>page_location</b> : page location of ads management\n               <br><b>slug</b> : slug ads management (should be unique, lowercase, and use dash instead of space or underscore, example: this-is-slug)\n               <br><b>script</b> : script is from monetag[ads] script tag\n               <br><b>status</b> : 0 = disabled, 1 = enabled\n               <br><b>soft_delete</b> : 0 = active, 1 = deleted",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -228,10 +228,6 @@
                                     "slug": {
                                         "type": "string",
                                         "example": "homepage"
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "example": "floating"
                                     },
                                     "script": {
                                         "type": "string",

@@ -13,7 +13,6 @@ class AdsManagement extends Model
         'id_ads_management',
         'page_location',
         'slug',
-        'type',
         'script',
         'status',
         'soft_delete'
